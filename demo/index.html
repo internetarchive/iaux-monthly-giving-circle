@@ -103,6 +103,19 @@
     const toggleReceiptsEl = document.querySelector('#toggle-receipts');
 
     const x = await fetch('./demo/data.json');
+    let y;
+    try {
+      y = await x.json('./demo/data.json');
+    } catch (e) {
+      console.error('Error fetching data - ./demo/data.json', e);
+    }
+    if (!y) {
+      try {
+        y = await x.json('./data.json');
+      } catch (e) {
+        console.error('Error fetching data - ./data.json', e);
+      }
+    }
     // const x = await fetch('./demo/data-short.json');
     const data = await x.json();
     const allSubscriptions = data.value;
