@@ -5,12 +5,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  
-
   <style>
     body {
       color: #333;
       font-family: var(--ia-theme-base-font-family, "Helvetica Neue", Helvetica, Arial, sans-serif);
+      /* font-size: 10px; */
       font-size: 14px;
     }
 
@@ -50,28 +49,30 @@
     align-items: center;
   }
   </style>
+  
 
   <script type="module" crossorigin src="./app-root.js"></script>
-  <link rel="stylesheet" href="./assets/index-248fbf11.css">
+  <link rel="stylesheet" href="./assets/index-0bcd78cc.css">
 </head>
 <body>
   <header>
-    <a href="recaptcha.html">Recaptcha Demo</a>
   </header>
-
   <div class="dev-tools">
     <div id="options">
     </div>
     <p><b>Latest analytic event: </b><span id="latest-analytic"></span></p>
     <div>
-      <form id="preload-email">
+      <!-- <form id="preload-email">
         <label for="email"><b>Pre-load Email:</b></label>
           <input type="email" id="email" name="email" required>
         <button type="submit">Preload Email</button>
         <button id="clear-email">Clear Email</button>
-      </form>
-      <br>
-      <button id="load-summaries">Load multiple Summaries</button>
+      </form> -->
+      <!-- <br> -->
+      <button id="load-plans">Load multiple plans</button>  |  
+      <button id="load-welcome-message">Load welcome message</button>  |  
+      <button id="toggle-receipts">Toggle Receipts</button>  |  
+      <button id="load-welcome-message">Load welcome message</button>  |  
     </div>
   </div>
 
