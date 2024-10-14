@@ -1,0 +1,14 @@
+{
+  "index.css": {
+    "file": "assets/index-248fbf11.css",
+    "src": "index.css"
+  },
+  "index.html": {
+    "css": [
+      "assets/index-248fbf11.css"
+    ],
+    "file": "app-root.js",
+    "isEntry": true,
+    "src": "index.html"
+  }
+}
