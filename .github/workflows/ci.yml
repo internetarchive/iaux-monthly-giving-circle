@@ -20,5 +20,5 @@ jobs:
     # - name: Run tests
     #   run: npm run test
 
-    - name: Upload reports
-      run: npx codecov
+    # - name: Upload reports
+    #   run: npx codecov
