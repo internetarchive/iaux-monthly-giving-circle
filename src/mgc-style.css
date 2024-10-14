@@ -2,7 +2,7 @@
 
   /* button  */
   .ia-button {
-    min-height: 3rem;
+    height: 30px;
     border: none;
     cursor: pointer;
     color: #fff;
@@ -10,7 +10,7 @@
     border-radius: .4rem;
     text-align: center;
     vertical-align: middle;
-    font-size: 1.4rem;
+    font-size: 1rem;
     display: inline-block;
     padding: .6rem 1.2rem;
     border: 1px solid transparent;
@@ -91,8 +91,9 @@
     flex-wrap: nowrap;
     align-content: center;
     margin: 0;
-    justify-content: flex-start;
+    justify-content: space-between;
     gap: 10px;
+    align-items: flex-end;
   }
 
   iaux-monthly-giving-circle .mgc-title .heart-label {
@@ -100,20 +101,25 @@
     flex-direction: row;
     flex-wrap: nowrap;
     align-content: flex-end;
-    align-items: flex-start;
+    align-items: center;
     justify-content: flex-start;
-    height: 3rem;
+    height: 2rem;
   }
 
   iaux-monthly-giving-circle .mgc-title button {
-    font-size: 1.3rem;
+    font-size: 1rem;
+    padding: 0 !important;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
   }
 
   iaux-monthly-giving-circle {
     display: block;
     width: inherit;
     --background-color: #EEFFEE;
-    --border-color: #23765D:
+    --border-color: #23765D;
+    margin: 5px 0;
   }
 
   iaux-mgc-welcome {
