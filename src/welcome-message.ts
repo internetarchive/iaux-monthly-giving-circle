@@ -7,13 +7,13 @@ const mailToString = `mailto:donations@archive.org?subject=Please%20Confirm%20my
 export class MGCWelcome extends LitElement {
   @property({ type: String }) patronName: string = '';
 
-  protected createRenderRoot() {
-    return this;
-  }
+  @property({ type: String }) baseHost: string = 'archive.org';
+
+  @property({ type: String }) defaultMonthlyDonationAmount: number = 5;
 
   protected render() {
-    const link =
-      'https://archive.org/donate/?amt=5&contrib_type=monthly&origin=iawww-usrsttng';
+    const link = `https://${this.baseHost}/donate/?amt=${this.defaultMonthlyDonationAmount}&contrib_type=monthly&origin=iawww-usrsttng`;
+
     return html`
       <section>
         <p>
@@ -48,8 +48,24 @@ export class MGCWelcome extends LitElement {
   }
 
   static styles: CSSResult = css`
+    :host {
+      border: 1px solid #23765d;
+      background-color: #eeffee;
+      display: block;
+      width: inherit;
+    }
+
     section {
-      margin: 1rem;
+      margin: 0.5rem;
+    }
+
+    section > p {
+      margin: 0;
+    }
+
+    section a.join-mgc {
+      padding-bottom: 1rem;
+      display: block;
     }
 
     ul {
@@ -58,12 +74,3 @@ export class MGCWelcome extends LitElement {
     }
   `;
 }
-
-/*
-Join the Monthly Giving Circle by starting a monthly recurring donation at any level to access benefits and perks:
-Exclusive webinars and virtual learning opportunities
-Discounts at Better World Books
-Access to the curated Monthly Giving Circle newsletter and more!
-Click here to join the Monthly Giving Circle
-Already a monthly donor but don't see your donation details here? Contact us at donations@archive.org
-*/
