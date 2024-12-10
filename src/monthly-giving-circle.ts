@@ -15,7 +15,9 @@ export class MonthlyGivingCircle extends LitElement {
   }
 
   protected render() {
-    return html` <iaux-mgc-title titleStyle="heart"></iaux-mgc-title>
-      <iaux-mgc-welcome .patronName=${this.patronName}></iaux-mgc-welcome>`;
+    return html`
+      <iaux-mgc-title titleStyle="heart"></iaux-mgc-title>
+      <iaux-mgc-welcome .patronName=${this.patronName}></iaux-mgc-welcome>
+    `;
   }
 }
