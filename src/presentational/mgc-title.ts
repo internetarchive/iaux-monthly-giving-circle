@@ -1,7 +1,7 @@
 import { LitElement, html, css, TemplateResult, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import iconDonate from '@internetarchive/icon-donate/index.js';
+import '@internetarchive/icon-donate/icon-donate.js';
 
 @customElement('iaux-mgc-title')
 export class MonthlyGivingCircle extends LitElement {
@@ -12,7 +12,7 @@ export class MonthlyGivingCircle extends LitElement {
 
     return this.titleStyle === 'heart'
       ? html`
-          <div class="icon-donate">${iconDonate}</div>
+          <div class="icon-donate"><ia-icon-donate></ia-icon-donate></div>
           <span>Monthly Giving Circle</span>
         `
       : nothing;
@@ -60,8 +60,10 @@ export class MonthlyGivingCircle extends LitElement {
       width: 2rem;
     }
 
-    h2 .icon-donate .fill-color {
-      fill: red;
+    h2 .icon-donate {
+      --iconFillColor: red;
+      --iconWidth: 2rem;
+      --iconHeight: 2rem;
     }
 
     slot[name='action'] {
