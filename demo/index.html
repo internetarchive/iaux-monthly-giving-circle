@@ -1,22 +1,50 @@
 <!doctype html>
-<html lang="en-GB">
+<html>
 <head>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Monthly Giving Circle demo</title>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <style>
     html {
-      font-size: 10px; /* This is to match petabox's base font size */
+      font-size: 62.5%;
     }
 
     body {
-      background: #fafafa;
+      margin: 0;
+      padding: 0;
+      color: #333;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.42857143;
+    }
+    
+    body .dev-tools {
+      background-color: aliceblue;
+      margin: 0 0 20px 0;
+      min-height: 50px;
+    }
+
+    body #demo {
+      padding: 1em;
     }
   </style>
+
+
 </head>
 <body>
-  <app-root></app-root>
+  <header>
+  </header>
+  <div class="dev-tools">
+    <div id="options">
+    </div>
+  </div>
 
-  <script type="module" src="../dist/demo/app-root.js">
-  </script>
+  <div id="demo">
+    <iaux-monthly-giving-circle></iaux-monthly-giving-circle>
+  </div>
+
+  <script type="module" src="../dist/src/monthly-giving-circle.js"></script>
+
 </body>
 </html>

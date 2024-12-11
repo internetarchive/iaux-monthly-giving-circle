@@ -21,5 +21,6 @@ export default defineConfig({
         entryFileNames: 'app-root.js',
       },
     },
+    target: 'esnext' /* browsers can handle the latest ES features */,
   },
 });
