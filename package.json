@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@internetarchive/icon-donate": "^1.3.4",
-    "lit": "^2.8.0"
+    "lit": "^3.0.0"
   },
   "devDependencies": {
     "@open-wc/eslint-config": "^9.0.0",
