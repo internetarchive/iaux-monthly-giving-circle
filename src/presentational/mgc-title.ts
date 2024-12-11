@@ -8,8 +8,6 @@ export class MonthlyGivingCircle extends LitElement {
   @property({ type: String }) titleStyle: 'heart' | 'default' = 'heart';
 
   get heart(): TemplateResult | typeof nothing {
-    // const heart = html`${iconDonate}`;
-
     return this.titleStyle === 'heart'
       ? html`
           <div class="icon-donate"><ia-icon-donate></ia-icon-donate></div>
