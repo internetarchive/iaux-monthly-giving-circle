@@ -1,15 +1,17 @@
-# \<donation-form>
+# \<iaux-monthly-giving-circle>
 
 The Internet Archive monthly donation management, web components.
 
-<!-- ![Donation Form](./assets/img/screenshot.png "Donation Form") -->
-
 ## Installation
 ```bash
-yarn add @internetarchive/donation-form
+npm i @internetarchive/donation-monthly-portal
 ```
 
 ## Usage
 ```html
 please see demo.
+```
+
+```bash
+npm i && npm start
 ```
