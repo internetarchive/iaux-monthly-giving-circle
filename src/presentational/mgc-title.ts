@@ -34,7 +34,7 @@ export class MonthlyGivingCircle extends LitElement {
 
   static styles = css`
     h2 {
-      font-size: 1.5rem;
+      font-size: 1.5em;
       display: flex;
       flex-direction: row;
       flex-wrap: nowrap;
@@ -57,17 +57,15 @@ export class MonthlyGivingCircle extends LitElement {
       align-content: flex-end;
       align-items: center;
       justify-content: flex-start;
-      width: 2rem;
     }
 
     h2 .icon-donate {
       --iconFillColor: red;
-      --iconWidth: 2rem;
-      --iconHeight: 2rem;
+      --iconWidth: 1.2em;
+      --iconHeight: 1.2em;
     }
 
     slot[name='action'] {
-      font-size: 1rem;
       padding: 0 !important;
       display: flex;
       justify-content: flex-end;

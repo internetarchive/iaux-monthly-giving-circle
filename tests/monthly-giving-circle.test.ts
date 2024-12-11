@@ -11,6 +11,7 @@ describe('IauxMonthlyGivingCircle', () => {
       html`<iaux-monthly-giving-circle></iaux-monthly-giving-circle>`
     );
 
+    // eslint-disable-next-line no-unused-expressions
     expect(el.querySelector('iaux-mgc-welcome')).to.not.be.null;
   });
 });

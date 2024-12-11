@@ -6,50 +6,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
+    html {
+      font-size: 62.5%;
+    }
+
     body {
+      margin: 0;
+      padding: 0;
       color: #333;
-      font-family: var(--ia-theme-base-font-family, "Helvetica Neue", Helvetica, Arial, sans-serif);
-      /* font-size: 10px; */
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 14px;
+      line-height: 1.42857143;
+    }
+    
+    body .dev-tools {
+      background-color: aliceblue;
+      margin: 0 0 20px 0;
+      min-height: 50px;
     }
 
-    body.modal-manager-open {
-      overflow: hidden;
+    body #demo {
+      padding: 1em;
     }
-
-    modal-manager {
-      display: none;
-      --modalTopMargin: 4rem;
-      --modalBottomMargin: 0.25rem;
-    }
-
-    modal-manager[mode='open'] {
-      display: block;
-    }
-
-    donation-form-controller {
-      display: block;
-      width: 32rem;
-    }
-
-    .dev-tools {
-      background-color: lightblue;
-      padding: 1rem 1rem;
-    }
-
-    #paypal-upsell-button {
-      opacity: 0.01;
-      padding-bottom: 0.6rem;
-    }
-
-  div#options {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: center;
-  }
   </style>
-  <link rel="stylesheet" href="../src/mgc-style.css" />
+
 
 </head>
 <body>
