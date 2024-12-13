@@ -28,6 +28,11 @@ export class MonthlyGivingCircle extends LitElement {
   }
 
   static styles = css`
+    :host {
+      padding-bottom: 5px;
+      display: block;
+    }
+
     h2 {
       font-size: 1.5em;
       display: flex;

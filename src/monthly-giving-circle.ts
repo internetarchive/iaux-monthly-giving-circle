@@ -61,7 +61,11 @@ export class MonthlyGivingCircle extends LitElement {
           .donations=${this.receipts}
           @EmailReceiptRequest=${(event: CustomEvent) => {
             console.log('EmailReceiptRequest', event.detail);
-            alert(`Email receipt: ${JSON.stringify(event.detail.donation)}`);
+            this.dispatchEvent(
+              new CustomEvent('EmailReceiptRequest', {
+                detail: { ...event.detail },
+              })
+            );
           }}
         ></iaux-mgc-receipts>
       `;

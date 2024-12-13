@@ -18,6 +18,31 @@ export class MGCWelcome extends LitElement {
     return `USD ${amount}`;
   }
 
+  dateFormatted(date: string) {
+    const splitDate = date.split('-');
+    const year = splitDate[0];
+    const month = parseInt(splitDate[1], 10);
+    const day = splitDate[2];
+
+    const monthMap: { [key: number]: string } = {
+      1: 'January',
+      2: 'February',
+      3: 'March',
+      4: 'April',
+      5: 'May',
+      6: 'June',
+      7: 'July',
+      8: 'August',
+      9: 'September',
+      10: 'October',
+      11: 'November',
+      12: 'December',
+    };
+
+    const displayMonth = monthMap[month];
+    return `${displayMonth} ${day}, ${year}`;
+  }
+
   emailReceipt(donation: donation) {
     this.dispatchEvent(
       new CustomEvent('EmailReceiptRequest', {
@@ -43,7 +68,7 @@ export class MGCWelcome extends LitElement {
                 const emailUnavailable = donation.status === 'pending';
                 return html`
                   <tr id=${`donation-${donation.id}`}>
-                    <td>${donation.date}</td>
+                    <td>${this.dateFormatted(donation.date)}</td>
                     <td>${this.donationAmountFormatted(donation.amount)}</td>
                     <td class="status">${donation.status}</td>
                     <td>
@@ -73,6 +98,11 @@ export class MGCWelcome extends LitElement {
     table {
       width: 100%;
       text-align: left;
+      max-width: 600px;
+    }
+
+    button {
+      padding: 1rem 0;
     }
   `;
 }

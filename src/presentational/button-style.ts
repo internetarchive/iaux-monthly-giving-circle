@@ -69,6 +69,7 @@ export class MonthlyGivingCircle extends LitElement {
       background: transparent;
       display: flex;
       align-items: flex-end;
+      padding: 0;
     }
   `;
 }
