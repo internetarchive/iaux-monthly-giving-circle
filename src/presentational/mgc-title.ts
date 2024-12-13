@@ -9,10 +9,7 @@ export class MonthlyGivingCircle extends LitElement {
 
   get heart(): TemplateResult | typeof nothing {
     return this.titleStyle === 'heart'
-      ? html`
-          <div class="icon-donate"><ia-icon-donate></ia-icon-donate></div>
-          <span>Monthly Giving Circle</span>
-        `
+      ? html` <div class="icon-donate"><ia-icon-donate></ia-icon-donate></div> `
       : nothing;
   }
 

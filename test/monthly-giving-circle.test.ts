@@ -14,4 +14,14 @@ describe('IauxMonthlyGivingCircle', () => {
     // eslint-disable-next-line no-unused-expressions
     expect(el.querySelector('iaux-mgc-welcome')).to.not.be.null;
   });
+
+  it('displays receipt button when receipts are available', async () => {
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<iaux-monthly-giving-circle
+        .receipts="[]"
+      ></iaux-monthly-giving-circle>`
+    );
+
+    expect(el.querySelector('iaux-mgc-welcome')).to.not.be.null;
+  });
 });

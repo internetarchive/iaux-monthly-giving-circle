@@ -37,6 +37,7 @@
   </header>
   <div class="dev-tools">
     <div id="options">
+      <button id="toggle-receipts">Toggle Receipts</button>
     </div>
   </div>
 
@@ -45,6 +46,56 @@
   </div>
 
   <script type="module" src="../dist/src/monthly-giving-circle.js"></script>
+  <script type="module">
+    let showReceipts = false;
+    // let displayFullscreen = false;
 
+    const mgcComponent = document.querySelector('iaux-monthly-giving-circle');
+    // options hooks
+    document.getElementById('toggle-receipts').addEventListener('click', async () => {
+      if (showReceipts) {
+        mgcComponent.receipts = [];
+        showReceipts = false;
+        return;
+      }
+      mgcComponent.receipts = [
+        {
+          amount: 100,
+          date: '2020-01-01',
+          donor: 'John Doe',
+          paymentMethod: 'Credit Card',
+          status: 'Completed'
+        },
+        {
+          amount: 100,
+          date: '2020-02-01',
+          donor: 'John Doe',
+          paymentMethod: 'Credit Card',
+          status: 'Completed',
+          is_test: true,
+        },
+        {
+          amount: 100,
+          date: '2020-03-01',
+          donor: 'John Doe',
+          paymentMethod: 'Credit Card',
+          status: 'Pending',
+          is_test: true,
+        },
+        {
+          amount: 100,
+          date: '2020-03-01',
+          donor: 'John Doe',
+          paymentMethod: 'Credit Card',
+          status: 'Pending',
+          is_test: true,
+        },
+      ]
+
+      await mgcComponent.updateComplete;
+
+      showReceipts = true;
+    });
+  </script>
 </body>
 </html>
