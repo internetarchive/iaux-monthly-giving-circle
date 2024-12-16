@@ -22,9 +22,8 @@ export class MonthlyGivingCircle extends LitElement {
 
   get showReceiptsCTA(): TemplateResult {
     return html`
-      <iaux-button-style>
+      <iaux-button-style class="link">
         <button
-          class="link"
           @click=${() => {
             this.viewToDisplay = 'receipts';
           }}

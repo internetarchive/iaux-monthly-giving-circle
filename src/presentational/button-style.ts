@@ -9,11 +9,11 @@ export class MonthlyGivingCircle extends LitElement {
     'primary';
 
   render() {
-    return html`<slot></slot>`;
+    return html`<slot buttonStyle=${this.styleType}></slot>`;
   }
 
   static styles = css`
-    ::slotted(button) {
+    ::slotted(*) {
       height: 30px;
       border: none;
       cursor: pointer;
@@ -22,7 +22,6 @@ export class MonthlyGivingCircle extends LitElement {
       border-radius: 0.4rem;
       text-align: center;
       vertical-align: middle;
-      /* font-size: 1rem; */
       display: inline-block;
       padding: 0.6rem 1.2rem;
       border: 1px solid transparent;
@@ -35,35 +34,34 @@ export class MonthlyGivingCircle extends LitElement {
       user-select: none;
     }
 
-    ::slotted(button:disabled),
-    ::slotted(button.disabled) {
+    :host(.disabled) ::slotted(*:disabled) {
       cursor: not-allowed;
       opacity: 0.5;
     }
 
-    ::slotted(button).transparent {
+    :host(.transparent) ::slotted(*) {
       background-color: transparent;
     }
 
-    ::slotted(button).slim {
+    :host(.slim) ::slotted(*) {
       padding: 0;
     }
 
-    ::slotted(button.primary) {
+    :host(.primary) ::slotted(*) {
       background-color: #194880;
       border-color: #c5d1df;
     }
 
-    ::slotted(button.secondary) {
+    :host(.secondary) ::slotted(*) {
       background: #333;
     }
 
-    ::slotted(button.cancel) {
+    :host(.cancel) ::slotted(*) {
       background-color: #e51c26;
       border-color: #f8c6c8;
     }
 
-    ::slotted(button.link) {
+    :host(.link) ::slotted(*) {
       color: #4b64ff;
       border: none;
       background: transparent;
