@@ -240,9 +240,8 @@
                     <td>${this.donationAmountFormatted(t.amount)}</td>
                     <td class="status">${t.status}</td>
                     <td>
-                      <iaux-button-style>
+                      <iaux-button-style class="link">
                         <button
-                          class="link"
                           @click=${()=>{e||this.emailReceipt(t)}}
                           ?disabled=${e}
                         >
@@ -276,9 +275,8 @@
         <iaux-mgc-title titleStyle="default">
           <span slot="title">Recent donations</span>
           <span slot="action">
-            <iaux-button-style>
+            <iaux-button-style class="link">
               <button
-                class="link"
                 @click=${t=>{const e=t.target;e.disabled=!0,this.viewToDisplay="welcome"}}
               >
                 Back to account settings
