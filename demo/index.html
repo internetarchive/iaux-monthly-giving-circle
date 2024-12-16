@@ -42,11 +42,20 @@
   </div>
 
   <div id="demo">
+    <style>
+      iaux-monthly-giving-circle {
+        display: block;
+        margin: 0 auto;
+        max-width: 800px;
+      }
+    </style>
     <iaux-monthly-giving-circle></iaux-monthly-giving-circle>
   </div>
 
   <script type="module" src="../dist/src/monthly-giving-circle.js"></script>
   <script type="module">
+    let updateNotices = [];
+
     const receiptsData = [
         {
           amount: 100,
@@ -83,9 +92,20 @@
     mgcComponent.receipts = receiptsData;
 
     // event handlers
-    mgcComponent.addEventListener('EmailReceiptRequest', (e) => {
-      // eslint-disable-next-line no-alert
-      alert(`EmailReceiptRequest: ${JSON.stringify(e.detail)}`);
+    mgcComponent.addEventListener('EmailReceiptRequest', async () => {
+      const randomizer = Math.floor(Math.random() + 0.5);
+      const successOrFail = randomizer === 1 ? 'success' : 'fail';
+      const message = successOrFail === 'success' ? 'Email receipt sent' : 'Email receipt failed';
+
+      const update = {
+        message,
+        status: successOrFail,
+      }
+
+      updateNotices = [update, ...updateNotices];
+
+      mgcComponent.updates = updateNotices;
+      await mgcComponent.updateComplete;
     });
 
     // options hooks

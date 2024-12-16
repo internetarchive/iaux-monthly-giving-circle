@@ -7,12 +7,15 @@ import './welcome-message';
 import './presentational/mgc-title';
 import './receipts';
 import './presentational/button-style';
+import './presentational/update-queue';
 
 @customElement('iaux-monthly-giving-circle')
 export class MonthlyGivingCircle extends LitElement {
   @property({ type: String }) patronName: string = '';
 
   @property({ type: Array }) receipts = [];
+
+  @property({ type: Array }) updates = [];
 
   @property({ type: String }) viewToDisplay: 'welcome' | 'receipts' = 'welcome';
 
@@ -48,6 +51,7 @@ export class MonthlyGivingCircle extends LitElement {
                   btn.disabled = true;
 
                   this.viewToDisplay = 'welcome';
+                  this.updates = [];
                 }}
               >
                 Back to account settings
@@ -55,6 +59,7 @@ export class MonthlyGivingCircle extends LitElement {
             </iaux-button-style>
           </span>
         </iaux-mgc-title>
+        <iaux-update-queue .updates=${this.updates}></iaux-update-queue>
         <iaux-mgc-receipts
           .donations=${this.receipts}
           @EmailReceiptRequest=${(event: CustomEvent) => {
