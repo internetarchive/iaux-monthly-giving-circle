@@ -1,15 +1,12 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 
 import '@internetarchive/icon-donate/icon-donate.js';
 
 @customElement('iaux-button-style')
 export class MonthlyGivingCircle extends LitElement {
-  @property({ type: String }) styleType: 'primary' | 'danger' | 'text' =
-    'primary';
-
   render() {
-    return html`<slot buttonStyle=${this.styleType}></slot>`;
+    return html`<slot></slot>`;
   }
 
   static styles = css`
@@ -68,6 +65,7 @@ export class MonthlyGivingCircle extends LitElement {
       display: flex;
       align-items: flex-end;
       padding: 0;
+      height: inherit;
     }
   `;
 }
