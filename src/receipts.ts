@@ -72,9 +72,8 @@ export class MGCWelcome extends LitElement {
                     <td>${this.donationAmountFormatted(donation.amount)}</td>
                     <td class="status">${donation.status}</td>
                     <td>
-                      <iaux-button-style>
+                      <iaux-button-style class="link">
                         <button
-                          class="link"
                           @click=${() => {
                             if (emailUnavailable) return;
                             this.emailReceipt(donation);

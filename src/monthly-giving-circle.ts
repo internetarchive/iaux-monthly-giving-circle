@@ -41,9 +41,8 @@ export class MonthlyGivingCircle extends LitElement {
         <iaux-mgc-title titleStyle="default">
           <span slot="title">Recent donations</span>
           <span slot="action">
-            <iaux-button-style>
+            <iaux-button-style class="link">
               <button
-                class="link"
                 @click=${(event: Event) => {
                   const btn = event.target as HTMLButtonElement;
                   btn.disabled = true;
