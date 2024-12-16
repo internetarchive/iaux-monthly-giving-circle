@@ -37,7 +37,8 @@
   </header>
   <div class="dev-tools">
     <div id="options">
-      <button id="toggle-receipts">Toggle Receipts</button>
+      <button id="toggle-receipts">Toggle receipts</button>
+      <button id="clear-updates">Clear updates</button>
     </div>
   </div>
 
@@ -83,8 +84,7 @@
       ];
 
 
-    let showReceipts = false;
-    // let displayFullscreen = false;
+    let showReceipts = true;
 
     const mgcComponent = document.querySelector('iaux-monthly-giving-circle');
 
@@ -119,6 +119,11 @@
       await mgcComponent.updateComplete;
 
       showReceipts = true;
+    });
+    document.getElementById('clear-updates').addEventListener('click', async () => {
+      updateNotices = [];
+      mgcComponent.updates = updateNotices;
+      await mgcComponent.updateComplete;
     });
   </script>
 </body>
