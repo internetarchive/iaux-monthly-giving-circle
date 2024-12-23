@@ -49,7 +49,7 @@ export class MonthlyGivingCircle extends LitElement {
             this.dispatchEvent(new CustomEvent('ShowReceipts'));
           }}
         >
-          Show receipts
+          View recent donation history
         </button>
       </iaux-button-style>
     `;
