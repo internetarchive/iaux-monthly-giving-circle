@@ -69,6 +69,7 @@ export class MonthlyGivingCircle extends LitElement {
                   btn.disabled = true;
 
                   this.viewToDisplay = 'welcome';
+                  this.dispatchEvent(new CustomEvent('ShowWelcome'));
                   this.updates = [];
                 }}
               >
