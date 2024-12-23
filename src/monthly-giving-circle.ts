@@ -46,6 +46,7 @@ export class MonthlyGivingCircle extends LitElement {
         <button
           @click=${() => {
             this.viewToDisplay = 'receipts';
+            this.dispatchEvent(new CustomEvent('ShowReceipts'));
           }}
         >
           Show receipts
