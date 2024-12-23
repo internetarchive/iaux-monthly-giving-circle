@@ -9,7 +9,6 @@ import './welcome-message';
 import './presentational/mgc-title';
 import './receipts';
 import './presentational/button-style';
-import './presentational/update-queue';
 
 export type anUpdate = {
   message: string;
