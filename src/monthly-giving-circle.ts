@@ -4,16 +4,18 @@ import { LitElement, html, TemplateResult, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import './welcome-message';
-import './presentational/mgc-title';
 import './receipts';
 import type { IauxMgcReceipts } from './receipts';
 import './presentational/iaux-button';
+import './plans';
+import './presentational/mgc-title';
 
 export type anUpdate = {
   message: string;
   status: 'success' | 'fail';
   donationId: string;
 };
+
 
 @customElement('iaux-monthly-giving-circle')
 export class MonthlyGivingCircle extends LitElement {
@@ -23,9 +25,9 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: Array }) updates: anUpdate[] = [];
 
-  @property({ type: String, reflect: true }) viewToDisplay:
-    | 'welcome'
-    | 'receipts' = 'welcome';
+  @property({ type: Array }) plans = [];
+
+  @property({ type: String }) viewToDisplay: 'welcome' | 'receipts' = 'welcome';
 
   protected createRenderRoot() {
     return this;
@@ -46,8 +48,7 @@ export class MonthlyGivingCircle extends LitElement {
   get showReceiptsCTA(): TemplateResult {
     return html`
       <iaux-button
-        class="link"
-        style="--button-padding: 0;"
+        class="link slim"
         .clickHandler=${() => {
           this.viewToDisplay = 'receipts';
           this.dispatchEvent(new CustomEvent('ShowReceipts'));
@@ -81,7 +82,6 @@ export class MonthlyGivingCircle extends LitElement {
         <iaux-mgc-receipts
           .receipts=${this.receipts}
           @EmailReceiptRequest=${(event: CustomEvent) => {
-            console.log('EmailReceiptRequest', event.detail);
             this.dispatchEvent(
               new CustomEvent('EmailReceiptRequest', {
                 detail: { ...event.detail },
@@ -89,6 +89,18 @@ export class MonthlyGivingCircle extends LitElement {
             );
           }}
         ></iaux-mgc-receipts>
+      `;
+    }
+
+    if (this.plans.length) {
+      return html`
+        <iaux-mgc-title titleStyle="heart">
+          <span slot="title">Monthly Giving Circle</span>
+          <span slot="action"
+            >${this.receipts.length ? this.showReceiptsCTA : nothing}</span
+          >
+        </iaux-mgc-title>
+        <iaux-mgc-plans .plans=${this.plans}></iaux-mgc-plans>
       `;
     }
 
