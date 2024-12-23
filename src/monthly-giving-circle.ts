@@ -4,8 +4,9 @@ import { LitElement, html, TemplateResult, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import './welcome-message';
-import './presentational/mgc-title';
 import './receipts';
+import './plans';
+import './presentational/mgc-title';
 import './presentational/button-style';
 import './presentational/update-queue';
 
@@ -16,6 +17,8 @@ export class MonthlyGivingCircle extends LitElement {
   @property({ type: Array }) receipts = [];
 
   @property({ type: Array }) updates = [];
+
+  @property({ type: Array }) plans = [];
 
   @property({ type: String }) viewToDisplay: 'welcome' | 'receipts' = 'welcome';
 
@@ -63,7 +66,6 @@ export class MonthlyGivingCircle extends LitElement {
         <iaux-mgc-receipts
           .donations=${this.receipts}
           @EmailReceiptRequest=${(event: CustomEvent) => {
-            console.log('EmailReceiptRequest', event.detail);
             this.dispatchEvent(
               new CustomEvent('EmailReceiptRequest', {
                 detail: { ...event.detail },
@@ -71,6 +73,18 @@ export class MonthlyGivingCircle extends LitElement {
             );
           }}
         ></iaux-mgc-receipts>
+      `;
+    }
+
+    if (this.plans.length) {
+      return html`
+        <iaux-mgc-title titleStyle="heart">
+          <span slot="title">Monthly Giving Circle</span>
+          <span slot="action"
+            >${this.receipts.length ? this.showReceiptsCTA : nothing}</span
+          >
+        </iaux-mgc-title>
+        <iaux-mgc-welcome .patronName=${this.patronName}></iaux-mgc-welcome>
       `;
     }
 
