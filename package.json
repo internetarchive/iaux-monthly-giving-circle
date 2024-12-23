@@ -27,6 +27,7 @@
     "ghpages:generate": "gh-pages -t -d ghpages -m \"Build for $(git log --pretty=format:\"%h %an %ai %s\" -n1) [skip ci]\""
   },
   "dependencies": {
+    "@internetarchive/iaux-notification-toast": "^0.0.0-alpha2",
     "@internetarchive/icon-donate": "^1.3.4",
     "lit": "^2.8.0"
   },
