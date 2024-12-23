@@ -3,11 +3,18 @@
 import { LitElement, html, TemplateResult, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
+import type { IauxNotificationToast } from '@internetarchive/iaux-notification-toast';
+import '@internetarchive/iaux-notification-toast';
 import './welcome-message';
 import './presentational/mgc-title';
 import './receipts';
 import './presentational/button-style';
 import './presentational/update-queue';
+
+export type anUpdate = {
+  message: string;
+  status: 'success' | 'fail';
+};
 
 @customElement('iaux-monthly-giving-circle')
 export class MonthlyGivingCircle extends LitElement {
@@ -15,12 +22,23 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: Array }) receipts = [];
 
-  @property({ type: Array }) updates = [];
+  @property({ type: Array }) updates: anUpdate[] = [];
 
   @property({ type: String }) viewToDisplay: 'welcome' | 'receipts' = 'welcome';
 
   protected createRenderRoot() {
     return this;
+  }
+
+  get notificationToastElement(): IauxNotificationToast {
+    return this.querySelector(
+      'iaux-notification-toast'
+    ) as IauxNotificationToast;
+  }
+
+  updateReceived(update: { message: string; status: 'success' | 'fail' }) {
+    this.notificationToastElement.addNotification(update);
+    this.updates.unshift(update);
   }
 
   get showReceiptsCTA(): TemplateResult {
@@ -59,7 +77,7 @@ export class MonthlyGivingCircle extends LitElement {
             </iaux-button-style>
           </span>
         </iaux-mgc-title>
-        <iaux-update-queue .updates=${this.updates}></iaux-update-queue>
+        <iaux-notification-toast></iaux-notification-toast>
         <iaux-mgc-receipts
           .donations=${this.receipts}
           @EmailReceiptRequest=${(event: CustomEvent) => {

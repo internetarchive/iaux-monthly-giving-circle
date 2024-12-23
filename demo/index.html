@@ -104,7 +104,8 @@
 
       updateNotices = [update, ...updateNotices];
 
-      mgcComponent.updates = updateNotices;
+
+      mgcComponent.updateReceived(update);
       await mgcComponent.updateComplete;
     });
 
