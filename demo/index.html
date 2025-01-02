@@ -59,11 +59,12 @@
 
     const receiptsData = [
         {
-          amount: 100,
-          date: '2020-01-01',
+          amount: 9999.99,
+          date: '2020-09-01',
           donor: 'John Doe',
           paymentMethod: 'Credit Card',
-          status: 'Completed'
+          status: 'Completed',
+          id: 'foo-id-1',
         },
         {
           amount: 100,
@@ -71,6 +72,7 @@
           donor: 'John Doe',
           paymentMethod: 'Credit Card',
           status: 'Completed',
+          id: 'foo-id-2',
           is_test: true,
         },
         {
@@ -78,7 +80,8 @@
           date: '2024-03-01',
           donor: 'John Doe',
           paymentMethod: 'Credit Card',
-          status: 'Pending',
+          status: 'Completed',
+          id: 'foo-id-3',
           is_test: true,
         },
       ];
@@ -92,7 +95,8 @@
     mgcComponent.receipts = receiptsData;
 
     // event handlers
-    mgcComponent.addEventListener('EmailReceiptRequest', async () => {
+    mgcComponent.addEventListener('EmailReceiptRequest', async (e) => {
+      const { donation } = e.detail;
       const randomizer = Math.floor(Math.random() + 0.5);
       const successOrFail = randomizer === 1 ? 'success' : 'fail';
       const message = successOrFail === 'success' ? 'Email receipt sent' : 'Email receipt failed';
@@ -100,7 +104,8 @@
       const update = {
         message,
         status: successOrFail,
-      }
+        donationId: donation.id
+      };
 
       updateNotices = [update, ...updateNotices];
 

@@ -3,11 +3,10 @@
 import { LitElement, html, TemplateResult, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import type { IauxNotificationToast } from '@internetarchive/iaux-notification-toast';
-import '@internetarchive/iaux-notification-toast';
 import './welcome-message';
 import './presentational/mgc-title';
 import './receipts';
+import type { IauxMgcReceipts } from './receipts';
 import './presentational/button-style';
 
 export type anUpdate = {
@@ -29,14 +28,19 @@ export class MonthlyGivingCircle extends LitElement {
     return this;
   }
 
-  get notificationToastElement(): IauxNotificationToast {
-    return this.querySelector(
-      'iaux-notification-toast'
-    ) as IauxNotificationToast;
+  get receiptListElement(): IauxMgcReceipts {
+    return this.querySelector('iaux-mgc-receipts') as IauxMgcReceipts;
   }
 
-  updateReceived(update: { message: string; status: 'success' | 'fail' }) {
-    this.notificationToastElement.addNotification(update);
+  updateReceived(update: {
+    message: string;
+    status: 'success' | 'fail';
+    donationId: string;
+  }) {
+    this.receiptListElement.emailSent({
+      id: update.donationId,
+      emailStatus: update.status,
+    });
     this.updates.unshift(update);
   }
 
@@ -78,9 +82,8 @@ export class MonthlyGivingCircle extends LitElement {
             </iaux-button-style>
           </span>
         </iaux-mgc-title>
-        <iaux-notification-toast></iaux-notification-toast>
         <iaux-mgc-receipts
-          .donations=${this.receipts}
+          .receipts=${this.receipts}
           @EmailReceiptRequest=${(event: CustomEvent) => {
             console.log('EmailReceiptRequest', event.detail);
             this.dispatchEvent(

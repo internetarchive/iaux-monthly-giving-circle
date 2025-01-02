@@ -1,5 +1,6 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import './presentational/button-style';
 
@@ -10,12 +11,52 @@ type donation = {
   id: string;
 };
 
+type donationEmailStatus = {
+  id: string;
+  emailStatus: 'success' | 'fail' | 'pending' | '';
+};
+
+type donationEmailStatusMapType = {
+  [id: string]: donationEmailStatus;
+};
+
 @customElement('iaux-mgc-receipts')
-export class MGCWelcome extends LitElement {
-  @property({ type: Array }) donations = [];
+export class IauxMgcReceipts extends LitElement {
+  @property({ type: Array }) receipts = [];
+
+  @property({ type: Object })
+  donationEmailStatusMap: donationEmailStatusMapType | null = null;
+
+  shouldUpdate(changed: PropertyValues) {
+    if (changed.has('donationEmailStatusMap')) {
+      return true;
+    }
+    return true;
+  }
+
+  updated(changed: PropertyValues) {
+    if (changed.has('receipts')) {
+      this.updateReceiptSentMap();
+    }
+  }
+
+  updateReceiptSentMap() {
+    if (!this.receipts.length) {
+      this.donationEmailStatusMap = null;
+    } else {
+      const donationEmailStatusMap: donationEmailStatusMapType = {};
+      this.receipts.forEach((donation: donation) => {
+        donationEmailStatusMap[donation.id] = {
+          id: donation.id,
+          emailStatus: '',
+        };
+      });
+      this.donationEmailStatusMap = donationEmailStatusMap;
+    }
+  }
 
   donationAmountFormatted(amount: number) {
-    return `USD ${amount}`;
+    return `USD $${amount}`;
   }
 
   dateFormatted(date: string) {
@@ -53,36 +94,110 @@ export class MGCWelcome extends LitElement {
     );
   }
 
+  public emailSent(receiptEmailed: donationEmailStatus) {
+    const statusMap = {
+      ...this.donationEmailStatusMap,
+    } as donationEmailStatusMapType;
+    const { id } = receiptEmailed;
+    statusMap[id] = receiptEmailed;
+    this.donationEmailStatusMap = statusMap;
+    // this.requestUpdate();
+  }
+
+  emailStatusMessageToDisplay(donationSentStatus: donationEmailStatus): string {
+    switch (donationSentStatus.emailStatus) {
+      case 'success':
+        return 'Email sent';
+      case 'fail':
+        return 'Email did not send';
+      default:
+        return '';
+    }
+  }
+
+  ctaButtonText(donation: donation, emailStatus?: donationEmailStatus) {
+    if (donation.status === 'pending') {
+      return 'Unavailable';
+    }
+
+    if (emailStatus?.emailStatus === 'pending') {
+      return 'Sending...';
+    }
+
+    return 'Email receipt';
+  }
+
   protected render() {
     return html`
       <section id="recent-donations-list">
         <table>
           <tr>
-            <th>Donor</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Action</th>
+            <th class="date">Date</th>
+            <th class="amount">Amount</th>
+            <th class="status">Status</th>
+            <th class="action">Action</th>
           </tr>
-          ${this.donations.length
-            ? this.donations.map((donation: donation) => {
-                const emailUnavailable = donation.status === 'pending';
+          ${this.receipts.length
+            ? this.receipts.map((donation: donation) => {
+                const emailStatus = this.donationEmailStatusMap?.[donation.id];
+
+                const emailUnavailable =
+                  emailStatus?.emailStatus === 'pending' ||
+                  donation.status === 'pending';
+                const emailStatusToDisplay =
+                  !emailStatus || !emailStatus.emailStatus
+                    ? nothing
+                    : html`<span
+                        class=${`sent-status ${emailStatus.emailStatus}`}
+                        >${this.emailStatusMessageToDisplay(emailStatus)}</span
+                      >`;
                 return html`
                   <tr id=${`donation-${donation.id}`}>
-                    <td>${this.dateFormatted(donation.date)}</td>
-                    <td>${this.donationAmountFormatted(donation.amount)}</td>
-                    <td class="status">${donation.status}</td>
                     <td>
-                      <iaux-button-style class="link">
-                        <button
-                          @click=${() => {
-                            if (emailUnavailable) return;
-                            this.emailReceipt(donation);
-                          }}
-                          ?disabled=${emailUnavailable}
+                      <div class="donation-date">
+                        ${this.dateFormatted(donation.date)}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="donation-amount">
+                        ${this.donationAmountFormatted(donation.amount)}
+                      </div>
+                    </td>
+                    <td class="status">
+                      <div class="donation-status">${donation.status}</div>
+                    </td>
+                    <td>
+                      <div class="request-receipt">
+                        <iaux-button-style
+                          class=${classMap({
+                            disabled: emailUnavailable,
+                            link: 'true',
+                          })}
                         >
-                          ${emailUnavailable ? 'Unavailable' : 'Email receipt'}
-                        </button>
-                      </iaux-button-style>
+                          <button
+                            @click=${(e: Event) => {
+                              (e.target as HTMLButtonElement).disabled = true;
+                              if (emailUnavailable) return;
+                              this.emailReceipt(donation);
+                              if (this.donationEmailStatusMap) {
+                                const statusMap = {
+                                  ...this.donationEmailStatusMap,
+                                } as donationEmailStatusMapType;
+                                statusMap[donation.id].emailStatus = 'pending';
+                                this.donationEmailStatusMap = statusMap;
+                                console.log(
+                                  'this.donationEmailStatusMap',
+                                  this.donationEmailStatusMap
+                                );
+                              }
+                            }}
+                            ?disabled=${emailUnavailable}
+                          >
+                            ${this.ctaButtonText(donation, emailStatus)}
+                          </button>
+                        </iaux-button-style>
+                        ${emailStatusToDisplay}
+                      </div>
                     </td>
                   </tr>
                 `;
@@ -95,13 +210,39 @@ export class MGCWelcome extends LitElement {
 
   static styles = css`
     table {
-      width: 100%;
       text-align: left;
-      max-width: 600px;
+      table-layout: fixed;
+      min-width: 600px;
     }
 
     button {
       padding: 1rem 0;
+    }
+
+    th.date {
+      width: 110px;
+    }
+    th.amount {
+      width: 80px;
+    }
+    th.status {
+      width: 70px;
+    }
+    th.action {
+      width: 200px;
+    }
+    iaux-button-style {
+      display: inline-block;
+      padding-right: 5px;
+    }
+    .sent-status.success {
+      color: rgb(33, 149, 24);
+      cursor: pointer;
+      border-left: 5px solid rgb(33, 149, 24);
+    }
+    .sent-status.fail {
+      color: #bb0505;
+      border-left: 5px solid #bb0505;
     }
   `;
 }

@@ -31,11 +31,6 @@ export class MonthlyGivingCircle extends LitElement {
       user-select: none;
     }
 
-    :host(.disabled) ::slotted(*:disabled) {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-
     :host(.transparent) ::slotted(*) {
       background-color: transparent;
     }
@@ -66,6 +61,12 @@ export class MonthlyGivingCircle extends LitElement {
       align-items: flex-end;
       padding: 0;
       height: inherit;
+    }
+
+    :host(.disabled) ::slotted(*) {
+      cursor: not-allowed;
+      opacity: 0.5;
+      color: #222;
     }
   `;
 }
