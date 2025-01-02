@@ -219,6 +219,10 @@ export class IauxMgcReceipts extends LitElement {
       padding: 1rem 0;
     }
 
+    td {
+      padding: 0;
+    }
+
     th.date {
       width: 110px;
     }
