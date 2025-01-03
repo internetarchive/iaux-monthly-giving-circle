@@ -38,7 +38,6 @@
   <div class="dev-tools">
     <div id="options">
       <button id="toggle-receipts">Toggle receipts</button>
-      <button id="clear-updates">Clear updates</button>
 
       <p id="interaction-status-area" style="min-height: 20px;margin: 10px;"></p>
     </div>
@@ -135,11 +134,6 @@
       await mgcComponent.updateComplete;
 
       showReceipts = true;
-    });
-    document.getElementById('clear-updates').addEventListener('click', async () => {
-      updateNotices = [];
-      mgcComponent.updates = updateNotices;
-      await mgcComponent.updateComplete;
     });
   </script>
 </body>

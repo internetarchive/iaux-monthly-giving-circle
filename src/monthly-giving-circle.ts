@@ -22,7 +22,9 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: Array }) updates: anUpdate[] = [];
 
-  @property({ type: String }) viewToDisplay: 'welcome' | 'receipts' = 'welcome';
+  @property({ type: String, reflect: true }) viewToDisplay:
+    | 'welcome'
+    | 'receipts' = 'welcome';
 
   protected createRenderRoot() {
     return this;
@@ -68,6 +70,7 @@ export class MonthlyGivingCircle extends LitElement {
           <span slot="action">
             <iaux-button-style class="link">
               <button
+                class="close-receipts"
                 @click=${(event: Event) => {
                   const btn = event.target as HTMLButtonElement;
                   btn.disabled = true;
