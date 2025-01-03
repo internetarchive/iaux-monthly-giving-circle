@@ -17,7 +17,7 @@ type donationEmailStatus = {
   emailStatus: 'success' | 'fail' | 'pending' | '';
 };
 
-type donationEmailStatusMapType = {
+type receiptDispatcherMap = {
   [id: string]: donationEmailStatus;
 };
 
@@ -26,32 +26,29 @@ export class IauxMgcReceipts extends LitElement {
   @property({ type: Array }) receipts = [];
 
   @property({ type: Object })
-  donationEmailStatusMap: donationEmailStatusMapType | null = null;
+  receiptDispatcher: receiptDispatcherMap | null = null;
 
   updated(changed: PropertyValues) {
     if (changed.has('receipts')) {
       this.updateReceiptSentMap();
     }
-    if (changed.has('donationEmailStatusMap')) {
-      console.log(
-        'donationEmailStatusMap UPDATED ---- ',
-        this.donationEmailStatusMap
-      );
+    if (changed.has('receiptDispatcher')) {
+      console.log('receiptDispatcher UPDATED ---- ', this.receiptDispatcher);
     }
   }
 
   updateReceiptSentMap() {
     if (!this.receipts.length) {
-      this.donationEmailStatusMap = null;
+      this.receiptDispatcher = null;
     } else {
-      const donationEmailStatusMap: donationEmailStatusMapType = {};
+      const receiptDispatcher: receiptDispatcherMap = {};
       this.receipts.forEach((donation: donation) => {
-        donationEmailStatusMap[donation.id] = {
+        receiptDispatcher[donation.id] = {
           id: donation.id,
           emailStatus: '',
         };
       });
-      this.donationEmailStatusMap = donationEmailStatusMap;
+      this.receiptDispatcher = receiptDispatcher;
     }
   }
 
@@ -95,19 +92,19 @@ export class IauxMgcReceipts extends LitElement {
   }
 
   async emailSent(receiptEmailed: donationEmailStatus) {
-    const currStatusMap = this.donationEmailStatusMap;
-    this.donationEmailStatusMap = null;
+    const currStatusMap = this.receiptDispatcher;
+    this.receiptDispatcher = null;
     await this.updateComplete;
     const statusMap = {
       ...currStatusMap,
-    } as donationEmailStatusMapType;
+    } as receiptDispatcherMap;
     const { id } = receiptEmailed;
     statusMap[id] = receiptEmailed;
 
-    this.donationEmailStatusMap = { ...statusMap };
+    this.receiptDispatcher = { ...statusMap };
     console.log(
       'RECEIPTS -- emailSent',
-      this.donationEmailStatusMap,
+      this.receiptDispatcher,
       receiptEmailed
     );
   }
@@ -147,7 +144,7 @@ export class IauxMgcReceipts extends LitElement {
           </tr>
           ${this.receipts.length
             ? this.receipts.map((donation: donation) => {
-                const emailStatus = this.donationEmailStatusMap?.[donation.id];
+                const emailStatus = this.receiptDispatcher?.[donation.id];
 
                 const emailUnavailable =
                   emailStatus?.emailStatus === 'pending' ||
@@ -187,12 +184,12 @@ export class IauxMgcReceipts extends LitElement {
                               (e.target as HTMLButtonElement).disabled = true;
                               if (emailUnavailable) return;
                               this.emailReceipt(donation);
-                              if (this.donationEmailStatusMap) {
+                              if (this.receiptDispatcher) {
                                 const statusMap = {
-                                  ...this.donationEmailStatusMap,
-                                } as donationEmailStatusMapType;
+                                  ...this.receiptDispatcher,
+                                } as receiptDispatcherMap;
                                 statusMap[donation.id].emailStatus = 'pending';
-                                this.donationEmailStatusMap = statusMap;
+                                this.receiptDispatcher = statusMap;
                               }
                             }}
                             ?disabled=${emailUnavailable}
