@@ -71,6 +71,7 @@ export class MGCWelcome extends LitElement {
     ul {
       list-style-type: disc;
       padding-left: 1rem;
+      margin-left: 1rem;
     }
   `;
 }
