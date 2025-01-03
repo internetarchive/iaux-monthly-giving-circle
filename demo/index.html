@@ -39,6 +39,8 @@
     <div id="options">
       <button id="toggle-receipts">Toggle receipts</button>
       <button id="clear-updates">Clear updates</button>
+
+      <p id="interaction-status-area" style="min-height: 20px;margin: 10px;"></p>
     </div>
   </div>
 
@@ -95,10 +97,17 @@
     mgcComponent.receipts = receiptsData;
 
     // event handlers
-    mgcComponent.addEventListener('EmailReceiptRequest', async (e) => {
+    mgcComponent.addEventListener('EmailReceiptRequest', (e) => {
+      debugger;
+      const uxMessageInfoArea = document.getElementById('interaction-status-area');
+
       const { donation } = e.detail;
       const randomizer = Math.floor(Math.random() + 0.5);
       const successOrFail = randomizer === 1 ? 'success' : 'fail';
+      const returnTiming = randomizer === 1 ? 3000 : 8000;
+
+      uxMessageInfoArea.innerText = `Email receipt request for donation ${donation.id} will return ${successOrFail} in ${returnTiming} ms.`;
+
       const message = successOrFail === 'success' ? 'Email receipt sent' : 'Email receipt failed';
 
       const update = {
@@ -109,8 +118,11 @@
 
       updateNotices = [update, ...updateNotices];
 
-      mgcComponent.updateReceived(update);
-      await mgcComponent.updateComplete;
+      setTimeout(() => {
+        mgcComponent.updateReceived(update);
+        console.log('EmailReceiptRequest index.html ----', update);
+        uxMessageInfoArea.innerText = '';
+      }, returnTiming);
     });
 
     // options hooks

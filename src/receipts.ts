@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -27,16 +28,15 @@ export class IauxMgcReceipts extends LitElement {
   @property({ type: Object })
   donationEmailStatusMap: donationEmailStatusMapType | null = null;
 
-  shouldUpdate(changed: PropertyValues) {
-    if (changed.has('donationEmailStatusMap')) {
-      return true;
-    }
-    return true;
-  }
-
   updated(changed: PropertyValues) {
     if (changed.has('receipts')) {
       this.updateReceiptSentMap();
+    }
+    if (changed.has('donationEmailStatusMap')) {
+      console.log(
+        'donationEmailStatusMap UPDATED ---- ',
+        this.donationEmailStatusMap
+      );
     }
   }
 
@@ -94,22 +94,30 @@ export class IauxMgcReceipts extends LitElement {
     );
   }
 
-  public emailSent(receiptEmailed: donationEmailStatus) {
+  async emailSent(receiptEmailed: donationEmailStatus) {
+    const currStatusMap = this.donationEmailStatusMap;
+    this.donationEmailStatusMap = null;
+    await this.updateComplete;
     const statusMap = {
-      ...this.donationEmailStatusMap,
+      ...currStatusMap,
     } as donationEmailStatusMapType;
     const { id } = receiptEmailed;
     statusMap[id] = receiptEmailed;
-    this.donationEmailStatusMap = statusMap;
-    // this.requestUpdate();
+
+    this.donationEmailStatusMap = { ...statusMap };
+    console.log(
+      'RECEIPTS -- emailSent',
+      this.donationEmailStatusMap,
+      receiptEmailed
+    );
   }
 
   emailStatusMessageToDisplay(donationSentStatus: donationEmailStatus): string {
     switch (donationSentStatus.emailStatus) {
       case 'success':
-        return 'Email sent';
+        return '✓ Email receipt sent';
       case 'fail':
-        return 'Email did not send';
+        return '✖ Email receipt failed';
       default:
         return '';
     }
@@ -185,10 +193,6 @@ export class IauxMgcReceipts extends LitElement {
                                 } as donationEmailStatusMapType;
                                 statusMap[donation.id].emailStatus = 'pending';
                                 this.donationEmailStatusMap = statusMap;
-                                console.log(
-                                  'this.donationEmailStatusMap',
-                                  this.donationEmailStatusMap
-                                );
                               }
                             }}
                             ?disabled=${emailUnavailable}
@@ -237,11 +241,26 @@ export class IauxMgcReceipts extends LitElement {
     }
     iaux-button-style {
       display: inline-block;
-      padding-right: 5px;
+    }
+
+    .request-receipt {
+      display: flex;
+      flex-wrap: nowrap;
+      align-content: center;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .sent-status.success,
+    .sent-status.fail {
+      padding: 5px;
+      background: rgb(238, 253, 238);
+      width: 135px;
+      min-height: 20px;
     }
     .sent-status.success {
       color: rgb(33, 149, 24);
-      cursor: pointer;
       border-left: 5px solid rgb(33, 149, 24);
     }
     .sent-status.fail {
