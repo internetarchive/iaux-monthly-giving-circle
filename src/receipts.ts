@@ -63,18 +63,18 @@ export class IauxMgcReceipts extends LitElement {
     const day = splitDate[2];
 
     const monthMap: { [key: number]: string } = {
-      1: 'January',
-      2: 'February',
-      3: 'March',
-      4: 'April',
-      5: 'May',
-      6: 'June',
-      7: 'July',
-      8: 'August',
-      9: 'September',
-      10: 'October',
-      11: 'November',
-      12: 'December',
+      1: 'JAN',
+      2: 'FEB',
+      3: 'MAR',
+      4: 'APR',
+      5: 'MAY',
+      6: 'JUN',
+      7: 'JUL',
+      8: 'AUG',
+      9: 'SEP',
+      10: 'OCT',
+      11: 'NOV',
+      12: 'DEC',
     };
 
     const displayMonth = monthMap[month];
@@ -112,9 +112,9 @@ export class IauxMgcReceipts extends LitElement {
   emailStatusMessageToDisplay(donationSentStatus: donationEmailStatus): string {
     switch (donationSentStatus.emailStatus) {
       case 'success':
-        return '✓ Email receipt sent';
+        return '✓ Sent';
       case 'fail':
-        return '✖ Email receipt failed';
+        return '✖ Failed';
       default:
         return '';
     }
@@ -139,7 +139,6 @@ export class IauxMgcReceipts extends LitElement {
           <tr>
             <th class="date">Date</th>
             <th class="amount">Amount</th>
-            <th class="status">Status</th>
             <th class="action">Action</th>
           </tr>
           ${this.receipts.length
@@ -167,9 +166,6 @@ export class IauxMgcReceipts extends LitElement {
                       <div class="donation-amount">
                         ${this.donationAmountFormatted(donation.amount)}
                       </div>
-                    </td>
-                    <td class="status">
-                      <div class="donation-status">${donation.status}</div>
                     </td>
                     <td>
                       <div class="request-receipt">
@@ -225,13 +221,10 @@ export class IauxMgcReceipts extends LitElement {
     }
 
     th.date {
-      width: 110px;
+      width: 55px;
     }
     th.amount {
-      width: 80px;
-    }
-    th.status {
-      width: 70px;
+      width: 55px;
     }
     th.action {
       width: 200px;
@@ -246,14 +239,14 @@ export class IauxMgcReceipts extends LitElement {
       align-content: center;
       justify-content: flex-start;
       align-items: center;
-      gap: 20px;
+      gap: 10px;
     }
 
     .sent-status.success,
     .sent-status.fail {
       padding: 5px;
       background: rgb(238, 253, 238);
-      width: 135px;
+      width: 55px;
       min-height: 20px;
     }
     .sent-status.success {

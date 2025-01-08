@@ -12,6 +12,7 @@ import './presentational/button-style';
 export type anUpdate = {
   message: string;
   status: 'success' | 'fail';
+  donationId: string;
 };
 
 @customElement('iaux-monthly-giving-circle')
@@ -34,11 +35,7 @@ export class MonthlyGivingCircle extends LitElement {
     return this.querySelector('iaux-mgc-receipts') as IauxMgcReceipts;
   }
 
-  updateReceived(update: {
-    message: string;
-    status: 'success' | 'fail';
-    donationId: string;
-  }) {
+  updateReceived(update: anUpdate) {
     this.receiptListElement.emailSent({
       id: update.donationId,
       emailStatus: update.status,
@@ -62,7 +59,6 @@ export class MonthlyGivingCircle extends LitElement {
   }
 
   protected render() {
-    console.log('***', this.viewToDisplay, this.receipts);
     if (this.viewToDisplay === 'receipts') {
       return html`
         <iaux-mgc-title titleStyle="default">

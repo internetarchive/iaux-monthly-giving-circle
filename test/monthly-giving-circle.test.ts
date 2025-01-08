@@ -31,7 +31,7 @@ describe('IauxMonthlyGivingCircle', () => {
     );
   });
 
-  describe('Receipts', () => {
+  describe('Receipts View - CTA & onclick display:', () => {
     it('Displays receipts CTA when receipts are available', async () => {
       const el = await fixture<MonthlyGivingCircle>(
         html`<iaux-monthly-giving-circle
