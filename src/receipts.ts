@@ -52,6 +52,16 @@ export class IauxMgcReceipts extends LitElement {
     }
   }
 
+  emailReceipt(donation: donation) {
+    this.dispatchEvent(
+      new CustomEvent('EmailReceiptRequest', {
+        detail: {
+          donation,
+        },
+      })
+    );
+  }
+
   donationAmountFormatted(amount: number) {
     return `USD $${amount}`;
   }
@@ -81,16 +91,7 @@ export class IauxMgcReceipts extends LitElement {
     return `${displayMonth} ${day}, ${year}`;
   }
 
-  emailReceipt(donation: donation) {
-    this.dispatchEvent(
-      new CustomEvent('EmailReceiptRequest', {
-        detail: {
-          donation,
-        },
-      })
-    );
-  }
-
+  /** callback that confirms status of an receipt email request  */
   async emailSent(receiptEmailed: donationEmailStatus) {
     const currStatusMap = this.receiptDispatcher;
     this.receiptDispatcher = null;
@@ -109,6 +110,7 @@ export class IauxMgcReceipts extends LitElement {
     );
   }
 
+  /* renderings */
   emailStatusMessageToDisplay(donationSentStatus: donationEmailStatus): string {
     switch (donationSentStatus.emailStatus) {
       case 'success':

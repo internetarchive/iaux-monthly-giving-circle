@@ -43,6 +43,7 @@ export class MonthlyGivingCircle extends LitElement {
       justify-content: space-between;
       gap: 10px;
       align-items: flex-end;
+      line-height: normal;
     }
 
     h2 .title-section {
