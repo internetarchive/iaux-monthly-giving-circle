@@ -141,6 +141,7 @@
       justify-content: space-between;
       gap: 10px;
       align-items: flex-end;
+      line-height: normal;
     }
 
     h2 .title-section {
@@ -236,7 +237,7 @@
       opacity: 0.5;
       color: #222;
     }
-  `;Ct=m([Z("iaux-button-style")],Ct);let G=class extends f{constructor(){super(...arguments),this.receipts=[],this.receiptDispatcher=null}updated(t){t.has("receipts")&&this.updateReceiptSentMap(),t.has("receiptDispatcher")&&console.log("receiptDispatcher UPDATED ---- ",this.receiptDispatcher)}updateReceiptSentMap(){if(!this.receipts.length)this.receiptDispatcher=null;else{const t={};this.receipts.forEach(e=>{t[e.id]={id:e.id,emailStatus:""}}),this.receiptDispatcher=t}}donationAmountFormatted(t){return`USD $${t}`}dateFormatted(t){const e=t.split("-"),i=e[0],s=parseInt(e[1],10),o=e[2];return`${{1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}[s]} ${o}, ${i}`}emailReceipt(t){this.dispatchEvent(new CustomEvent("EmailReceiptRequest",{detail:{donation:t}}))}async emailSent(t){const e=this.receiptDispatcher;this.receiptDispatcher=null,await this.updateComplete;const i={...e},{id:s}=t;i[s]=t,this.receiptDispatcher={...i},console.log("RECEIPTS -- emailSent",this.receiptDispatcher,t)}emailStatusMessageToDisplay(t){switch(t.emailStatus){case"success":return"✓ Sent";case"fail":return"✖ Failed";default:return""}}ctaButtonText(t,e){return t.status==="pending"?"Unavailable":e?.emailStatus==="pending"?"Sending...":"Email receipt"}render(){return _`
+  `;Ct=m([Z("iaux-button-style")],Ct);let G=class extends f{constructor(){super(...arguments),this.receipts=[],this.receiptDispatcher=null}updated(t){t.has("receipts")&&this.updateReceiptSentMap(),t.has("receiptDispatcher")&&console.log("receiptDispatcher UPDATED ---- ",this.receiptDispatcher)}updateReceiptSentMap(){if(!this.receipts.length)this.receiptDispatcher=null;else{const t={};this.receipts.forEach(e=>{t[e.id]={id:e.id,emailStatus:""}}),this.receiptDispatcher=t}}emailReceipt(t){this.dispatchEvent(new CustomEvent("EmailReceiptRequest",{detail:{donation:t}}))}donationAmountFormatted(t){return`USD $${t}`}dateFormatted(t){const e=t.split("-"),i=e[0],s=parseInt(e[1],10),o=e[2];return`${{1:"JAN",2:"FEB",3:"MAR",4:"APR",5:"MAY",6:"JUN",7:"JUL",8:"AUG",9:"SEP",10:"OCT",11:"NOV",12:"DEC"}[s]} ${o}, ${i}`}async emailSent(t){const e=this.receiptDispatcher;this.receiptDispatcher=null,await this.updateComplete;const i={...e},{id:s}=t;i[s]=t,this.receiptDispatcher={...i},console.log("RECEIPTS -- emailSent",this.receiptDispatcher,t)}emailStatusMessageToDisplay(t){switch(t.emailStatus){case"success":return"✓ Sent";case"fail":return"✖ Failed";default:return""}}ctaButtonText(t,e){return t.status==="pending"?"Unavailable":e?.emailStatus==="pending"?"Sending...":"Email receipt"}render(){return _`
       <section id="recent-donations-list">
         <table>
           <tr>
