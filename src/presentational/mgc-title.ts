@@ -33,6 +33,16 @@ export class MonthlyGivingCircle extends LitElement {
       display: block;
     }
 
+    :host([titlestyle='default']) h2 {
+      justify-content: flex-start;
+      gap: 20px;
+    }
+
+    :host([titlestyle='heart']) h2 .title-section {
+      width: 100%;
+      display: flex;
+    }
+
     h2 {
       font-size: 1.5em;
       display: flex;
@@ -41,14 +51,8 @@ export class MonthlyGivingCircle extends LitElement {
       align-content: center;
       margin: 0;
       justify-content: space-between;
-      gap: 10px;
       align-items: flex-end;
       line-height: normal;
-    }
-
-    h2 .title-section {
-      width: 100%;
-      display: flex;
     }
 
     h2 .icon-donate {
