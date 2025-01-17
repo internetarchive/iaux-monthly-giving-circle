@@ -2,23 +2,17 @@
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import type { aReceipt } from './models/receipt';
 
 import './presentational/button-style';
 
-type donation = {
-  status: string;
-  amount: number;
-  date: string;
-  id: string;
-};
-
-type donationEmailStatus = {
+type receiptEmailStatus = {
   id: string;
   emailStatus: 'success' | 'fail' | 'pending' | '';
 };
 
 type receiptDispatcherMap = {
-  [id: string]: donationEmailStatus;
+  [id: string]: receiptEmailStatus;
 };
 
 @customElement('iaux-mgc-receipts')
@@ -42,9 +36,9 @@ export class IauxMgcReceipts extends LitElement {
       this.receiptDispatcher = null;
     } else {
       const receiptDispatcher: receiptDispatcherMap = {};
-      this.receipts.forEach((donation: donation) => {
-        receiptDispatcher[donation.id] = {
-          id: donation.id,
+      this.receipts.forEach((receipt: aReceipt) => {
+        receiptDispatcher[receipt.id] = {
+          id: receipt.id,
           emailStatus: '',
         };
       });
@@ -52,11 +46,11 @@ export class IauxMgcReceipts extends LitElement {
     }
   }
 
-  emailReceipt(donation: donation) {
+  emailReceipt(receipt: aReceipt) {
     this.dispatchEvent(
       new CustomEvent('EmailReceiptRequest', {
         detail: {
-          donation,
+          donation: receipt,
         },
       })
     );
@@ -66,33 +60,8 @@ export class IauxMgcReceipts extends LitElement {
     return `USD $${amount}`;
   }
 
-  dateFormatted(date: string) {
-    const splitDate = date.split('-');
-    const year = splitDate[0];
-    const month = parseInt(splitDate[1], 10);
-    const day = splitDate[2];
-
-    const monthMap: { [key: number]: string } = {
-      1: 'JAN',
-      2: 'FEB',
-      3: 'MAR',
-      4: 'APR',
-      5: 'MAY',
-      6: 'JUN',
-      7: 'JUL',
-      8: 'AUG',
-      9: 'SEP',
-      10: 'OCT',
-      11: 'NOV',
-      12: 'DEC',
-    };
-
-    const displayMonth = monthMap[month];
-    return `${displayMonth} ${day}, ${year}`;
-  }
-
   /** callback that confirms status of an receipt email request  */
-  async emailSent(receiptEmailed: donationEmailStatus) {
+  async emailSent(receiptEmailed: receiptEmailStatus) {
     const currStatusMap = this.receiptDispatcher;
     this.receiptDispatcher = null;
     await this.updateComplete;
@@ -111,8 +80,8 @@ export class IauxMgcReceipts extends LitElement {
   }
 
   /* renderings */
-  emailStatusMessageToDisplay(donationSentStatus: donationEmailStatus): string {
-    switch (donationSentStatus.emailStatus) {
+  emailStatusMessageToDisplay(receiptSentStatus: receiptEmailStatus): string {
+    switch (receiptSentStatus.emailStatus) {
       case 'success':
         return '✓ Sent';
       case 'fail':
@@ -122,11 +91,7 @@ export class IauxMgcReceipts extends LitElement {
     }
   }
 
-  ctaButtonText(donation: donation, emailStatus?: donationEmailStatus) {
-    if (donation.status === 'pending') {
-      return 'Unavailable';
-    }
-
+  ctaButtonText(donation: aReceipt, emailStatus?: receiptEmailStatus) {
     if (emailStatus?.emailStatus === 'pending') {
       return 'Sending...';
     }
@@ -144,12 +109,10 @@ export class IauxMgcReceipts extends LitElement {
             <th class="action">Action</th>
           </tr>
           ${this.receipts.length
-            ? this.receipts.map((donation: donation) => {
+            ? this.receipts.map((donation: aReceipt) => {
                 const emailStatus = this.receiptDispatcher?.[donation.id];
 
-                const emailUnavailable =
-                  emailStatus?.emailStatus === 'pending' ||
-                  donation.status === 'pending';
+                const emailUnavailable = emailStatus?.emailStatus === 'pending';
                 const emailStatusToDisplay =
                   !emailStatus || !emailStatus.emailStatus
                     ? nothing
@@ -158,11 +121,12 @@ export class IauxMgcReceipts extends LitElement {
                         >${this.emailStatusMessageToDisplay(emailStatus)}</span
                       >`;
                 return html`
-                  <tr id=${`donation-${donation.id}`}>
+                  <tr
+                    id=${`donation-${donation.id}`}
+                    class=${`${donation.isTest ? 'test' : ''}`}
+                  >
                     <td>
-                      <div class="donation-date">
-                        ${this.dateFormatted(donation.date)}
-                      </div>
+                      <div class="donation-date">${donation.date}</div>
                     </td>
                     <td>
                       <div class="donation-amount">

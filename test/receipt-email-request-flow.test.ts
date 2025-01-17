@@ -7,25 +7,21 @@ import type { MonthlyGivingCircle } from '../src/monthly-giving-circle';
 import '../src/monthly-giving-circle';
 import type { IauxMgcReceipts } from '../src/receipts';
 
-describe('Receipts: Requesting an email', () => {
-  describe('Event handlers', () => {
-    it('foo', async () => {
+describe('Receipts: When requesting an email', () => {
+  describe('`<iaux-monthly-giving-circle>` fires event: EmailReceiptRequest', () => {
+    it('and receives updates via `update`', async () => {
       const el = await fixture<MonthlyGivingCircle>(
         html`<iaux-monthly-giving-circle
           .receipts=${[
             {
               amount: 9999.99,
               date: '2020-09-01',
-              donor: 'John Doe',
-              paymentMethod: 'Credit Card',
-              status: 'Completed',
               id: 'foo-id-1',
+              is_test: false,
             },
           ]}
         ></iaux-monthly-giving-circle>`
       );
-
-      // await el.updateComplete;
 
       // open receipt view
       el.querySelector('button')?.click();

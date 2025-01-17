@@ -56,35 +56,53 @@
 
   <script type="module" src="../dist/src/monthly-giving-circle.js"></script>
   <script type="module">
+    import { Receipt } from '../dist/src/models/receipt.js';
+
     let updateNotices = [];
 
     const receiptsData = [
-        {
+        new Receipt({
           amount: 9999.99,
-          date: '2020-09-01',
+          date: (new Date('2019-01-22 14:26:34')).toLocaleString('US-EN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          }),
           donor: 'John Doe',
           paymentMethod: 'Credit Card',
           status: 'Completed',
           id: 'foo-id-1',
-        },
-        {
+          token: 'foo-token-1',
+          isTest: false,
+        }),
+        new Receipt({
           amount: 100,
-          date: '2023-02-01',
+          date: (new Date('2022-09-22 14:26:34')).toLocaleString('US-EN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          }),
           donor: 'John Doe',
           paymentMethod: 'Credit Card',
           status: 'Completed',
           id: 'foo-id-2',
-          is_test: true,
-        },
-        {
+          token: 'foo-token-2',
+          isTest: true,
+        }),
+        new Receipt({
           amount: 100,
-          date: '2024-03-01',
+          date: (new Date('2023-12-23 14:26:34')).toLocaleString('US-EN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          }),
           donor: 'John Doe',
           paymentMethod: 'Credit Card',
           status: 'Completed',
           id: 'foo-id-3',
-          is_test: true,
-        },
+          token: 'foo-token-3',
+          isTest: false,
+        }),
       ];
 
 
