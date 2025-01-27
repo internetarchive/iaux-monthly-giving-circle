@@ -86,8 +86,9 @@ export class IauxMgcReceipts extends LitElement {
     );
 
     // re-enable email request button
+    const escapedId = CSS.escape(id);
     const button = this.shadowRoot?.querySelector(
-      `#donation-${id} iaux-button`
+      `#donation-${escapedId} iaux-button`
     ) as IauxButton;
     button.isDisabled = false;
   }
