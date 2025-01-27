@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { aReceipt } from './models/receipt';
+import type { Receipt } from './models/receipt';
 
 import './presentational/iaux-button';
 import type { IauxButton } from './presentational/iaux-button';
@@ -43,7 +43,7 @@ export class IauxMgcReceipts extends LitElement {
       this.receiptDispatcher = null;
     } else {
       const receiptDispatcher: receiptDispatcherMap = {};
-      this.receipts.forEach((receipt: aReceipt) => {
+      this.receipts.forEach((receipt: Receipt) => {
         receiptDispatcher[receipt.id] = {
           id: receipt.id,
           emailStatus: '',
@@ -53,7 +53,7 @@ export class IauxMgcReceipts extends LitElement {
     }
   }
 
-  emailReceipt(receipt: aReceipt) {
+  emailReceipt(receipt: Receipt) {
     this.dispatchEvent(
       new CustomEvent('EmailReceiptRequest', {
         detail: {
@@ -105,7 +105,7 @@ export class IauxMgcReceipts extends LitElement {
     }
   }
 
-  ctaButtonText(donation: aReceipt, emailStatus?: receiptEmailStatus) {
+  ctaButtonText(donation: Receipt, emailStatus?: receiptEmailStatus) {
     if (emailStatus?.emailStatus === 'pending') {
       return 'Sending...';
     }
@@ -123,7 +123,7 @@ export class IauxMgcReceipts extends LitElement {
             <th class="action">Action</th>
           </tr>
           ${this.receipts.length
-            ? this.receipts.map((donation: aReceipt) => {
+            ? this.receipts.map((donation: Receipt) => {
                 const emailStatus = this.receiptDispatcher?.[donation.id];
 
                 const emailUnavailable = emailStatus?.emailStatus === 'pending';

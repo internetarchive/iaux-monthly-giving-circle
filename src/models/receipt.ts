@@ -1,4 +1,4 @@
-export type aReceipt = {
+type aReceipt = {
   id: string;
   amount: number;
   date: string;
