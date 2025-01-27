@@ -7,7 +7,7 @@ import './welcome-message';
 import './presentational/mgc-title';
 import './receipts';
 import type { IauxMgcReceipts } from './receipts';
-import './presentational/button-style';
+import './presentational/iaux-button';
 
 export type anUpdate = {
   message: string;
@@ -45,16 +45,16 @@ export class MonthlyGivingCircle extends LitElement {
 
   get showReceiptsCTA(): TemplateResult {
     return html`
-      <iaux-button-style class="link">
-        <button
-          @click=${() => {
-            this.viewToDisplay = 'receipts';
-            this.dispatchEvent(new CustomEvent('ShowReceipts'));
-          }}
-        >
-          View recent donation history
-        </button>
-      </iaux-button-style>
+      <iaux-button
+        class="link"
+        style="--button-padding: 0;"
+        .clickHandler=${() => {
+          this.viewToDisplay = 'receipts';
+          this.dispatchEvent(new CustomEvent('ShowReceipts'));
+        }}
+      >
+        View recent donation history
+      </iaux-button>
     `;
   }
 
@@ -64,21 +64,18 @@ export class MonthlyGivingCircle extends LitElement {
         <iaux-mgc-title titleStyle="default">
           <span slot="title">Recent donations</span>
           <span slot="action">
-            <iaux-button-style class="link">
-              <button
-                class="close-receipts"
-                @click=${(event: Event) => {
-                  const btn = event.target as HTMLButtonElement;
-                  btn.disabled = true;
-
-                  this.viewToDisplay = 'welcome';
-                  this.dispatchEvent(new CustomEvent('ShowWelcome'));
-                  this.updates = [];
-                }}
-              >
-                Back to account settings
-              </button>
-            </iaux-button-style>
+            <iaux-button
+              class="link slim"
+              id="close-receipts"
+              .clickHandler=${async () => {
+                this.viewToDisplay = 'welcome';
+                this.dispatchEvent(new CustomEvent('ShowWelcome'));
+                this.updates = [];
+                await this.updateComplete;
+              }}
+            >
+              Back to account settings
+            </iaux-button>
           </span>
         </iaux-mgc-title>
         <iaux-mgc-receipts

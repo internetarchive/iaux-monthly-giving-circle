@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import type { aReceipt } from './models/receipt';
 
-import './presentational/button-style';
+import './presentational/iaux-button';
+import type { IauxButton } from './presentational/iaux-button';
 
 type receiptEmailStatus = {
   id: string;
@@ -21,6 +21,13 @@ export class IauxMgcReceipts extends LitElement {
 
   @property({ type: Object })
   receiptDispatcher: receiptDispatcherMap | null = null;
+
+  shouldUpdate(changed: PropertyValues) {
+    if (changed.has('receiptDispatcher')) {
+      return true;
+    }
+    return false;
+  }
 
   updated(changed: PropertyValues) {
     if (changed.has('receipts')) {
@@ -77,6 +84,12 @@ export class IauxMgcReceipts extends LitElement {
       this.receiptDispatcher,
       receiptEmailed
     );
+
+    // re-enable email request button
+    const button = this.shadowRoot?.querySelector(
+      `#donation-${id} iaux-button`
+    ) as IauxButton;
+    button.isDisabled = false;
   }
 
   /* renderings */
@@ -135,30 +148,30 @@ export class IauxMgcReceipts extends LitElement {
                     </td>
                     <td>
                       <div class="request-receipt">
-                        <iaux-button-style
-                          class=${classMap({
-                            disabled: emailUnavailable,
-                            link: 'true',
-                          })}
+                        <iaux-button
+                          class="link slim"
+                          style="--link-button-flex-align-items: center;"
+                          .clickHandler=${async (iauxButton: IauxButton) => {
+                            const initialClick = !emailUnavailable;
+                            if (initialClick) {
+                              // eslint-disable-next-line no-param-reassign
+                              iauxButton.isDisabled = true;
+                              await iauxButton.updateComplete;
+                            }
+
+                            if (emailUnavailable) return;
+                            this.emailReceipt(donation);
+                            if (this.receiptDispatcher) {
+                              const statusMap = {
+                                ...this.receiptDispatcher,
+                              } as receiptDispatcherMap;
+                              statusMap[donation.id].emailStatus = 'pending';
+                              this.receiptDispatcher = statusMap;
+                            }
+                          }}
                         >
-                          <button
-                            @click=${(e: Event) => {
-                              (e.target as HTMLButtonElement).disabled = true;
-                              if (emailUnavailable) return;
-                              this.emailReceipt(donation);
-                              if (this.receiptDispatcher) {
-                                const statusMap = {
-                                  ...this.receiptDispatcher,
-                                } as receiptDispatcherMap;
-                                statusMap[donation.id].emailStatus = 'pending';
-                                this.receiptDispatcher = statusMap;
-                              }
-                            }}
-                            ?disabled=${emailUnavailable}
-                          >
-                            ${this.ctaButtonText(donation, emailStatus)}
-                          </button>
-                        </iaux-button-style>
+                          ${this.ctaButtonText(donation, emailStatus)}
+                        </iaux-button>
                         ${emailStatusToDisplay}
                       </div>
                     </td>

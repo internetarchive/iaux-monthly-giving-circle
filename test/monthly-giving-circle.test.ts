@@ -4,6 +4,7 @@ import { html, fixture, expect } from '@open-wc/testing';
 import type { MonthlyGivingCircle } from '../src/monthly-giving-circle';
 
 import '../src/monthly-giving-circle';
+import type { IauxButton } from '../src/presentational/iaux-button';
 
 describe('IauxMonthlyGivingCircle', () => {
   it('displays welcome message on load', async () => {
@@ -49,7 +50,9 @@ describe('IauxMonthlyGivingCircle', () => {
       );
 
       const titleEl = el.querySelector('iaux-mgc-title');
-      const receiptsButton = titleEl!.querySelector('button');
+      const receiptsButton = titleEl!.querySelector(
+        'iaux-button'
+      ) as IauxButton;
       expect(receiptsButton).to.exist;
       expect(receiptsButton!.innerText).to.equal(
         'View recent donation history'
@@ -82,9 +85,18 @@ describe('IauxMonthlyGivingCircle', () => {
       );
 
       const titleEl = el.querySelector('iaux-mgc-title');
-      const receiptsButton = titleEl!.querySelector('button');
-      expect(receiptsButton).to.exist;
-      receiptsButton!.click();
+      expect(titleEl).to.exist;
+
+      const receiptsButton = titleEl!.querySelector(
+        'iaux-button'
+      ) as IauxButton;
+
+      expect(receiptsButton.innerText).to.equal('View recent donation history');
+
+      const innerButton = receiptsButton.shadowRoot?.querySelector(
+        'button'
+      ) as HTMLButtonElement;
+      innerButton.click();
 
       await el.updateComplete;
 
@@ -105,8 +117,8 @@ describe('IauxMonthlyGivingCircle', () => {
 
       // shows back button
       const backButton = titleEl2?.querySelector(
-        'button.close-receipts'
-      ) as HTMLButtonElement;
+        'iaux-button#close-receipts'
+      ) as IauxButton;
       expect(backButton!.innerText).to.equal('Back to account settings');
 
       // shows receipts element
@@ -114,7 +126,8 @@ describe('IauxMonthlyGivingCircle', () => {
       expect(receiptsEl).to.exist;
 
       // goes back to welcome page if back button is clicked
-      backButton!.click();
+      // dig into the shadowRoot to get the button
+      backButton.shadowRoot?.querySelector('button')?.click();
       await el.updateComplete;
 
       expect(el.viewToDisplay).to.equal('welcome');
