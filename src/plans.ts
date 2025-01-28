@@ -5,7 +5,7 @@ import type SubscriptionSummary from './models/subscription-summary';
 
 import './presentational/iaux-button';
 
-// type donation = {
+// type donationSummary = {
 //   status: string;
 //   amount: number;
 //   date: string;
@@ -50,15 +50,16 @@ export class IauxMgcPlans extends LitElement {
       <section class="monthly-giving-circle">
         <ul>
           ${this.plans.map((plan: SubscriptionSummary) => {
+            console.log(' ******** ');
+            console.log('plan: ', plan);
             const methodType =
               plan.payment?.paymentMethodType ?? 'Method not found';
             const cardType = plan.payment?.cardType ?? 'Card type not found';
             const last4 = plan.payment?.last4
-              ? `...${plan.payment.last4}`
+              ? `...${plan.payment?.last4}`
               : 'CC number not found';
             const nextBillingDate = plan.payment?.nextBillingDate ?? '';
-            console.log(' ******** ');
-            console.log('plan: ', plan);
+
             return html`
               <li>
                 <div class="info">
@@ -70,30 +71,30 @@ export class IauxMgcPlans extends LitElement {
                   <div class="payment-details">
                     <h3>Method</h3>
                     <p>${methodType}</p>
-                    ${plan.payment.cardType === 'creditCard'
+                    ${plan.payment?.cardType === 'creditCard'
                       ? html`<p>${cardType}</p>
                           <p>${last4}</p>`
                       : nothing}
-                    ${plan.payment.paymentMethodType === 'Paypal'
+                    ${plan.payment?.paymentMethodType === 'Paypal'
                       ? html`<p>
                           Paypal email:
-                          <a href=${`mailto:${plan.payment.paypalEmail}`}
-                            >${plan.payment.paypalEmail}</a
+                          <a href=${`mailto:${plan.payment?.paypalEmail}`}
+                            >${plan.payment?.paypalEmail}</a
                           >
                         </p>`
                       : nothing}
-                    ${plan.payment.paymentMethodType === 'Venmo'
+                    ${plan.payment?.paymentMethodType === 'Venmo'
                       ? html`<p>
                           Venmo username:
-                          <a href=${`mailto:${plan.payment.venmoUsername}`}
-                            >${plan.payment.paypalEmail}</a
+                          <a href=${`mailto:${plan.payment?.venmoUsername}`}
+                            >${plan.payment?.paypalEmail}</a
                           >
                         </p>`
                       : nothing}
                     <p>
                       Expires:
-                      ${plan.payment.expirationMonth ??
-                      'month not found'}/${plan.payment.expirationYear ??
+                      ${plan.payment?.expirationMonth ??
+                      'month not found'}/${plan.payment?.expirationYear ??
                       'year not found'}
                     </p>
                   </div>
@@ -121,10 +122,60 @@ export class IauxMgcPlans extends LitElement {
   }
 
   static styles = css`
+    li {
+      border: 1px solid #23765d;
+      background-color: #eeffee;
+      display: block;
+      width: inherit;
+    }
     table {
       width: 100%;
       text-align: left;
       max-width: 600px;
+    }
+
+    ul {
+      padding: 0;
+      list-style-type: none;
+      margin: 0;
+    }
+
+    ul li {
+      border: 1px solid #23765d;
+      background-color: #eeffee;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      height: 150px;
+      position: relative;
+      min-width: 420px;
+    }
+
+    ul li button.edit-donation {
+      height: 30px;
+      display: block;
+      position: absolute;
+      bottom: 0;
+    }
+
+    ul li .info {
+      display: grid;
+      grid-template-columns: 0.5fr 1fr 0.5fr;
+      grid-template-rows: 1fr;
+      gap: 0px 5px;
+      grid-auto-flow: row;
+      grid-template-areas: 'amount details next-donation';
+    }
+
+    ul li .info .amount {
+      grid-area: amount;
+    }
+
+    ul li .info .payment-details {
+      grid-area: details;
+    }
+
+    ul li .info .next-donation {
+      grid-area: next-donation;
     }
   `;
 }
