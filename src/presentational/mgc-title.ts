@@ -9,10 +9,7 @@ export class MonthlyGivingCircle extends LitElement {
 
   get heart(): TemplateResult | typeof nothing {
     return this.titleStyle === 'heart'
-      ? html`
-          <div class="icon-donate"><ia-icon-donate></ia-icon-donate></div>
-          <span>Monthly Giving Circle</span>
-        `
+      ? html` <div class="icon-donate"><ia-icon-donate></ia-icon-donate></div> `
       : nothing;
   }
 
@@ -31,6 +28,21 @@ export class MonthlyGivingCircle extends LitElement {
   }
 
   static styles = css`
+    :host {
+      padding-bottom: 5px;
+      display: block;
+    }
+
+    :host([titlestyle='default']) h2 {
+      justify-content: flex-start;
+      gap: 20px;
+    }
+
+    :host([titlestyle='heart']) h2 .title-section {
+      width: 100%;
+      display: flex;
+    }
+
     h2 {
       font-size: 1.5em;
       display: flex;
@@ -39,13 +51,8 @@ export class MonthlyGivingCircle extends LitElement {
       align-content: center;
       margin: 0;
       justify-content: space-between;
-      gap: 10px;
       align-items: flex-end;
-    }
-
-    h2 .title-section {
-      width: 100%;
-      display: flex;
+      line-height: normal;
     }
 
     h2 .icon-donate {
