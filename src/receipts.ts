@@ -63,10 +63,6 @@ export class IauxMgcReceipts extends LitElement {
     );
   }
 
-  donationAmountFormatted(amount: number) {
-    return `USD $${amount}`;
-  }
-
   /** callback that confirms status of an receipt email request  */
   async emailSent(receiptEmailed: receiptEmailStatus) {
     const currStatusMap = this.receiptDispatcher;
@@ -144,7 +140,7 @@ export class IauxMgcReceipts extends LitElement {
                     </td>
                     <td>
                       <div class="donation-amount">
-                        ${this.donationAmountFormatted(donation.amount)}
+                        ${donation.amountFormatted}
                       </div>
                     </td>
                     <td>

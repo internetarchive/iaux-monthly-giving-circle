@@ -1,26 +1,53 @@
-type aReceipt = {
-  id: string;
-  amount: number;
+type AReceipt = {
+  currency: string;
+  net_amount: number;
+  total_amount: number;
+  receive_date?: Date;
   date: string;
   isTest: boolean;
   token: string;
 };
 export class Receipt {
-  id: string;
+  receipt: AReceipt;
 
-  amount: number;
+  constructor(receipt: AReceipt) {
+    this.receipt = receipt;
+  }
 
-  date: string;
+  get amountFormatted(): string {
+    const value = this.receipt.total_amount ?? this.receipt.net_amount;
+    const currencyType = this.receipt.currency ?? 'CURR not found';
+    if (value) {
+      return `${currencyType} ${this.currencySymbol}${value}`;
+    }
+    return "no amount found, can't find total_amount or net_amount";
+  }
 
-  isTest: boolean;
+  get amount(): string {
+    return (
+      `${this.receipt.total_amount}` ??
+      `${this.receipt.net_amount}` ??
+      "no amount found, can't find total_amount or net_amount"
+    );
+  }
 
-  token: string;
+  get isTest(): boolean {
+    return this.receipt.isTest ?? false;
+  }
 
-  constructor(receipt: aReceipt) {
-    this.id = receipt.id;
-    this.amount = receipt.amount;
-    this.date = receipt.date;
-    this.isTest = receipt.isTest;
-    this.token = receipt.token;
+  get id(): string {
+    return this.receipt.token ?? 'no token found';
+  }
+
+  get date(): string {
+    return this.receipt.date ?? 'no date found';
+  }
+
+  get currencySymbol(): string {
+    if (this.receipt.currency === 'USD') {
+      return '$';
+    }
+
+    return '';
   }
 }
