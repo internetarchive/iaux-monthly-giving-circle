@@ -4,18 +4,17 @@ import { LitElement, html, TemplateResult, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import './welcome-message';
+import './plans';
+import './presentational/mgc-title';
 import './receipts';
 import type { IauxMgcReceipts } from './receipts';
 import './presentational/iaux-button';
-import './plans';
-import './presentational/mgc-title';
 
-export type anUpdate = {
+export type AnUpdate = {
   message: string;
   status: 'success' | 'fail';
   donationId: string;
 };
-
 
 @customElement('iaux-monthly-giving-circle')
 export class MonthlyGivingCircle extends LitElement {
@@ -23,11 +22,13 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: Array }) receipts = [];
 
-  @property({ type: Array }) updates: anUpdate[] = [];
+  @property({ type: Array }) updates: AnUpdate[] = [];
 
   @property({ type: Array }) plans = [];
 
-  @property({ type: String }) viewToDisplay: 'welcome' | 'receipts' = 'welcome';
+  @property({ type: String, reflect: true }) viewToDisplay:
+    | 'welcome'
+    | 'receipts' = 'welcome';
 
   protected createRenderRoot() {
     return this;
@@ -37,7 +38,7 @@ export class MonthlyGivingCircle extends LitElement {
     return this.querySelector('iaux-mgc-receipts') as IauxMgcReceipts;
   }
 
-  updateReceived(update: anUpdate) {
+  updateReceived(update: AnUpdate) {
     this.receiptListElement.emailSent({
       id: update.donationId,
       emailStatus: update.status,
@@ -82,6 +83,7 @@ export class MonthlyGivingCircle extends LitElement {
         <iaux-mgc-receipts
           .receipts=${this.receipts}
           @EmailReceiptRequest=${(event: CustomEvent) => {
+            console.log('EmailReceiptRequest', event.detail);
             this.dispatchEvent(
               new CustomEvent('EmailReceiptRequest', {
                 detail: { ...event.detail },

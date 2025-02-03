@@ -7,7 +7,8 @@ import '@internetarchive/icon-donate/icon-donate.js';
 export class IauxButton extends LitElement {
   @property({ type: Boolean, reflect: true }) isDisabled = false;
 
-  @property({ type: Function }) clickHandler: Function | undefined;
+  // eslint-disable-next-line no-use-before-define
+  @property({ type: Object }) clickHandler?: (self: IauxButton) => void;
 
   @query('button') button!: HTMLButtonElement;
 
@@ -16,10 +17,6 @@ export class IauxButton extends LitElement {
       <button
         ?disabled=${this.isDisabled}
         @click=${() => {
-          if (this.isDisabled) {
-            return;
-          }
-
           if (this.clickHandler) {
             this?.clickHandler(this);
           }

@@ -6,13 +6,13 @@ import type { Receipt } from './models/receipt';
 import './presentational/iaux-button';
 import type { IauxButton } from './presentational/iaux-button';
 
-type receiptEmailStatus = {
+type ReceiptEmailStatus = {
   id: string;
   emailStatus: 'success' | 'fail' | 'pending' | '';
 };
 
 type receiptDispatcherMap = {
-  [id: string]: receiptEmailStatus;
+  [id: string]: ReceiptEmailStatus;
 };
 
 @customElement('iaux-mgc-receipts')
@@ -63,12 +63,8 @@ export class IauxMgcReceipts extends LitElement {
     );
   }
 
-  donationAmountFormatted(amount: number) {
-    return `USD $${amount}`;
-  }
-
   /** callback that confirms status of an receipt email request  */
-  async emailSent(receiptEmailed: receiptEmailStatus) {
+  async emailSent(receiptEmailed: ReceiptEmailStatus) {
     const currStatusMap = this.receiptDispatcher;
     this.receiptDispatcher = null;
     await this.updateComplete;
@@ -94,7 +90,7 @@ export class IauxMgcReceipts extends LitElement {
   }
 
   /* renderings */
-  emailStatusMessageToDisplay(receiptSentStatus: receiptEmailStatus): string {
+  emailStatusMessageToDisplay(receiptSentStatus: ReceiptEmailStatus): string {
     switch (receiptSentStatus.emailStatus) {
       case 'success':
         return '✓ Sent';
@@ -105,7 +101,7 @@ export class IauxMgcReceipts extends LitElement {
     }
   }
 
-  ctaButtonText(donation: Receipt, emailStatus?: receiptEmailStatus) {
+  ctaButtonText(donation: Receipt, emailStatus?: ReceiptEmailStatus) {
     if (emailStatus?.emailStatus === 'pending') {
       return 'Sending...';
     }
@@ -144,7 +140,7 @@ export class IauxMgcReceipts extends LitElement {
                     </td>
                     <td>
                       <div class="donation-amount">
-                        ${this.donationAmountFormatted(donation.amount)}
+                        ${donation.amountFormatted}
                       </div>
                     </td>
                     <td>
