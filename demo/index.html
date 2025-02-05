@@ -17,6 +17,9 @@
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 14px;
       line-height: 1.42857143;
+
+      /* css vars for web component */
+      --one-column-view-max-width: 500px;
     }
     
     body .dev-tools {
@@ -40,7 +43,6 @@
       <button id="toggle-receipts">Toggle receipts</button>
       <button id="clear-updates">Clear updates</button>
       <button id="toggle-plans">Toggle plans</button>
-      <button id="toggle-buttons">Toggle button types</button>
 
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
@@ -65,10 +67,9 @@
 
     const plans = {
       "41": {
-        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtYWlsc3luYyIsImlhdCI6MTcyMzc1MDI3OS41MjgwMjksIm5iZiI6MTcyMzc1MDIxOS41MjgwMjksImV4cCI6MTcyMzc1MDg3OS41MjgwMjksImtleSI6eyJwaWQiOiI1czUzazYiLCJjaWQiOjgwMzUzOCwiYW1vdW50IjoxMCwicGF5bWVudE1ldGhvZFRva2VuIjoiZ3l3ZnA5IiwiY3VzdG9tZXJJZCI6IjY5OTk2NjAyNiJ9LCJ1c2VyIjoiQGlzYS1hdC10aGUtYXJjaGl2ZSJ9.drnp9oK-UVsuzuRAW_MTFjdWjiS630B88P-c0jDzzVw",
+        "token": "Acbdcdcadsfdasf.1234alphanumeric.3foobarXyZ",
         "amount": 10,
         "start_date": "2024-05-22 00:00:00",
-        "contribution_status_id": 5,
         "is_test": true,
         "btdata": {
           "billingDayOfMonth": 22,
@@ -87,10 +88,9 @@
         }
       },
       "23764": {
-        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtYWlsc3luYyIsImlhdCI6MTcyMzc1MDI3OS41Mjg3NzEsIm5iZiI6MTcyMzc1MDIxOS41Mjg3NzEsImV4cCI6MTcyMzc1MDg3OS41Mjg3NzEsImtleSI6eyJwaWQiOiI4NWRyNzIiLCJjaWQiOjgwMzUzOCwiYW1vdW50Ijo1LCJwYXltZW50TWV0aG9kVG9rZW4iOiJjZXBha256ZCIsImN1c3RvbWVySWQiOiIyOTY3MjM2OTUifSwidXNlciI6IkBpc2EtYXQtdGhlLWFyY2hpdmUifQ.csGjSCrk3FV-mm7O1SwoUKCghwTQCRaD8_LJemo4YhQ",
+        "token": "Acbdcdcadsfdasf.1234alphanumeric.3foobar",
         "amount": 5,
         "start_date": "2022-12-09 00:00:00",
-        "contribution_status_id": 5,
         "is_test": true,
         "btdata": {
           "billingDayOfMonth": 9,
@@ -108,11 +108,10 @@
         }
       },
       "35406": {
-        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtYWlsc3luYyIsImlhdCI6MTcyMzc1MDI3OS41MjcyMTYsIm5iZiI6MTcyMzc1MDIxOS41MjcyMTYsImV4cCI6MTcyMzc1MDg3OS41MjcyMTYsImtleSI6eyJwaWQiOiIyN21yNnIiLCJjaWQiOjgwMzUzOCwiYW1vdW50Ijo1LCJwYXltZW50TWV0aG9kVG9rZW4iOiI4dDduenFnIiwiY3VzdG9tZXJJZCI6Ijg1MzkzMjIxMyJ9LCJ1c2VyIjoiQGlzYS1hdC10aGUtYXJjaGl2ZSJ9.Si-IBV0VhSwTL1SDXpn5bfuFP4qp-r9Jkoe4bw4eRyw",
+        "token": "Acbdcdcadsfdasf.1234alphanumeric.3foobar444999sparklingCider",
         "amount": 5,
         "currency": "USD",
         "start_date": "2024-07-01 00:00:00",
-        "contribution_status_id": 5,
         "is_test": true,
         "btdata": {
           "billingDayOfMonth": 22,
@@ -194,6 +193,7 @@
 
     // load start data
     mgcComponent.receipts = receiptsData;
+    mgcComponent.plans = plansArray;
 
     // event handlers
     mgcComponent.addEventListener('EmailReceiptRequest', (e) => {

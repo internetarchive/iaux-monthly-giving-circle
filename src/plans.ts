@@ -189,7 +189,7 @@ export class IauxMgcPlans extends LitElement {
       grid-area: next-donation;
     }
 
-    @media screen and (max-width: var(--one-column-view-max-width, 500px)) {
+    @media screen and (max-width: 500px) {
       ul li .info {
         display: block;
         border: 1px solid yellow;
