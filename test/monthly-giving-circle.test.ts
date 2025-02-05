@@ -5,6 +5,7 @@ import type { MonthlyGivingCircle } from '../src/monthly-giving-circle';
 
 import '../src/monthly-giving-circle';
 import type { IauxButton } from '../src/presentational/iaux-button';
+import { MonthlyPlan } from '../src/models/plan';
 
 describe('IauxMonthlyGivingCircle', () => {
   it('displays welcome message on load', async () => {
@@ -30,6 +31,44 @@ describe('IauxMonthlyGivingCircle', () => {
     expect(joinLink.href).to.equal(
       'https://archive.org/donate/?amt=5&contrib_type=monthly&origin=iawww-usrsttng'
     );
+  });
+
+  describe('Plans View:', () => {
+    it('displays list', async () => {
+      const el = await fixture<MonthlyGivingCircle>(
+        html`<iaux-monthly-giving-circle
+          .plans=${[
+            new MonthlyPlan({
+              token:
+                'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtYWlsc3luYyIsImlhdCI6MTcyMzc1MDI3OS41MjcyMTYsIm5iZiI6MTcyMzc1MDIxOS41MjcyMTYsImV4cCI6MTcyMzc1MDg3OS41MjcyMTYsImtleSI6eyJwaWQiOiIyN21yNnIiLCJjaWQiOjgwMzUzOCwiYW1vdW50Ijo1LCJwYXltZW50TWV0aG9kVG9rZW4iOiI4dDduenFnIiwiY3VzdG9tZXJJZCI6Ijg1MzkzMjIxMyJ9LCJ1c2VyIjoiQGlzYS1hdC10aGUtYXJjaGl2ZSJ9.Si-IBV0VhSwTL1SDXpn5bfuFP4qp-r9Jkoe4bw4eRyw',
+              amount: 5,
+              currency: 'USD',
+              start_date: '2024-07-01 00:00:00',
+              is_test: true,
+              btdata: {
+                billingDayOfMonth: 22,
+                nextBillingDate: {
+                  date: '2024-08-22 00:00:00.000000',
+                  timezone_type: 3,
+                  timezone: 'UTC',
+                },
+                status: 'Active',
+                paymentMethodType: 'Venmo',
+                last4: null,
+                cardType: null,
+                expirationMonth: null,
+                expirationYear: null,
+                venmoUsername: 'venmojoe',
+              },
+            }),
+          ]}
+        ></iaux-monthly-giving-circle>`
+      );
+
+      expect(el.viewToDisplay).to.equal('plans');
+      expect(el.plans.length).to.equal(1);
+      expect(el.querySelector('iaux-mgc-plans')).to.exist;
+    });
   });
 
   describe('Receipts View - CTA & onclick display:', () => {

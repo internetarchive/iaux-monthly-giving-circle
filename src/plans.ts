@@ -1,7 +1,7 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import type SubscriptionSummary from './models/subscription-summary';
+import type { MonthlyPlan } from './models/plan';
 
 import './presentational/iaux-button';
 
@@ -49,7 +49,7 @@ export class IauxMgcPlans extends LitElement {
     return html`
       <section class="monthly-giving-circle">
         <ul>
-          ${this.plans.map((plan: SubscriptionSummary) => {
+          ${this.plans.map((plan: MonthlyPlan) => {
             console.log(' ******** ');
             console.log('plan: ', plan);
             const methodType =
@@ -58,15 +58,19 @@ export class IauxMgcPlans extends LitElement {
             const last4 = plan.payment?.last4
               ? `...${plan.payment?.last4}`
               : 'CC number not found';
-            const nextBillingDate = plan.payment?.nextBillingDate ?? '';
 
             return html`
               <li>
                 <div class="info">
                   <div class="amount">
                     <h3>Amount</h3>
-                    <p>${plan.currencyType} ${plan.amount}/month</p>
-                    ${plan.isTest ? html`<p>(Test payment)</p>` : nothing}
+                    <p>
+                      ${plan.currency}
+                      ${plan.currencySymbol}${plan.amount}/month
+                    </p>
+                    ${plan.isTest
+                      ? html`<p class="is-test">(Test payment)</p>`
+                      : nothing}
                   </div>
                   <div class="payment-details">
                     <h3>Method</h3>
@@ -91,20 +95,18 @@ export class IauxMgcPlans extends LitElement {
                           >
                         </p>`
                       : nothing}
-                    <p>
-                      Expires:
-                      ${plan.payment?.expirationMonth ??
-                      'month not found'}/${plan.payment?.expirationYear ??
-                      'year not found'}
-                    </p>
+                    ${plan.payment?.cardType !== 'creditCard'
+                      ? html`<p>
+                          Expires:
+                          ${plan.payment?.expirationMonth ??
+                          'month not found'}/${plan.payment?.expirationYear ??
+                          'year not found'}
+                        </p>`
+                      : nothing}
                   </div>
                   <div class="next-donation">
                     <h3>Next Donation</h3>
-                    <p>
-                      ${nextBillingDate
-                        ? html`${nextBillingDate}`
-                        : 'not found'}
-                    </p>
+                    <p>${plan.nextBillingDate}</p>
                   </div>
                 </div>
                 <iaux-button
@@ -122,6 +124,16 @@ export class IauxMgcPlans extends LitElement {
   }
 
   static styles = css`
+    :host {
+      max-height: 500px;
+      overflow-y: scroll;
+      display: block;
+    }
+
+    .is-test {
+      font-size: 0.8rem;
+    }
+
     li {
       border: 1px solid #23765d;
       background-color: #eeffee;
@@ -144,10 +156,8 @@ export class IauxMgcPlans extends LitElement {
       border: 1px solid #23765d;
       background-color: #eeffee;
       margin: 0.5rem 0;
-      padding: 0.5rem;
-      height: 150px;
+      padding: 0.5rem 0.5rem 1rem 0.5rem;
       position: relative;
-      min-width: 420px;
     }
 
     ul li button.edit-donation {
@@ -159,6 +169,7 @@ export class IauxMgcPlans extends LitElement {
 
     ul li .info {
       display: grid;
+      min-height: 90px;
       grid-template-columns: 0.5fr 1fr 0.5fr;
       grid-template-rows: 1fr;
       gap: 0px 5px;
@@ -176,6 +187,21 @@ export class IauxMgcPlans extends LitElement {
 
     ul li .info .next-donation {
       grid-area: next-donation;
+    }
+
+    @media screen and (max-width: var(--one-column-view-max-width, 500px)) {
+      ul li .info {
+        display: block;
+        border: 1px solid yellow;
+      }
+    }
+
+    ul li .info > * {
+      margin: 0 0 0.5rem 0;
+    }
+
+    ul li .info > * > * {
+      margin: 0;
     }
   `;
 }

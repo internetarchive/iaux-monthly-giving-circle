@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 
-import { LitElement, html, TemplateResult, nothing } from 'lit';
+import { LitElement, html, TemplateResult, nothing, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import './welcome-message';
@@ -28,10 +28,17 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: String, reflect: true }) viewToDisplay:
     | 'welcome'
-    | 'receipts' = 'welcome';
+    | 'receipts'
+    | 'plans' = 'welcome';
 
   protected createRenderRoot() {
     return this;
+  }
+
+  updated(changed: PropertyValues) {
+    if (changed.has('plans') && this.plans.length) {
+      this.viewToDisplay = 'plans';
+    }
   }
 
   get receiptListElement(): IauxMgcReceipts {
@@ -60,7 +67,7 @@ export class MonthlyGivingCircle extends LitElement {
     `;
   }
 
-  protected render() {
+  get headerSection(): TemplateResult {
     if (this.viewToDisplay === 'receipts') {
       return html`
         <iaux-mgc-title titleStyle="default">
@@ -80,17 +87,6 @@ export class MonthlyGivingCircle extends LitElement {
             </iaux-button>
           </span>
         </iaux-mgc-title>
-        <iaux-mgc-receipts
-          .receipts=${this.receipts}
-          @EmailReceiptRequest=${(event: CustomEvent) => {
-            console.log('EmailReceiptRequest', event.detail);
-            this.dispatchEvent(
-              new CustomEvent('EmailReceiptRequest', {
-                detail: { ...event.detail },
-              })
-            );
-          }}
-        ></iaux-mgc-receipts>
       `;
     }
 
@@ -102,7 +98,6 @@ export class MonthlyGivingCircle extends LitElement {
             >${this.receipts.length ? this.showReceiptsCTA : nothing}</span
           >
         </iaux-mgc-title>
-        <iaux-mgc-plans .plans=${this.plans}></iaux-mgc-plans>
       `;
     }
 
@@ -113,7 +108,35 @@ export class MonthlyGivingCircle extends LitElement {
           >${this.receipts.length ? this.showReceiptsCTA : nothing}</span
         >
       </iaux-mgc-title>
-      <iaux-mgc-welcome .patronName=${this.patronName}></iaux-mgc-welcome>
+    `;
+  }
+
+  protected render() {
+    return html`
+      ${this.headerSection}
+      ${this.viewToDisplay === 'receipts'
+        ? html`
+            <iaux-mgc-receipts
+              .receipts=${this.receipts}
+              @EmailReceiptRequest=${(event: CustomEvent) => {
+                console.log('EmailReceiptRequest', event.detail);
+                this.dispatchEvent(
+                  new CustomEvent('EmailReceiptRequest', {
+                    detail: { ...event.detail },
+                  })
+                );
+              }}
+            ></iaux-mgc-receipts>
+          `
+        : nothing}
+      ${this.viewToDisplay === 'plans'
+        ? html` <iaux-mgc-plans .plans=${this.plans}></iaux-mgc-plans> `
+        : nothing}
+      ${this.viewToDisplay === 'welcome'
+        ? html`
+            <iaux-mgc-welcome .patronName=${this.patronName}></iaux-mgc-welcome>
+          `
+        : nothing}
     `;
   }
 }
