@@ -5,45 +5,9 @@ import type { MonthlyPlan } from './models/plan';
 
 import './presentational/iaux-button';
 
-// type donationSummary = {
-//   status: string;
-//   amount: number;
-//   date: string;
-//   id: string;
-// };
-
 @customElement('iaux-mgc-plans')
 export class IauxMgcPlans extends LitElement {
   @property({ type: Array }) plans = [];
-
-  donationAmountFormatted(amount: number) {
-    return `USD ${amount}`;
-  }
-
-  dateFormatted(date: string) {
-    const splitDate = date.split('-');
-    const year = splitDate[0];
-    const month = parseInt(splitDate[1], 10);
-    const day = splitDate[2];
-
-    const monthMap: { [key: number]: string } = {
-      1: 'January',
-      2: 'February',
-      3: 'March',
-      4: 'April',
-      5: 'May',
-      6: 'June',
-      7: 'July',
-      8: 'August',
-      9: 'September',
-      10: 'October',
-      11: 'November',
-      12: 'December',
-    };
-
-    const displayMonth = monthMap[month];
-    return `${displayMonth} ${day}, ${year}`;
-  }
 
   protected render() {
     return html`
@@ -189,19 +153,18 @@ export class IauxMgcPlans extends LitElement {
       grid-area: next-donation;
     }
 
-    @media screen and (max-width: 500px) {
-      ul li .info {
-        display: block;
-        border: 1px solid yellow;
-      }
-    }
-
     ul li .info > * {
       margin: 0 0 0.5rem 0;
     }
 
     ul li .info > * > * {
       margin: 0;
+    }
+
+    @media screen and (max-width: 500px) {
+      ul li .info {
+        display: block;
+      }
     }
   `;
 }

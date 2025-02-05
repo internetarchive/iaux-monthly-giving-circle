@@ -39,8 +39,7 @@ describe('IauxMonthlyGivingCircle', () => {
         html`<iaux-monthly-giving-circle
           .plans=${[
             new MonthlyPlan({
-              token:
-                'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtYWlsc3luYyIsImlhdCI6MTcyMzc1MDI3OS41MjcyMTYsIm5iZiI6MTcyMzc1MDIxOS41MjcyMTYsImV4cCI6MTcyMzc1MDg3OS41MjcyMTYsImtleSI6eyJwaWQiOiIyN21yNnIiLCJjaWQiOjgwMzUzOCwiYW1vdW50Ijo1LCJwYXltZW50TWV0aG9kVG9rZW4iOiI4dDduenFnIiwiY3VzdG9tZXJJZCI6Ijg1MzkzMjIxMyJ9LCJ1c2VyIjoiQGlzYS1hdC10aGUtYXJjaGl2ZSJ9.Si-IBV0VhSwTL1SDXpn5bfuFP4qp-r9Jkoe4bw4eRyw',
+              token: 'a.va.lid.T0ken',
               amount: 5,
               currency: 'USD',
               start_date: '2024-07-01 00:00:00',
