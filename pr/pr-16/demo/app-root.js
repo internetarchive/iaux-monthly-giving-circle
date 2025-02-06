@@ -195,7 +195,7 @@
   `;$([f({type:Boolean,reflect:!0})],j.prototype,"isDisabled",void 0);$([f({type:Object})],j.prototype,"clickHandler",void 0);$([si("button")],j.prototype,"button",void 0);j=$([L("ia-button")],j);let ot=class extends A{constructor(){super(...arguments),this.plans=[]}render(){return v`
       <section class="monthly-giving-circle">
         <ul>
-          ${this.plans.map(t=>{var e,i,s,o,r,c,l,a,d,h,u,m,E,g,dt,ht,ut,pt;console.log(" ******** "),console.log("plan: ",t);const Ee=(i=(e=t.payment)===null||e===void 0?void 0:e.paymentMethodType)!==null&&i!==void 0?i:"Method not found",we=(o=(s=t.payment)===null||s===void 0?void 0:s.cardType)!==null&&o!==void 0?o:"Card type not found",Ce=!((r=t.payment)===null||r===void 0)&&r.last4?`...${(c=t.payment)===null||c===void 0?void 0:c.last4}`:"CC number not found";return v`
+          ${this.plans.map(t=>{var e,i,s,o,r,c,l,a,d,h,u,m,E,g,dt,ht,ut,pt;const Ee=(i=(e=t.payment)===null||e===void 0?void 0:e.paymentMethodType)!==null&&i!==void 0?i:"Method not found",we=(o=(s=t.payment)===null||s===void 0?void 0:s.cardType)!==null&&o!==void 0?o:"Card type not found",Ce=!((r=t.payment)===null||r===void 0)&&r.last4?`...${(c=t.payment)===null||c===void 0?void 0:c.last4}`:"CC number not found";return v`
               <li>
                 <div class="info">
                   <div class="amount">
@@ -235,6 +235,7 @@
                 </div>
                 <ia-button
                   class="ia-button link edit-donation"
+                  isdisabled
                   .clickHandler=${()=>console.log(t)}
                 >
                   Manage this monthly donation
