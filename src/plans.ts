@@ -14,8 +14,6 @@ export class IauxMgcPlans extends LitElement {
       <section class="monthly-giving-circle">
         <ul>
           ${this.plans.map((plan: MonthlyPlan) => {
-            console.log(' ******** ');
-            console.log('plan: ', plan);
             const methodType =
               plan.payment?.paymentMethodType ?? 'Method not found';
             const cardType = plan.payment?.cardType ?? 'Card type not found';
@@ -75,6 +73,7 @@ export class IauxMgcPlans extends LitElement {
                 </div>
                 <ia-button
                   class="ia-button link edit-donation"
+                  isdisabled
                   .clickHandler=${() => console.log(plan)}
                 >
                   Manage this monthly donation
