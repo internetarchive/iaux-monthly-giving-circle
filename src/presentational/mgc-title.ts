@@ -76,5 +76,12 @@ export class MonthlyGivingCircle extends LitElement {
       justify-content: flex-end;
       align-items: flex-end;
     }
+
+    @media screen and (max-width: 500px) {
+      h2,
+      slot[name='action'] {
+        display: block;
+      }
+    }
   `;
 }
