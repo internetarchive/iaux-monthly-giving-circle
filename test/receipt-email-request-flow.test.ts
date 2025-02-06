@@ -6,13 +6,13 @@ import type { MonthlyGivingCircle } from '../src/monthly-giving-circle';
 
 import '../src/monthly-giving-circle';
 import type { IauxMgcReceipts } from '../src/receipts';
-import type { IauxButton } from '../src/presentational/iaux-button';
+import type { IauxButton } from '../src/presentational/ia-button';
 
 describe('Receipts: When requesting an email', () => {
-  describe('`<iaux-monthly-giving-circle>` fires event: EmailReceiptRequest', () => {
+  describe('`<ia-monthly-giving-circle>` fires event: EmailReceiptRequest', () => {
     it('and receives updates via `update`', async () => {
       const el = await fixture<MonthlyGivingCircle>(
-        html`<iaux-monthly-giving-circle
+        html`<ia-monthly-giving-circle
           .receipts=${[
             {
               amount: 9999.99,
@@ -21,13 +21,13 @@ describe('Receipts: When requesting an email', () => {
               is_test: false,
             },
           ]}
-        ></iaux-monthly-giving-circle>`
+        ></ia-monthly-giving-circle>`
       );
 
       // open receipt view
-      const titleEl = el.querySelector('iaux-mgc-title');
+      const titleEl = el.querySelector('ia-mgc-title');
       const receiptsDisplayButton = titleEl!.querySelector(
-        'iaux-button'
+        'ia-button'
       ) as IauxButton;
       const innerButton = receiptsDisplayButton.shadowRoot?.querySelector(
         'button'
@@ -37,9 +37,7 @@ describe('Receipts: When requesting an email', () => {
       await el.updateComplete;
 
       // set spies for receipt function
-      const receiptsEl = el.querySelector(
-        'iaux-mgc-receipts'
-      ) as IauxMgcReceipts;
+      const receiptsEl = el.querySelector('ia-mgc-receipts') as IauxMgcReceipts;
       const receiptElSpy = Sinon.spy(receiptsEl, 'emailSent');
 
       const mainElementUpdateReceivedSpy = Sinon.spy(el, 'updateReceived');
@@ -64,7 +62,7 @@ describe('Receipts: When requesting an email', () => {
 
       // request an email
       const requestReceiptButton = receiptsEl!.shadowRoot!.querySelector(
-        'tr#donation-foo-id-1 iaux-button'
+        'tr#donation-foo-id-1 ia-button'
       ) as IauxButton;
       requestReceiptButton!.click();
     });

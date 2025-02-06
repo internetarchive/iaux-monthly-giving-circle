@@ -8,7 +8,7 @@ import './plans';
 import './presentational/mgc-title';
 import './receipts';
 import type { IauxMgcReceipts } from './receipts';
-import './presentational/iaux-button';
+import './presentational/ia-button';
 
 export type AnUpdate = {
   message: string;
@@ -16,7 +16,7 @@ export type AnUpdate = {
   donationId: string;
 };
 
-@customElement('iaux-monthly-giving-circle')
+@customElement('ia-monthly-giving-circle')
 export class MonthlyGivingCircle extends LitElement {
   @property({ type: String }) patronName: string = '';
 
@@ -36,13 +36,13 @@ export class MonthlyGivingCircle extends LitElement {
   }
 
   updated(changed: PropertyValues) {
-    if (changed.has('plans') && this.plans.length) {
-      this.viewToDisplay = 'plans';
+    if (changed.has('plans')) {
+      this.viewToDisplay = this.plans.length ? 'plans' : 'welcome';
     }
   }
 
   get receiptListElement(): IauxMgcReceipts {
-    return this.querySelector('iaux-mgc-receipts') as IauxMgcReceipts;
+    return this.querySelector('ia-mgc-receipts') as IauxMgcReceipts;
   }
 
   updateReceived(update: AnUpdate) {
@@ -55,7 +55,7 @@ export class MonthlyGivingCircle extends LitElement {
 
   get showReceiptsCTA(): TemplateResult {
     return html`
-      <iaux-button
+      <ia-button
         class="link slim"
         .clickHandler=${() => {
           this.viewToDisplay = 'receipts';
@@ -63,17 +63,17 @@ export class MonthlyGivingCircle extends LitElement {
         }}
       >
         View recent donation history
-      </iaux-button>
+      </ia-button>
     `;
   }
 
   get headerSection(): TemplateResult {
     if (this.viewToDisplay === 'receipts') {
       return html`
-        <iaux-mgc-title titleStyle="default">
+        <ia-mgc-title titleStyle="default">
           <span slot="title">Recent donations</span>
           <span slot="action">
-            <iaux-button
+            <ia-button
               class="link slim"
               id="close-receipts"
               .clickHandler=${async () => {
@@ -84,30 +84,30 @@ export class MonthlyGivingCircle extends LitElement {
               }}
             >
               Back to account settings
-            </iaux-button>
+            </ia-button>
           </span>
-        </iaux-mgc-title>
+        </ia-mgc-title>
       `;
     }
 
     if (this.plans.length) {
       return html`
-        <iaux-mgc-title titleStyle="heart">
+        <ia-mgc-title titleStyle="heart">
           <span slot="title">Monthly Giving Circle</span>
           <span slot="action"
             >${this.receipts.length ? this.showReceiptsCTA : nothing}</span
           >
-        </iaux-mgc-title>
+        </ia-mgc-title>
       `;
     }
 
     return html`
-      <iaux-mgc-title titleStyle="heart">
+      <ia-mgc-title titleStyle="heart">
         <span slot="title">Monthly Giving Circle</span>
         <span slot="action"
           >${this.receipts.length ? this.showReceiptsCTA : nothing}</span
         >
-      </iaux-mgc-title>
+      </ia-mgc-title>
     `;
   }
 
@@ -116,7 +116,7 @@ export class MonthlyGivingCircle extends LitElement {
       ${this.headerSection}
       ${this.viewToDisplay === 'receipts'
         ? html`
-            <iaux-mgc-receipts
+            <ia-mgc-receipts
               .receipts=${this.receipts}
               @EmailReceiptRequest=${(event: CustomEvent) => {
                 console.log('EmailReceiptRequest', event.detail);
@@ -126,15 +126,15 @@ export class MonthlyGivingCircle extends LitElement {
                   })
                 );
               }}
-            ></iaux-mgc-receipts>
+            ></ia-mgc-receipts>
           `
         : nothing}
       ${this.viewToDisplay === 'plans'
-        ? html` <iaux-mgc-plans .plans=${this.plans}></iaux-mgc-plans> `
+        ? html` <ia-mgc-plans .plans=${this.plans}></ia-mgc-plans> `
         : nothing}
       ${this.viewToDisplay === 'welcome'
         ? html`
-            <iaux-mgc-welcome .patronName=${this.patronName}></iaux-mgc-welcome>
+            <ia-mgc-welcome .patronName=${this.patronName}></ia-mgc-welcome>
           `
         : nothing}
     `;

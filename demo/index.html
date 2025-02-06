@@ -50,13 +50,13 @@
 
   <div id="demo">
     <style>
-      iaux-monthly-giving-circle {
+      ia-monthly-giving-circle {
         display: block;
         margin: 0 auto;
         max-width: 800px;
       }
     </style>
-    <iaux-monthly-giving-circle></iaux-monthly-giving-circle>
+    <ia-monthly-giving-circle></ia-monthly-giving-circle>
   </div>
 
   <script type="module" src="../dist/src/monthly-giving-circle.js"></script>
@@ -135,6 +135,7 @@
 
     const receiptsData = [
         new Receipt({
+          currency: 'USD',
           net_amount: 9999.99,
           total_amount: 9999.99,
           fee_amount: 0,
@@ -189,7 +190,7 @@
 
     let showReceipts = true;
 
-    const mgcComponent = document.querySelector('iaux-monthly-giving-circle');
+    const mgcComponent = document.querySelector('ia-monthly-giving-circle');
 
     // load start data
     mgcComponent.receipts = receiptsData;

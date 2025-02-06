@@ -3,9 +3,9 @@ import { customElement, property } from 'lit/decorators.js';
 
 import type { MonthlyPlan } from './models/plan';
 
-import './presentational/iaux-button';
+import './presentational/ia-button';
 
-@customElement('iaux-mgc-plans')
+@customElement('ia-mgc-plans')
 export class IauxMgcPlans extends LitElement {
   @property({ type: Array }) plans = [];
 
@@ -73,12 +73,12 @@ export class IauxMgcPlans extends LitElement {
                     <p>${plan.nextBillingDate}</p>
                   </div>
                 </div>
-                <iaux-button
+                <ia-button
                   class="ia-button link edit-donation"
                   .clickHandler=${() => console.log(plan)}
                 >
                   Manage this monthly donation
-                </iaux-button>
+                </ia-button>
               </li>
             `;
           })}

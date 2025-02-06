@@ -3,8 +3,8 @@ import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Receipt } from './models/receipt';
 
-import './presentational/iaux-button';
-import type { IauxButton } from './presentational/iaux-button';
+import './presentational/ia-button';
+import type { IauxButton } from './presentational/ia-button';
 
 type ReceiptEmailStatus = {
   id: string;
@@ -15,7 +15,7 @@ type receiptDispatcherMap = {
   [id: string]: ReceiptEmailStatus;
 };
 
-@customElement('iaux-mgc-receipts')
+@customElement('ia-mgc-receipts')
 export class IauxMgcReceipts extends LitElement {
   @property({ type: Array }) receipts = [];
 
@@ -84,7 +84,7 @@ export class IauxMgcReceipts extends LitElement {
     // re-enable email request button
     const escapedId = CSS.escape(id);
     const button = this.shadowRoot?.querySelector(
-      `#donation-${escapedId} iaux-button`
+      `#donation-${escapedId} ia-button`
     ) as IauxButton;
     button.isDisabled = false;
   }
@@ -145,7 +145,7 @@ export class IauxMgcReceipts extends LitElement {
                     </td>
                     <td>
                       <div class="request-receipt">
-                        <iaux-button
+                        <ia-button
                           class="link slim"
                           style="--link-button-flex-align-items: center;"
                           .clickHandler=${async (iauxButton: IauxButton) => {
@@ -168,7 +168,7 @@ export class IauxMgcReceipts extends LitElement {
                           }}
                         >
                           ${this.ctaButtonText(donation, emailStatus)}
-                        </iaux-button>
+                        </ia-button>
                         ${emailStatusToDisplay}
                       </div>
                     </td>
@@ -205,7 +205,7 @@ export class IauxMgcReceipts extends LitElement {
     th.action {
       width: 200px;
     }
-    iaux-button-style {
+    ia-button-style {
       display: inline-block;
     }
 

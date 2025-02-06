@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 
 import '@internetarchive/icon-donate/icon-donate.js';
 
-@customElement('iaux-mgc-title')
+@customElement('ia-mgc-title')
 export class MonthlyGivingCircle extends LitElement {
   @property({ type: String }) titleStyle: 'heart' | 'default' = 'heart';
 
