@@ -4,17 +4,18 @@ import { html, fixture, expect } from '@open-wc/testing';
 import type { MonthlyGivingCircle } from '../src/monthly-giving-circle';
 
 import '../src/monthly-giving-circle';
-import type { IauxButton } from '../src/presentational/iaux-button';
+import type { IauxButton } from '../src/presentational/ia-button';
+import { MonthlyPlan } from '../src/models/plan';
 
 describe('IauxMonthlyGivingCircle', () => {
   it('displays welcome message on load', async () => {
     const el = await fixture<MonthlyGivingCircle>(
-      html`<iaux-monthly-giving-circle></iaux-monthly-giving-circle>`
+      html`<ia-monthly-giving-circle></ia-monthly-giving-circle>`
     );
 
     expect(el.viewToDisplay).to.equal('welcome');
 
-    const titleEl = el.querySelector('iaux-mgc-title');
+    const titleEl = el.querySelector('ia-mgc-title');
     expect(titleEl).to.not.be.null;
     expect(titleEl!.getAttribute('titlestyle')).to.equal('heart');
     expect(titleEl!.children.length).to.equal(2);
@@ -22,7 +23,7 @@ describe('IauxMonthlyGivingCircle', () => {
       'Monthly Giving Circle'
     );
 
-    const welcomeEl = el.querySelector('iaux-mgc-welcome');
+    const welcomeEl = el.querySelector('ia-mgc-welcome');
     const joinLink = welcomeEl!.shadowRoot?.querySelector(
       'a.join-mgc'
     ) as HTMLAnchorElement;
@@ -32,10 +33,47 @@ describe('IauxMonthlyGivingCircle', () => {
     );
   });
 
+  describe('Plans View:', () => {
+    it('displays list', async () => {
+      const el = await fixture<MonthlyGivingCircle>(
+        html`<ia-monthly-giving-circle
+          .plans=${[
+            new MonthlyPlan({
+              token: 'a.va.lid.T0ken',
+              amount: 5,
+              currency: 'USD',
+              start_date: '2024-07-01 00:00:00',
+              is_test: true,
+              btdata: {
+                billingDayOfMonth: 22,
+                nextBillingDate: {
+                  date: '2024-08-22 00:00:00.000000',
+                  timezone_type: 3,
+                  timezone: 'UTC',
+                },
+                status: 'Active',
+                paymentMethodType: 'Venmo',
+                last4: null,
+                cardType: null,
+                expirationMonth: null,
+                expirationYear: null,
+                venmoUsername: 'venmojoe',
+              },
+            }),
+          ]}
+        ></ia-monthly-giving-circle>`
+      );
+
+      expect(el.viewToDisplay).to.equal('plans');
+      expect(el.plans.length).to.equal(1);
+      expect(el.querySelector('ia-mgc-plans')).to.exist;
+    });
+  });
+
   describe('Receipts View - CTA & onclick display:', () => {
     it('Displays receipts CTA when receipts are available', async () => {
       const el = await fixture<MonthlyGivingCircle>(
-        html`<iaux-monthly-giving-circle
+        html`<ia-monthly-giving-circle
           .receipts=${[
             {
               amount: 9999.99,
@@ -46,13 +84,11 @@ describe('IauxMonthlyGivingCircle', () => {
               id: 'foo-id-1',
             },
           ]}
-        ></iaux-monthly-giving-circle>`
+        ></ia-monthly-giving-circle>`
       );
 
-      const titleEl = el.querySelector('iaux-mgc-title');
-      const receiptsButton = titleEl!.querySelector(
-        'iaux-button'
-      ) as IauxButton;
+      const titleEl = el.querySelector('ia-mgc-title');
+      const receiptsButton = titleEl!.querySelector('ia-button') as IauxButton;
       expect(receiptsButton).to.exist;
       expect(receiptsButton!.innerText).to.equal(
         'View recent donation history'
@@ -61,7 +97,7 @@ describe('IauxMonthlyGivingCircle', () => {
       el.receipts = [];
       await el.updateComplete;
 
-      const newTitleEl = el.querySelector('iaux-mgc-title');
+      const newTitleEl = el.querySelector('ia-mgc-title');
       expect(newTitleEl).to.exist;
 
       const newReceiptsButton = newTitleEl!.querySelector('button');
@@ -70,7 +106,7 @@ describe('IauxMonthlyGivingCircle', () => {
 
     it('Display receipts table when receipts CTA is clicked', async () => {
       const el = await fixture<MonthlyGivingCircle>(
-        html`<iaux-monthly-giving-circle
+        html`<ia-monthly-giving-circle
           .receipts=${[
             {
               amount: 9999.99,
@@ -81,15 +117,13 @@ describe('IauxMonthlyGivingCircle', () => {
               id: 'foo-id-1',
             },
           ]}
-        ></iaux-monthly-giving-circle>`
+        ></ia-monthly-giving-circle>`
       );
 
-      const titleEl = el.querySelector('iaux-mgc-title');
+      const titleEl = el.querySelector('ia-mgc-title');
       expect(titleEl).to.exist;
 
-      const receiptsButton = titleEl!.querySelector(
-        'iaux-button'
-      ) as IauxButton;
+      const receiptsButton = titleEl!.querySelector('ia-button') as IauxButton;
 
       expect(receiptsButton.innerText).to.equal('View recent donation history');
 
@@ -102,11 +136,11 @@ describe('IauxMonthlyGivingCircle', () => {
 
       expect(el.viewToDisplay).to.equal('receipts');
 
-      const welcomeEl = el.querySelector('iaux-mgc-welcome');
+      const welcomeEl = el.querySelector('ia-mgc-welcome');
       expect(welcomeEl).to.not.exist;
 
       // shows proper title
-      const titleEl2 = el.querySelector('iaux-mgc-title');
+      const titleEl2 = el.querySelector('ia-mgc-title');
       expect(titleEl2).to.exist;
       expect(titleEl2!.getAttribute('titlestyle')).to.equal('default');
       const titleValueEl = titleEl2?.querySelector(
@@ -117,12 +151,12 @@ describe('IauxMonthlyGivingCircle', () => {
 
       // shows back button
       const backButton = titleEl2?.querySelector(
-        'iaux-button#close-receipts'
+        'ia-button#close-receipts'
       ) as IauxButton;
       expect(backButton!.innerText).to.equal('Back to account settings');
 
       // shows receipts element
-      const receiptsEl = el.querySelector('iaux-mgc-receipts');
+      const receiptsEl = el.querySelector('ia-mgc-receipts');
       expect(receiptsEl).to.exist;
 
       // goes back to welcome page if back button is clicked
@@ -132,7 +166,7 @@ describe('IauxMonthlyGivingCircle', () => {
 
       expect(el.viewToDisplay).to.equal('welcome');
 
-      const titleEl3 = el.querySelector('iaux-mgc-title');
+      const titleEl3 = el.querySelector('ia-mgc-title');
       expect(titleEl3).to.exist;
       expect(titleEl3!.getAttribute('titlestyle')).to.equal('heart');
       const welcomeTitle = titleEl3?.querySelector(

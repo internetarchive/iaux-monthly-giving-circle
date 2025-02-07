@@ -3,7 +3,7 @@ import { customElement, property, query } from 'lit/decorators.js';
 
 import '@internetarchive/icon-donate/icon-donate.js';
 
-@customElement('iaux-button')
+@customElement('ia-button')
 export class IauxButton extends LitElement {
   @property({ type: Boolean, reflect: true }) isDisabled = false;
 

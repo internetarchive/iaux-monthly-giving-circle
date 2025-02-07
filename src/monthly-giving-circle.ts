@@ -1,41 +1,51 @@
 /* eslint-disable no-debugger */
 
-import { LitElement, html, TemplateResult, nothing } from 'lit';
+import { LitElement, html, TemplateResult, nothing, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import './welcome-message';
+import './plans';
 import './presentational/mgc-title';
 import './receipts';
 import type { IauxMgcReceipts } from './receipts';
-import './presentational/iaux-button';
+import './presentational/ia-button';
 
-export type anUpdate = {
+export type AnUpdate = {
   message: string;
   status: 'success' | 'fail';
   donationId: string;
 };
 
-@customElement('iaux-monthly-giving-circle')
+@customElement('ia-monthly-giving-circle')
 export class MonthlyGivingCircle extends LitElement {
   @property({ type: String }) patronName: string = '';
 
   @property({ type: Array }) receipts = [];
 
-  @property({ type: Array }) updates: anUpdate[] = [];
+  @property({ type: Array }) updates: AnUpdate[] = [];
+
+  @property({ type: Array }) plans = [];
 
   @property({ type: String, reflect: true }) viewToDisplay:
     | 'welcome'
-    | 'receipts' = 'welcome';
+    | 'receipts'
+    | 'plans' = 'welcome';
 
   protected createRenderRoot() {
     return this;
   }
 
-  get receiptListElement(): IauxMgcReceipts {
-    return this.querySelector('iaux-mgc-receipts') as IauxMgcReceipts;
+  updated(changed: PropertyValues) {
+    if (changed.has('plans')) {
+      this.viewToDisplay = this.plans.length ? 'plans' : 'welcome';
+    }
   }
 
-  updateReceived(update: anUpdate) {
+  get receiptListElement(): IauxMgcReceipts {
+    return this.querySelector('ia-mgc-receipts') as IauxMgcReceipts;
+  }
+
+  updateReceived(update: AnUpdate) {
     this.receiptListElement.emailSent({
       id: update.donationId,
       emailStatus: update.status,
@@ -45,26 +55,25 @@ export class MonthlyGivingCircle extends LitElement {
 
   get showReceiptsCTA(): TemplateResult {
     return html`
-      <iaux-button
-        class="link"
-        style="--button-padding: 0;"
+      <ia-button
+        class="link slim"
         .clickHandler=${() => {
           this.viewToDisplay = 'receipts';
           this.dispatchEvent(new CustomEvent('ShowReceipts'));
         }}
       >
         View recent donation history
-      </iaux-button>
+      </ia-button>
     `;
   }
 
-  protected render() {
+  get headerSection(): TemplateResult {
     if (this.viewToDisplay === 'receipts') {
       return html`
-        <iaux-mgc-title titleStyle="default">
+        <ia-mgc-title titleStyle="default">
           <span slot="title">Recent donations</span>
           <span slot="action">
-            <iaux-button
+            <ia-button
               class="link slim"
               id="close-receipts"
               .clickHandler=${async () => {
@@ -75,31 +84,59 @@ export class MonthlyGivingCircle extends LitElement {
               }}
             >
               Back to account settings
-            </iaux-button>
+            </ia-button>
           </span>
-        </iaux-mgc-title>
-        <iaux-mgc-receipts
-          .receipts=${this.receipts}
-          @EmailReceiptRequest=${(event: CustomEvent) => {
-            console.log('EmailReceiptRequest', event.detail);
-            this.dispatchEvent(
-              new CustomEvent('EmailReceiptRequest', {
-                detail: { ...event.detail },
-              })
-            );
-          }}
-        ></iaux-mgc-receipts>
+        </ia-mgc-title>
+      `;
+    }
+
+    if (this.plans.length) {
+      return html`
+        <ia-mgc-title titleStyle="heart">
+          <span slot="title">Monthly Giving Circle</span>
+          <span slot="action"
+            >${this.receipts.length ? this.showReceiptsCTA : nothing}</span
+          >
+        </ia-mgc-title>
       `;
     }
 
     return html`
-      <iaux-mgc-title titleStyle="heart">
+      <ia-mgc-title titleStyle="heart">
         <span slot="title">Monthly Giving Circle</span>
         <span slot="action"
           >${this.receipts.length ? this.showReceiptsCTA : nothing}</span
         >
-      </iaux-mgc-title>
-      <iaux-mgc-welcome .patronName=${this.patronName}></iaux-mgc-welcome>
+      </ia-mgc-title>
+    `;
+  }
+
+  protected render() {
+    return html`
+      ${this.headerSection}
+      ${this.viewToDisplay === 'receipts'
+        ? html`
+            <ia-mgc-receipts
+              .receipts=${this.receipts}
+              @EmailReceiptRequest=${(event: CustomEvent) => {
+                console.log('EmailReceiptRequest', event.detail);
+                this.dispatchEvent(
+                  new CustomEvent('EmailReceiptRequest', {
+                    detail: { ...event.detail },
+                  })
+                );
+              }}
+            ></ia-mgc-receipts>
+          `
+        : nothing}
+      ${this.viewToDisplay === 'plans'
+        ? html` <ia-mgc-plans .plans=${this.plans}></ia-mgc-plans> `
+        : nothing}
+      ${this.viewToDisplay === 'welcome'
+        ? html`
+            <ia-mgc-welcome .patronName=${this.patronName}></ia-mgc-welcome>
+          `
+        : nothing}
     `;
   }
 }
