@@ -77,7 +77,7 @@ export class MonthlyGivingCircle extends LitElement {
               class="link slim"
               id="close-receipts"
               .clickHandler=${async () => {
-                this.viewToDisplay = 'welcome';
+                this.viewToDisplay = this.plans.length ? 'plans' : 'welcome';
                 this.dispatchEvent(new CustomEvent('ShowWelcome'));
                 this.updates = [];
                 await this.updateComplete;
