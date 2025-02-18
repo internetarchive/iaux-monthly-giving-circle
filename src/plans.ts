@@ -16,8 +16,11 @@ export class IauxMgcPlans extends LitElement {
       <section class="monthly-giving-circle">
         <ul>
           ${this.plans.map((plan: MonthlyPlan) => {
-            const methodType =
+            let methodType =
               plan.payment?.paymentMethodType ?? 'Method not found';
+            if (methodType === 'creditCard') {
+              methodType = 'Credit card';
+            }
             const cardType = plan.payment?.cardType ?? 'Card type not found';
             const last4 = plan.payment?.last4
               ? `...${plan.payment?.last4}`
