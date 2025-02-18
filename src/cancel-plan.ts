@@ -151,8 +151,9 @@ export class IauxMgcCancelPlan extends LitElement {
       --button-height: auto;
     }
 
-    ia-button .donation-form-section {
+    ia-button > * {
       text-align: left;
+      text-wrap: wrap;
     }
 
     h3 {

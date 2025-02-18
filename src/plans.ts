@@ -43,7 +43,7 @@ export class IauxMgcPlans extends LitElement {
                   <div class="payment-details">
                     <h3>Method</h3>
                     <p>${methodType}</p>
-                    ${plan.payment?.cardType === 'creditCard'
+                    ${plan.payment?.paymentMethodType === 'creditCard'
                       ? html`<p>${cardType}</p>
                           <p>${last4}</p>`
                       : nothing}
@@ -63,7 +63,7 @@ export class IauxMgcPlans extends LitElement {
                           >
                         </p>`
                       : nothing}
-                    ${plan.payment?.cardType !== 'creditCard'
+                    ${plan.payment?.paymentMethodType !== 'creditCard'
                       ? html`<p>
                           Expires:
                           ${plan.payment?.expirationMonth ??

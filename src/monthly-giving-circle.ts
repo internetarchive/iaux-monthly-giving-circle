@@ -146,6 +146,18 @@ export class MonthlyGivingCircle extends LitElement {
       case 'editPlan':
         title = 'Edit plan';
         titleStyle = 'default';
+        cta = html`<ia-button
+          class="primary"
+          id="close-edit-plan"
+          .clickHandler=${async () => {
+            this.viewToDisplay = this.plans.length ? 'plans' : 'welcome';
+            this.dispatchEvent(new CustomEvent('ShowWelcome'));
+            this.updates = [];
+            await this.updateComplete;
+          }}
+        >
+          Back to account settings
+        </ia-button>`;
         break;
 
       default:

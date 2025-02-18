@@ -67,6 +67,7 @@ export class IauxButton extends LitElement {
     }
 
     :host(.primary) button {
+      color: #ffeeee;
       background-color: #194880;
       border-color: #c5d1df;
     }
