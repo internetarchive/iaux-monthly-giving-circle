@@ -73,7 +73,6 @@ export class IauxMgcCancelPlan extends LitElement {
       </donation-form-section>
       </ia-button>
 
-      <hr />
       ${this.initialCancelRequest ? this.confirmCancelation : nothing}
     `;
   }

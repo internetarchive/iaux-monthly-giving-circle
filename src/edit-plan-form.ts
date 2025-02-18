@@ -13,7 +13,7 @@ export class MGCWelcome extends LitElement {
   render() {
     return html`
       <section class="mgc-edit-plan">
-        <p>edit plan form</p>
+        <hr />
         <iaux-mgc-cancel-plan
           .plan=${this.plan}
           @cancelPlan=${() => {
