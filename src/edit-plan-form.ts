@@ -8,16 +8,18 @@ import './cancel-plan';
 export class MGCWelcome extends LitElement {
   @property({ type: Object }) plan?: MonthlyPlan;
 
+  @property({ type: Object }) cancelPlanHandler?: (plan: MonthlyPlan) => void;
+
   render() {
     return html`
       <section class="mgc-edit-plan">
         <p>edit plan form</p>
         <iaux-mgc-cancel-plan
           .plan=${this.plan}
-          .cancelPlan=${(plan: MonthlyPlan) => {
-            this.dispatchEvent(
-              new CustomEvent('cancelPlan', { detail: { plan } })
-            );
+          @cancelPlan=${() => {
+            if (this.plan) {
+              this.cancelPlanHandler?.(this.plan);
+            }
           }}
         ></iaux-mgc-cancel-plan>
       </section>

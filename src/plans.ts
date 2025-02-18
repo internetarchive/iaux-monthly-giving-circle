@@ -1,9 +1,11 @@
+/* eslint-disable no-param-reassign */
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import type { MonthlyPlan } from './models/plan';
 
 import './presentational/ia-button';
+import type { IauxButton } from './presentational/ia-button';
 
 @customElement('ia-mgc-plans')
 export class IauxMgcPlans extends LitElement {
@@ -21,8 +23,12 @@ export class IauxMgcPlans extends LitElement {
               ? `...${plan.payment?.last4}`
               : 'CC number not found';
 
+            const ctaText = plan.plan.isCancelled
+              ? 'Plan is cancelled'
+              : 'Manage this monthly donation';
+
             return html`
-              <li>
+              <li class=${`${plan.plan.isCancelled ? 'cancelled' : ''}`}>
                 <div class="info">
                   <div class="amount">
                     <h3>Amount</h3>
@@ -73,10 +79,17 @@ export class IauxMgcPlans extends LitElement {
                 </div>
                 <ia-button
                   class="ia-button link edit-donation"
-                  isdisabled
-                  .clickHandler=${() => console.log(plan)}
+                  .isDisabled=${plan.plan.isCancelled}
+                  .clickHandler=${async (e: Event, iaButton: IauxButton) => {
+                    // disable button
+                    iaButton.isDisabled = true;
+                    // open form
+                    this.dispatchEvent(
+                      new CustomEvent('editThisPlan', { detail: { plan } })
+                    );
+                  }}
                 >
-                  Manage this monthly donation
+                  ${ctaText}
                 </ia-button>
               </li>
             `;
@@ -102,6 +115,9 @@ export class IauxMgcPlans extends LitElement {
       background-color: #eeffee;
       display: block;
       width: inherit;
+    }
+    li.cancelled {
+      background-color: lightgoldenrodyellow;
     }
     table {
       width: 100%;

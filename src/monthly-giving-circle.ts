@@ -90,11 +90,11 @@ export class MonthlyGivingCircle extends LitElement {
       ${isEditingPlan
         ? html`<ia-mgc-edit-plan
             .plan=${this.editingThisPlan}
-            @cancelPlan=${(event: CustomEvent) => {
-              console.log('cancelPlan', event.detail);
+            .cancelPlanHandler=${(plan: MonthlyPlan) => {
+              console.log('cancelPlan', plan);
               this.dispatchEvent(
                 new CustomEvent('cancelPlan', {
-                  detail: { ...event.detail },
+                  detail: { plan },
                 })
               );
             }}

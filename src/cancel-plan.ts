@@ -1,4 +1,11 @@
-import { LitElement, html, TemplateResult, PropertyValues, nothing } from 'lit';
+import {
+  LitElement,
+  html,
+  TemplateResult,
+  PropertyValues,
+  nothing,
+  css,
+} from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import type { MonthlyPlan } from './models/plan';
 
@@ -11,41 +18,22 @@ import '@internetarchive/donation-form-section';
 export class IauxMgcCancelPlan extends LitElement {
   @property({ type: Object }) plan?: MonthlyPlan;
 
-  @property({ type: Boolean, reflect: true }) requestToCancel = false;
+  @property({ type: Boolean, reflect: true }) patronWantsToKeepPlan = true;
 
   @property({ type: Boolean, reflect: true }) initialCancelRequest = false;
 
   @query('form') form!: HTMLFormElement;
 
-  protected createRenderRoot() {
-    return this;
-  }
-
   updated(changed: PropertyValues) {
     if (changed.has('plan')) {
       console.log('plan updated', this.plan);
     }
-
-    if (changed.has('requestToCancel')) {
-      if (this.requestToCancel) {
-        this.form?.querySelector('button')?.removeAttribute('disabled');
-      }
-    }
   }
 
-  async cancelPlan(e: Event) {
+  async cancelThisPlan(e: Event) {
     e.preventDefault();
-    this.requestToCancel = true;
-    const cancelbutton = this.shadowRoot?.querySelector(
-      `button#${`submit-${this.formId}`}`
-    );
-    cancelbutton?.setAttribute('disabled', 'true');
-    console.log('canceling subscription', { plan: this.plan });
-    this.dispatchEvent(
-      new CustomEvent('cancelPlan', {
-        detail: { plan: this.plan },
-      })
-    );
+    this.patronWantsToKeepPlan = false;
+    this.dispatchEvent(new Event('cancelPlan'));
   }
 
   get formId(): string {
@@ -53,7 +41,24 @@ export class IauxMgcCancelPlan extends LitElement {
   }
 
   protected render() {
+    if (this.initialCancelRequest) {
+      return this.confirmCancelation;
+    }
+
     return html`
+      <ia-button
+            class='clear-container'
+            .clickHandler=${(e: CustomEvent, iaButton: IauxButton) => {
+              // eslint-disable-next-line no-param-reassign
+              iaButton.isDisabled = true;
+              if (this.initialCancelRequest) {
+                this.initialCancelRequest = false;
+                this.patronWantsToKeepPlan = true;
+                return;
+              }
+              this.initialCancelRequest = true;
+            }}
+          >
       <donation-form-section
         badgemode="hidebadge"
         headline="Cancel recurring donation (requires confirmation)"
@@ -62,24 +67,12 @@ export class IauxMgcCancelPlan extends LitElement {
             You can also pause your recurring donation by setting the next
             donation date up to 12 months in the future.
           </p>
-          <ia-button
-            class="ia-button"
-            .clickHandler=${(e: CustomEvent, iaButton: IauxButton) => {
-              // eslint-disable-next-line no-param-reassign
-              iaButton.isDisabled = true;
-              if (this.initialCancelRequest) {
-                this.initialCancelRequest = false;
-                this.requestToCancel = false;
-                return;
-              }
-              this.initialCancelRequest = true;
-              this.requestToCancel = false;
-            }}
-          >
+
             Let's cancel my donation
-          </ia-button>
         </div>
       </donation-form-section>
+      </ia-button>
+
       <hr />
       ${this.initialCancelRequest ? this.confirmCancelation : nothing}
     `;
@@ -90,33 +83,84 @@ export class IauxMgcCancelPlan extends LitElement {
     <section class="cancel-donation">
     <donation-form-section badgemode="hidebadge" headline="Cancel recurring donation">
 
-      <button class="x"  @click=${() => {
+      <ia-button class='text exit-cancel'  @click=${() => {
         this.initialCancelRequest = false;
-        this.requestToCancel = false;
-      }}>X</button>
+        this.patronWantsToKeepPlan = true;
+      }}>X</ia-button>
 
       <p>Canceling ends your monthly recurring donation to the Internet Archive, effective immediately. You will not be charged moving forward.</p>
       <p>Canceling does not affect your account or access to the Internet Archive, although you will no longer have access to any of the Monthly Giving Circle perks.</p>
       <p>If you have any questions regarding donations, contact us at <a href="mailto:donations@archive.org">donations@archive.org</a></p>
 
-      <form id=${this.formId} @submit=${(e: Event) => this.cancelPlan(e)}>
+      <form id=${this.formId} @submit=${(e: Event) => this.cancelThisPlan(e)}>
         <div class="checkbox-option-container">
-          <input id=${`confirm-${this.formId}`} type="checkbox" required @change=${(
-      e: Event
-    ) => {
-      this.requestToCancel = (e.target as HTMLInputElement).checked;
-      if (this.requestToCancel) {
-        this.form?.querySelector('button')?.removeAttribute('disabled');
-      } else {
-        this.form?.querySelector('button')?.setAttribute('disabled', 'true');
-      }
-    }}>
+          <input
+            id=${`confirm-${this.formId}`}
+            type="checkbox"
+            required
+            @change=${async (e: Event) => {
+              e.preventDefault();
+              this.patronWantsToKeepPlan = !(e.target as HTMLInputElement)
+                .checked;
+              await this.updateComplete;
+            }}>
           <label for=${`confirm-${this.formId}`}><b>I'm sure I want to cancel my subscription</b></label>
         </div>
 
-        <button class="ia-button" disabled="true" id=${`submit-${this.formId}`} type="submit">I'm sure I want to cancel my recurring donation.</button>
+        <ia-button
+          class="cancel"
+          .isDisabled=${this.patronWantsToKeepPlan}
+          id=${`submit-${this.formId}`}
+          type="submit"
+          .clickHandler=${(e: Event, iaButton: IauxButton) => {
+            // eslint-disable-next-line no-param-reassign
+            iaButton.isDisabled = true;
+            this.cancelThisPlan(e);
+          }}
+        >I'm sure I want to cancel my recurring donation.</ia-button>
       </form>
     </section>
     `;
   }
+
+  static styles = css`
+    .warning > * {
+      margin: 5px 0;
+    }
+
+    .cancel-donation {
+      display: block;
+      border: 2px solid #d9534f;
+      background-color: #ffeeee;
+    }
+
+    .cancel-donation > * {
+      padding: 5px;
+      position: relative;
+    }
+
+    ia-button.exit-cancel {
+      --button-border: 1px solid;
+      --button-border-radius: 50%;
+      position: absolute;
+      top: -5px;
+      right: -10px;
+    }
+
+    ia-button {
+      --button-height: auto;
+    }
+
+    ia-button .donation-form-section {
+      text-align: left;
+    }
+
+    h3 {
+      position: relative;
+    }
+
+    .checkbox-option-container {
+      margin-bottom: 5px;
+    }
+  `;
 }
