@@ -8,7 +8,10 @@ export class IauxButton extends LitElement {
   @property({ type: Boolean, reflect: true }) isDisabled = false;
 
   // eslint-disable-next-line no-use-before-define
-  @property({ type: Object }) clickHandler?: (self: IauxButton) => void;
+  @property({ type: Object }) clickHandler?: (
+    e: Event,
+    self: IauxButton
+  ) => void;
 
   @query('button') button!: HTMLButtonElement;
 
@@ -16,9 +19,9 @@ export class IauxButton extends LitElement {
     return html`
       <button
         ?disabled=${this.isDisabled}
-        @click=${() => {
+        @click=${(e: Event) => {
           if (this.clickHandler) {
-            this?.clickHandler(this);
+            this?.clickHandler(e, this);
           }
         }}
       >

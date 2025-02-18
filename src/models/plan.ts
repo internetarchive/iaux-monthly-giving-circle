@@ -71,8 +71,16 @@ export class MonthlyPlan {
     return nextBillingDate ?? 'not found';
   }
 
+  get hasBeenCancelled(): boolean {
+    return this.plan.isCancelled === true;
+  }
+
   get isTest(): boolean {
     return this.plan.is_test;
+  }
+
+  cancelPlan(): void {
+    this.plan.isCancelled = true;
   }
 }
 

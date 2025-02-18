@@ -2,6 +2,7 @@ import { LitElement, html, TemplateResult, PropertyValues, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import type { MonthlyPlan } from './models/plan';
 
+import type { IauxButton } from './presentational/ia-button';
 import '@internetarchive/donation-form/dist/src/form-elements/contact-form/contact-form.js';
 
 import '@internetarchive/donation-form-section';
@@ -58,18 +59,14 @@ export class IauxMgcCancelPlan extends LitElement {
         headline="Cancel recurring donation (requires confirmation)"
       >
         <div class="warning">
-          ${this.plan?.summary.isCancelled
-            ? html`<p>
-                Previous donation amount: $${this.plan?.summary.oldAmount}
-              </p>`
-            : nothing}
-          <p>
             You can also pause your recurring donation by setting the next
             donation date up to 12 months in the future.
           </p>
-          <button
+          <ia-button
             class="ia-button"
-            @click=${() => {
+            .clickHandler=${(e: CustomEvent, iaButton: IauxButton) => {
+              // eslint-disable-next-line no-param-reassign
+              iaButton.isDisabled = true;
               if (this.initialCancelRequest) {
                 this.initialCancelRequest = false;
                 this.requestToCancel = false;
@@ -80,7 +77,7 @@ export class IauxMgcCancelPlan extends LitElement {
             }}
           >
             Let's cancel my donation
-          </button>
+          </ia-button>
         </div>
       </donation-form-section>
       <hr />
