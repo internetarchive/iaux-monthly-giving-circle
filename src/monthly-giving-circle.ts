@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 
-import { LitElement, html, TemplateResult, nothing, PropertyValues } from 'lit';
+import { LitElement, html, TemplateResult, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import './welcome-message';
@@ -106,27 +106,8 @@ export class MonthlyGivingCircle extends LitElement {
   get sectionTitle(): TemplateResult {
     let title = '';
     let titleStyle = '';
+    let cta = html``;
 
-    switch (this.viewToDisplay) {
-      case 'receipts':
-        title = 'Recent donations';
-        titleStyle = 'default';
-        break;
-
-      case 'editPlan':
-        title = 'Edit plan';
-        titleStyle = 'default';
-        break;
-
-      default:
-        title = 'Monthly Giving Circle';
-        titleStyle = 'heart';
-        break;
-    }
-
-    const displayReceiptsLink =
-      this.receipts.length &&
-      (this.viewToDisplay === 'plans' || this.viewToDisplay === 'welcome');
     const receiptsCTA = html`
       <ia-button
         class="link slim"
@@ -139,12 +120,47 @@ export class MonthlyGivingCircle extends LitElement {
         View recent donation history
       </ia-button>
     `;
+
+    const displayReceiptsLink =
+      this.receipts.length &&
+      (this.viewToDisplay === 'plans' || this.viewToDisplay === 'welcome');
+
+    switch (this.viewToDisplay) {
+      case 'receipts':
+        title = 'Recent donations';
+        titleStyle = 'default';
+        cta = html`<ia-button
+          class="link slim"
+          id="close-receipts"
+          .clickHandler=${async () => {
+            this.viewToDisplay = this.plans.length ? 'plans' : 'welcome';
+            this.dispatchEvent(new CustomEvent('ShowWelcome'));
+            this.updates = [];
+            await this.updateComplete;
+          }}
+        >
+          Back to account settings
+        </ia-button>`;
+        break;
+
+      case 'editPlan':
+        title = 'Edit plan';
+        titleStyle = 'default';
+        break;
+
+      default:
+        title = 'Monthly Giving Circle';
+        titleStyle = 'heart';
+        if (displayReceiptsLink) {
+          cta = receiptsCTA;
+        }
+        break;
+    }
+
     return html`
       <ia-mgc-title titleStyle=${titleStyle}>
         <span slot="title">${title}</span>
-        <span slot="action"
-          >${displayReceiptsLink ? receiptsCTA : nothing}</span
-        >
+        <span slot="action">${cta}</span>
       </ia-mgc-title>
     `;
   }
@@ -173,6 +189,7 @@ export class MonthlyGivingCircle extends LitElement {
               @editThisPlan=${(event: CustomEvent) => {
                 this.editingThisPlan = event.detail.plan;
                 this.viewToDisplay = 'editPlan';
+                this.dispatchEvent(new Event('ShowEditForm'));
               }}
               .plans=${this.plans}
             ></ia-mgc-plans>
