@@ -7,8 +7,11 @@ import '@internetarchive/icon-donate/icon-donate.js';
 export class IauxButton extends LitElement {
   @property({ type: Boolean, reflect: true }) isDisabled = false;
 
-  // eslint-disable-next-line no-use-before-define
-  @property({ type: Object }) clickHandler?: (self: IauxButton) => void;
+  @property({ type: Object }) clickHandler?: (
+    e: Event,
+    // eslint-disable-next-line no-use-before-define
+    self: IauxButton
+  ) => void;
 
   @query('button') button!: HTMLButtonElement;
 
@@ -16,9 +19,9 @@ export class IauxButton extends LitElement {
     return html`
       <button
         ?disabled=${this.isDisabled}
-        @click=${() => {
+        @click=${(e: Event) => {
           if (this.clickHandler) {
-            this?.clickHandler(this);
+            this?.clickHandler(e, this);
           }
         }}
       >
@@ -34,7 +37,10 @@ export class IauxButton extends LitElement {
     }
 
     button {
-      border: none;
+      border: var(--button-border, yellow);
+      background-color: var(--button-background-color, unset);
+      border-radius: var(--button-border-radius, 0);
+
       cursor: pointer;
       line-height: normal;
       border-radius: 0.4rem;
@@ -61,6 +67,7 @@ export class IauxButton extends LitElement {
     }
 
     :host(.primary) button {
+      color: #ffeeee;
       background-color: #194880;
       border-color: #c5d1df;
     }
@@ -70,8 +77,12 @@ export class IauxButton extends LitElement {
     }
 
     :host(.cancel) button {
-      background-color: #e51c26;
-      border-color: #f8c6c8;
+      border-color: #ffeeee;
+      background-color: #d9534f;
+    }
+
+    :host(.cancel) button:disabled {
+      border: 2px solid #f18286;
     }
 
     :host(.link) button {
@@ -82,6 +93,15 @@ export class IauxButton extends LitElement {
       align-items: var(--link-button-flex-align-items, flex-end);
       padding: var(--link-button-padding, inherit);
       height: inherit;
+    }
+
+    :host(.text) button {
+      color: #222;
+    }
+
+    :host(.clear-container) button {
+      height: inherit !important;
+      background: transparent;
     }
 
     :host([isdisabled]) button {

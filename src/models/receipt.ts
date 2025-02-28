@@ -2,6 +2,7 @@ type AReceipt = {
   currency: string;
   net_amount: number;
   total_amount: number;
+  fee_amount: number;
   receive_date?: Date;
   date: string;
   isTest: boolean;

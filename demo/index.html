@@ -224,6 +224,21 @@
       }, returnTiming);
     });
 
+    mgcComponent.addEventListener('cancelPlan', async (e) => {
+      const { plan } = e.detail;
+      const currPlansList = mgcComponent.plans;
+      const newPlansList = currPlansList.map((p) => {
+        if (p.plan.token === plan.plan.token) {
+          console.log('p 2 plan', p, plan);
+          p.cancelPlan();
+        }
+        return p;
+      });
+      mgcComponent.plans = newPlansList;
+      await mgcComponent.updateComplete;
+      console.log("plan cancelled & plan list updated", mgcComponent.plans);
+    })
+
     // options hooks
     document.getElementById('toggle-receipts').addEventListener('click', async () => {
       if (showReceipts) {

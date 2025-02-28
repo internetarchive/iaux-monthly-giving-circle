@@ -2,11 +2,15 @@
 import { html, fixture, expect } from '@open-wc/testing';
 import Sinon from 'sinon';
 
-import type { MonthlyGivingCircle } from '../src/monthly-giving-circle';
+import type {
+  APlanUpdate,
+  MonthlyGivingCircle,
+} from '../src/monthly-giving-circle';
 
 import '../src/monthly-giving-circle';
 import type { IauxMgcReceipts } from '../src/receipts';
 import type { IauxButton } from '../src/presentational/ia-button';
+import { Receipt } from '../src/models/receipt';
 
 describe('Receipts: When requesting an email', () => {
   describe('`<ia-monthly-giving-circle>` fires event: EmailReceiptRequest', () => {
@@ -14,12 +18,19 @@ describe('Receipts: When requesting an email', () => {
       const el = await fixture<MonthlyGivingCircle>(
         html`<ia-monthly-giving-circle
           .receipts=${[
-            {
-              amount: 9999.99,
-              date: '2020-09-01',
-              id: 'foo-id-1',
-              is_test: false,
-            },
+            new Receipt({
+              currency: 'USD',
+              net_amount: 100,
+              total_amount: 222.88,
+              fee_amount: 122.88,
+              date: new Date('2023-12-23 14:26:34').toLocaleString('US-EN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              }),
+              isTest: false,
+              token: 'foo-token-3',
+            }),
           ]}
         ></ia-monthly-giving-circle>`
       );
@@ -44,6 +55,7 @@ describe('Receipts: When requesting an email', () => {
 
       // set handler for EmailReceiptRequest event
       let emailRequested = false;
+
       el.addEventListener('EmailReceiptRequest', async () => {
         emailRequested = true;
         expect(emailRequested).to.be.true;
@@ -52,18 +64,19 @@ describe('Receipts: When requesting an email', () => {
         el.updateReceived({
           message: 'Email sent',
           status: 'success',
-          donationId: 'foo-id-1',
-        });
+          donationId: 'foo-token-3',
+        } as APlanUpdate);
 
         await el.updateComplete;
 
         expect(receiptElSpy.calledOnce).to.equal(true);
+        expect(emailRequested).to.be.null;
       });
-
       // request an email
       const requestReceiptButton = receiptsEl!.shadowRoot!.querySelector(
-        'tr#donation-foo-id-1 ia-button'
+        'tr#donation-foo-token-3 ia-button'
       ) as IauxButton;
+
       requestReceiptButton!.click();
     });
   });
