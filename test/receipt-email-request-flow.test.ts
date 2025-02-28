@@ -2,7 +2,10 @@
 import { html, fixture, expect } from '@open-wc/testing';
 import Sinon from 'sinon';
 
-import type { MonthlyGivingCircle } from '../src/monthly-giving-circle';
+import type {
+  APlanUpdate,
+  MonthlyGivingCircle,
+} from '../src/monthly-giving-circle';
 
 import '../src/monthly-giving-circle';
 import type { IauxMgcReceipts } from '../src/receipts';
@@ -52,26 +55,28 @@ describe('Receipts: When requesting an email', () => {
 
       // set handler for EmailReceiptRequest event
       let emailRequested = false;
+
       el.addEventListener('EmailReceiptRequest', async () => {
         emailRequested = true;
         expect(emailRequested).to.be.true;
         expect(mainElementUpdateReceivedSpy.calledOnce).to.equal(444);
 
-        // el.updateReceived({
-        //   message: 'Email sent',
-        //   status: 'success',
-        //   plan: ,
-        // });
+        el.updateReceived({
+          message: 'Email sent',
+          status: 'success',
+          donationId: 'foo-token-3',
+        } as APlanUpdate);
 
         await el.updateComplete;
 
         expect(receiptElSpy.calledOnce).to.equal(true);
+        expect(emailRequested).to.be.null;
       });
-
       // request an email
       const requestReceiptButton = receiptsEl!.shadowRoot!.querySelector(
-        'tr#donation-foo-id-1 ia-button'
+        'tr#donation-foo-token-3 ia-button'
       ) as IauxButton;
+
       requestReceiptButton!.click();
     });
   });

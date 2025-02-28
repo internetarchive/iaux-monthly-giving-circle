@@ -198,10 +198,11 @@ export class MonthlyGivingCircle extends LitElement {
       ${this.viewToDisplay === 'plans' && this.plans.length
         ? html`
             <ia-mgc-plans
-              @editThisPlan=${(event: CustomEvent) => {
+              @editThisPlan=${async (event: CustomEvent) => {
                 this.editingThisPlan = event.detail.plan;
                 this.viewToDisplay = 'editPlan';
                 this.dispatchEvent(new Event('ShowEditForm'));
+                await this.updateComplete;
               }}
               .plans=${this.plans}
             ></ia-mgc-plans>
