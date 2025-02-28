@@ -88,7 +88,7 @@ describe('IauxMonthlyGivingCircle', () => {
       expect(el.viewToDisplay).to.equal('editPlan');
 
       const editPlanForm = el.querySelector('ia-mgc-edit-plan');
-      expect(editPlanForm).to.be.null;
+      expect(editPlanForm).to.exist;
     });
   });
 
