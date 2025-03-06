@@ -11,12 +11,13 @@ import type { IauxMgcReceipts } from './receipts';
 import './presentational/ia-button';
 import type { MonthlyPlan } from './models/plan';
 import './edit-plan-form';
+import type { IauxEditPlanForm } from './edit-plan-form';
 
 export type APlanUpdate = {
   plan?: MonthlyPlan;
   donationId?: string;
   status: 'success' | 'fail';
-  action: 'receiptSent' | 'cancel';
+  action: 'receiptSent' | 'cancel' | 'amountUpdate';
   message: string;
 };
 
@@ -52,6 +53,10 @@ export class MonthlyGivingCircle extends LitElement {
     return this.querySelector('ia-mgc-receipts') as IauxMgcReceipts;
   }
 
+  get editFormElement(): IauxEditPlanForm {
+    return this.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+  }
+
   /* Update Callback */
   updateReceived(update: APlanUpdate) {
     // log update
@@ -59,17 +64,20 @@ export class MonthlyGivingCircle extends LitElement {
 
     const { plan, donationId = '' } = update;
     const idToUse = plan?.id ?? donationId;
-    const editingPlanIsUpdating = this.editingThisPlan?.id === idToUse;
 
-    if (editingPlanIsUpdating) {
-      console.log('edit received, mismatch plans', {
-        planCurrentlyEditing: this.editingThisPlan,
-        planReceived: update.plan,
-      });
+    const updateIsForEditingPlan =
+      this.editingThisPlan && this.editingThisPlan.id === idToUse;
+
+    if (!updateIsForEditingPlan) {
+      // error, handle
+    }
+
+    if (update.action === 'amountUpdate') {
+      this.editFormElement.amountUpdates(update.status);
       return;
     }
 
-    if (plan?.hasBeenCancelled) {
+    if (update.action === 'cancel' || plan?.hasBeenCancelled) {
       this.editingThisPlan = undefined;
       this.viewToDisplay = 'plans';
       return;
@@ -95,6 +103,22 @@ export class MonthlyGivingCircle extends LitElement {
               this.dispatchEvent(
                 new CustomEvent('cancelPlan', {
                   detail: { plan },
+                })
+              );
+            }}
+            .updateAmountHandler=${(
+              plan: MonthlyPlan,
+              options: {
+                amount: number;
+                baseAmount: number;
+                coverFees: boolean;
+                feeCovered: number;
+              }
+            ) => {
+              console.log('updateAmount', plan, { ...options });
+              this.dispatchEvent(
+                new CustomEvent('updateAmount', {
+                  detail: { plan, amountOptions: options },
                 })
               );
             }}
