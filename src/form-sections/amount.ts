@@ -129,6 +129,7 @@ export class MGCEditPlanAmount extends LitElement {
     this.newAmount = 0;
     this.errorMessage = '';
     this.updateMessage = '';
+    this.updateStatus = '';
   }
 
   requestAmountUpdate(e: Event): void {
