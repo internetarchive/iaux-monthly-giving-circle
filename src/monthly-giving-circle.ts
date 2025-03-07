@@ -168,7 +168,7 @@ export class MonthlyGivingCircle extends LitElement {
         break;
 
       case 'editPlan':
-        title = 'Edit plan';
+        title = 'Monthly Giving Circle';
         titleStyle = 'default';
         cta = html`<ia-button
           class="primary"
