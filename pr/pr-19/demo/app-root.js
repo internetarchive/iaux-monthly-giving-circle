@@ -894,7 +894,8 @@
     }
 
     .checkbox-option-container {
-      margin-bottom: 5px;
+      display: flex;
+      margin: 10px 0;
     }
   `;d([g({type:Object})],O.prototype,"plan",void 0);d([g({type:Boolean,reflect:!0})],O.prototype,"patronWantsToKeepPlan",void 0);d([g({type:Boolean,reflect:!0})],O.prototype,"initialCancelRequest",void 0);d([b("form")],O.prototype,"form",void 0);O=d([w("ia-mgc-cancel-plan")],O);let yt=class extends S{constructor(){super(...arguments),this.status=""}get glyph(){return this.status==="success"?"✓":this.status==="fail"?"✖":""}render(){return this.status?p`
       <span class="sent-status ${this.status}"
