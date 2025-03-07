@@ -404,10 +404,13 @@
       align-items: flex-end;
     }
 
-    @media screen and (max-width: 500px) {
+    @media screen and (max-width: 450px) {
       h2,
       slot[name='action'] {
         display: block;
+      }
+      slot[name='action'] {
+        margin-top: 10px;
       }
     }
   `;c([g({type:String})],ft.prototype,"titleStyle",void 0);ft=c([w("ia-mgc-title")],ft);let st=class extends S{constructor(){super(...arguments),this.receipts=[],this.receiptDispatcher=null}shouldUpdate(t){return!!t.has("receiptDispatcher")}updated(t){t.has("receipts")&&this.updateReceiptSentMap(),t.has("receiptDispatcher")&&console.log("receiptDispatcher UPDATED ---- ",this.receiptDispatcher)}updateReceiptSentMap(){if(!this.receipts.length)this.receiptDispatcher=null;else{const t={};this.receipts.forEach(e=>{t[e.id]={id:e.id,emailStatus:""}}),this.receiptDispatcher=t}}emailReceipt(t){this.dispatchEvent(new CustomEvent("EmailReceiptRequest",{detail:{donation:t}}))}async emailSent(t){var e;const i=this.receiptDispatcher;this.receiptDispatcher=null,await this.updateComplete;const n={...i},{id:s}=t;n[s]=t,this.receiptDispatcher={...n},console.log("RECEIPTS -- emailSent",this.receiptDispatcher,t);const a=CSS.escape(s),l=(e=this.shadowRoot)===null||e===void 0?void 0:e.querySelector(`#donation-${a} ia-button`);l.isDisabled=!1}emailStatusMessageToDisplay(t){switch(t.emailStatus){case"success":return"Sent";case"fail":return"Failed";default:return""}}ctaButtonText(t,e){return e?.emailStatus==="pending"?"Sending...":"Email receipt"}render(){return p`
