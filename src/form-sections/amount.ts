@@ -1,4 +1,11 @@
-import { LitElement, html, PropertyValues, nothing, css } from 'lit';
+import {
+  LitElement,
+  html,
+  PropertyValues,
+  nothing,
+  css,
+  TemplateResult,
+} from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import '@internetarchive/donation-form-section';
 import {
@@ -48,38 +55,6 @@ export class MGCEditPlanAmount extends LitElement {
     }
   }
 
-  captureAmountChanges(newAmount?: number) {
-    if (!this.donationPaymentInfo && this.plan) {
-      this.donationPaymentInfo = new DonationPaymentInfo({
-        donationType: DonationType.Monthly,
-        amount: 0,
-        coverFees: true,
-      });
-      return;
-    }
-
-    let newPlan;
-    if (newAmount) {
-      newPlan = new DonationPaymentInfo({
-        donationType: DonationType.Monthly,
-        amount: newAmount,
-        coverFees: true,
-      });
-    } else {
-      const amount = this.donationPaymentInfo
-        ? this.donationPaymentInfo.amount
-        : this.plan!.amount;
-
-      newPlan = new DonationPaymentInfo({
-        donationType: DonationType.Monthly,
-        amount,
-        coverFees: true,
-      });
-    }
-
-    this.donationPaymentInfo = newPlan;
-  }
-
   protected render() {
     return html`
       <section>
@@ -96,8 +71,6 @@ export class MGCEditPlanAmount extends LitElement {
                   class="ia-button link"
                   .clickHandler=${() => {
                     this.currentlyEditing = true;
-                    this.updateStatus = '';
-                    this.updateMessage = '';
                   }}
                 >
                   Edit...
@@ -109,32 +82,34 @@ export class MGCEditPlanAmount extends LitElement {
     `;
   }
 
-  totalAmountWithFees(): number {
-    if (this.newAmount === 0) {
-      return 0;
+  /* External Function that is called by consumer to tell the form there has been data update */
+  async amountUpdated(status: 'success' | 'fail') {
+    this.clearInputField();
+
+    this.updateStatus = status;
+    this.updateMessage =
+      status === 'success' ? 'Amount updated' : 'Failed. Try again.';
+
+    if (status === 'success') {
+      this.closeForm();
+      await this.updateComplete;
+
+      this.updateStatus = status;
+      this.updateMessage = 'Amount updated';
+
+      return;
     }
 
-    return DonationPaymentInfo.calculateTotal(this.newAmount, this.coverFees);
+    (
+      this.form.querySelector('ia-button#update-amount') as IauxButton
+    ).isDisabled = false;
+
+    this.captureAmountChanges();
+
+    await this.updateComplete;
   }
 
-  get coveredFeesText() {
-    return `I'll generously add $${this.donationPaymentInfo?.feeAmountCovered} to cover fees.`;
-  }
-
-  closeForm() {
-    const input = this.form.querySelector(
-      'input[name="amount"]'
-    ) as HTMLInputElement;
-    input.value = '';
-    this.donationPaymentInfo = undefined;
-    this.currentlyEditing = false;
-    this.coverFees = false;
-    this.newAmount = 0;
-    this.errorMessage = '';
-    this.updateMessage = '';
-    this.updateStatus = '';
-  }
-
+  /* Dispatches amount change request */
   requestAmountUpdate(e: Event): void {
     e.preventDefault();
 
@@ -167,42 +142,79 @@ export class MGCEditPlanAmount extends LitElement {
         },
       })
     );
-
-    this.errorMessage = '';
   }
 
-  async amountUpdated(status: 'success' | 'fail') {
-    this.updateStatus = status;
-    this.updateMessage =
-      status === 'success' ? 'Amount updated' : 'Failed. Try again.';
-
-    if (status === 'success') {
-      this.closeForm();
-      await this.updateComplete;
-
-      this.updateStatus = status;
-      this.updateMessage = 'Amount updated';
-
+  /* captures form changes */
+  captureAmountChanges(newAmount?: number) {
+    if (!this.donationPaymentInfo && this.plan) {
+      this.donationPaymentInfo = new DonationPaymentInfo({
+        donationType: DonationType.Monthly,
+        amount: 0,
+        coverFees: true,
+      });
       return;
     }
 
-    (
-      this.form.querySelector('ia-button#update-amount') as IauxButton
-    ).isDisabled = false;
+    let newPlan;
+    if (newAmount) {
+      newPlan = new DonationPaymentInfo({
+        donationType: DonationType.Monthly,
+        amount: newAmount,
+        coverFees: true,
+      });
+    } else {
+      const amount = this.donationPaymentInfo
+        ? this.donationPaymentInfo.amount
+        : this.plan!.amount;
 
-    // empty the input field
+      newPlan = new DonationPaymentInfo({
+        donationType: DonationType.Monthly,
+        amount,
+        coverFees: true,
+      });
+    }
+
+    this.donationPaymentInfo = newPlan;
+  }
+
+  closeForm() {
+    this.clearInputField();
+    this.clearStatusMessaging();
+    this.currentlyEditing = false;
+    this.coverFees = false;
+    this.errorMessage = '';
+  }
+
+  clearInputField() {
     const input = this.form.querySelector(
       'input[name="amount"]'
     ) as HTMLInputElement;
     input.value = '';
     this.newAmount = 0;
     this.donationPaymentInfo = undefined;
-    this.captureAmountChanges();
+  }
 
+  async clearStatusMessaging() {
+    this.errorMessage = '';
+    this.updateMessage = '';
+    this.updateStatus = '';
     await this.updateComplete;
   }
 
-  get editAmountForm() {
+  /* DISPLAY */
+  totalAmountWithFees(): number {
+    if (this.newAmount === 0) {
+      return 0;
+    }
+
+    return DonationPaymentInfo.calculateTotal(this.newAmount, this.coverFees);
+  }
+
+  get coveredFeesText() {
+    return `I'll generously add $${this.donationPaymentInfo?.feeAmountCovered} to cover fees.`;
+  }
+
+  get editAmountForm(): TemplateResult {
     return html`
       <section>
         <form id="edit-plan-amount">
@@ -214,6 +226,7 @@ export class MGCEditPlanAmount extends LitElement {
               id="amount"
               name="amount"
               required="true"
+              @focus=${() => this.clearStatusMessaging()}
               @input=${(e: Event) => {
                 const newAmount = Number((e.target as HTMLInputElement).value);
                 this.captureAmountChanges(newAmount);
@@ -253,7 +266,7 @@ export class MGCEditPlanAmount extends LitElement {
                 class="ia-button primary"
                 type="submit"
                 .clickHandler=${async (e: Event, iaButton: IauxButton) => {
-                  this.errorMessage = '';
+                  this.clearStatusMessaging();
 
                   if (!this.newAmount) {
                     this.errorMessage = 'Please enter a new amount';
