@@ -53,7 +53,7 @@ export class MGCEditPlanAmount extends LitElement {
       this.donationPaymentInfo = new DonationPaymentInfo({
         donationType: DonationType.Monthly,
         amount: 0,
-        coverFees: this.coverFees,
+        coverFees: true,
       });
       return;
     }
@@ -63,7 +63,7 @@ export class MGCEditPlanAmount extends LitElement {
       newPlan = new DonationPaymentInfo({
         donationType: DonationType.Monthly,
         amount: newAmount,
-        coverFees: this.coverFees,
+        coverFees: true,
       });
     } else {
       const amount = this.donationPaymentInfo
@@ -73,7 +73,7 @@ export class MGCEditPlanAmount extends LitElement {
       newPlan = new DonationPaymentInfo({
         donationType: DonationType.Monthly,
         amount,
-        coverFees: this.coverFees,
+        coverFees: true,
       });
     }
 
@@ -118,11 +118,6 @@ export class MGCEditPlanAmount extends LitElement {
   }
 
   get coveredFeesText() {
-    const newAmountInput = this.querySelector('input#amount');
-    const noFees = !this.donationPaymentInfo?.feeAmountCovered;
-    if (!newAmountInput || noFees) {
-      return `I'll generously cover fees`;
-    }
     return `I'll generously add $${this.donationPaymentInfo?.feeAmountCovered} to cover fees.`;
   }
 
@@ -236,6 +231,7 @@ export class MGCEditPlanAmount extends LitElement {
                   const input = e.target as HTMLInputElement;
                   const coverFees = input.checked;
                   this.coverFees = coverFees;
+                  this.captureAmountChanges();
                 }}
               />
               <label for="cover-fees">${this.coveredFeesText}</label>
@@ -271,9 +267,17 @@ export class MGCEditPlanAmount extends LitElement {
                   const input = this.form.querySelector(
                     'input[name="amount"]'
                   ) as HTMLInputElement;
-                  const requestedAmount = Number(input.value);
-                  if ((requestedAmount ?? 0) >= 9999) {
-                    this.errorMessage = 'Amount must be less than $9,999';
+                  const requestedAmount = Number(input.value) ?? 0;
+                  const amountTooLow = requestedAmount < 1;
+                  const amountTooHigh = requestedAmount >= 9999;
+                  if (amountTooLow) {
+                    this.errorMessage = 'Please enter a valid amount';
+                  }
+                  if (amountTooHigh) {
+                    this.errorMessage =
+                      'Amount must be less than $9,999. Would you like to donate more? Please contact us at donations@archive.org';
+                  }
+                  if (amountTooHigh || amountTooLow) {
                     // eslint-disable-next-line no-param-reassign
                     (iaButton as IauxButton).isDisabled = false;
                     await iaButton.updateComplete;
@@ -312,7 +316,7 @@ export class MGCEditPlanAmount extends LitElement {
     }
 
     p.error {
-      color: red;
+      color: var(--mgc-warning-color-dark, #bb0505);
     }
 
     ia-mgc-update-status {
