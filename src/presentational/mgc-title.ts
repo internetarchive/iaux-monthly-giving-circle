@@ -77,10 +77,13 @@ export class MGCTitle extends LitElement {
       align-items: flex-end;
     }
 
-    @media screen and (max-width: 500px) {
+    @media screen and (max-width: 450px) {
       h2,
       slot[name='action'] {
         display: block;
+      }
+      slot[name='action'] {
+        margin-top: 10px;
       }
     }
   `;
