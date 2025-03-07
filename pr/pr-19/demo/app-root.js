@@ -806,7 +806,7 @@
       }
     `}};d([g({type:String})],at.prototype,"sectionBadge",void 0);d([g({type:String})],at.prototype,"headline",void 0);d([g({type:String})],at.prototype,"badgeMode",void 0);at=d([w("donation-form-section")],at);let O=class extends S{constructor(){super(...arguments),this.patronWantsToKeepPlan=!0,this.initialCancelRequest=!1}updated(t){t.has("plan")&&console.log("plan updated",this.plan)}async cancelThisPlan(t){t.preventDefault(),this.patronWantsToKeepPlan=!1,this.dispatchEvent(new Event("cancelPlan"))}get formId(){var t;return`cancel-donation-form-${(t=this.plan)===null||t===void 0?void 0:t.id}`}render(){return this.initialCancelRequest?this.confirmCancelation:p`
       <ia-button
-        class="clear-container"
+        class="clear-container slim"
         .clickHandler=${(t,e)=>{if(e.isDisabled=!0,this.initialCancelRequest){this.initialCancelRequest=!1,this.patronWantsToKeepPlan=!0;return}this.initialCancelRequest=!0}}
       >
         <donation-form-section
@@ -854,6 +854,9 @@
       </form>
     </section>
     `}};O.styles=v`
+    :host {
+      --formSectionTitleFontSize: 1.4rem;
+    }
     .warning > * {
       margin: 5px 0;
     }
