@@ -95,6 +95,8 @@ export class MGCEditPlanAmount extends LitElement {
                   class="ia-button link"
                   @click=${() => {
                     this.currentlyEditing = true;
+                    this.updateStatus = '';
+                    this.updateMessage = '';
                   }}
                 >
                   Edit...
@@ -123,7 +125,7 @@ export class MGCEditPlanAmount extends LitElement {
     return `I'll generously add $${this.donationPaymentInfo?.feeAmountCovered} to cover fees.`;
   }
 
-  async closeForm() {
+  closeForm() {
     const input = this.form.querySelector(
       'input[name="amount"]'
     ) as HTMLInputElement;
@@ -135,7 +137,6 @@ export class MGCEditPlanAmount extends LitElement {
     this.errorMessage = '';
     this.updateMessage = '';
     this.updateStatus = '';
-    await this.updateComplete;
   }
 
   requestAmountUpdate(e: Event): void {
@@ -214,11 +215,6 @@ export class MGCEditPlanAmount extends LitElement {
       <section>
         <form id="edit-plan-amount">
           <p>Current donation amount: $${this.plan?.amount}</p>
-          ${this.plan?.plan.oldAmount
-            ? html`<p>
-                Previous donation amount: $${this.plan?.plan.oldAmount}
-              </p>`
-            : nothing}
           <div>
             $
             <input
@@ -235,7 +231,7 @@ export class MGCEditPlanAmount extends LitElement {
             / month
           </div>
           <div>
-            <div class="checkbox-option-container" style="display: flex;">
+            <div class="checkbox-option-container">
               <input
                 type="checkbox"
                 id="cover-fees"
@@ -267,7 +263,7 @@ export class MGCEditPlanAmount extends LitElement {
                   this.errorMessage = '';
 
                   if (!this.newAmount) {
-                    this.errorMessage = 'Please enter a valid amount';
+                    this.errorMessage = 'Please enter a new amount';
                     return;
                   }
 
@@ -326,6 +322,11 @@ export class MGCEditPlanAmount extends LitElement {
     ia-mgc-update-status {
       display: inline-block;
       margin-left: 1rem;
+    }
+
+    .checkbox-option-container {
+      margin: 10px 0;
+      display: flex;
     }
   `;
 }
