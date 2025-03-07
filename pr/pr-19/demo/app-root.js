@@ -904,7 +904,7 @@
       color: var(--mgc-warning-color-dark, #bb0505);
       border-left: 5px solid var(--mgc-warning-color-dark, #bb0505);
     }
-  `;c([g({type:String})],yt.prototype,"status",void 0);yt=c([w("ia-mgc-update-status")],yt);let E=class extends S{constructor(){super(...arguments),this.newAmount=0,this.currentlyEditing=!1,this.coverFees=!1,this.updateMessage="",this.errorMessage="",this.updateStatus=""}updated(t){t.has("plan")&&this.plan&&this.captureAmountChanges(),t.has("coverFees")&&this.captureAmountChanges(),t.has("currentlyEditing")&&this.currentlyEditing&&this.form.focus(),t.has("donationPaymentInfo")&&!this.donationPaymentInfo&&this.captureAmountChanges()}captureAmountChanges(t){if(!this.donationPaymentInfo&&this.plan){this.donationPaymentInfo=new x({donationType:z.Monthly,amount:0,coverFees:this.coverFees});return}let e;if(t)e=new x({donationType:z.Monthly,amount:t,coverFees:this.coverFees});else{const i=this.donationPaymentInfo?this.donationPaymentInfo.amount:this.plan.amount;e=new x({donationType:z.Monthly,amount:i,coverFees:this.coverFees})}this.donationPaymentInfo=e}render(){var t;return p`
+  `;c([g({type:String})],yt.prototype,"status",void 0);yt=c([w("ia-mgc-update-status")],yt);let E=class extends S{constructor(){super(...arguments),this.newAmount=0,this.currentlyEditing=!1,this.coverFees=!1,this.updateMessage="",this.errorMessage="",this.updateStatus=""}updated(t){t.has("plan")&&this.plan&&this.captureAmountChanges(),t.has("coverFees")&&this.captureAmountChanges(),t.has("currentlyEditing")&&this.currentlyEditing&&this.form.focus(),t.has("donationPaymentInfo")&&!this.donationPaymentInfo&&this.captureAmountChanges()}captureAmountChanges(t){if(!this.donationPaymentInfo&&this.plan){this.donationPaymentInfo=new x({donationType:z.Monthly,amount:0,coverFees:!0});return}let e;if(t)e=new x({donationType:z.Monthly,amount:t,coverFees:!0});else{const i=this.donationPaymentInfo?this.donationPaymentInfo.amount:this.plan.amount;e=new x({donationType:z.Monthly,amount:i,coverFees:!0})}this.donationPaymentInfo=e}render(){var t;return p`
       <section>
         <donation-form-section badgemode="hidebadge" headline="Amount">
           ${this.currentlyEditing?f:p` <p class="current-amount">
@@ -923,7 +923,7 @@
           ${this.currentlyEditing?this.editAmountForm:f}
         </donation-form-section>
       </section>
-    `}totalAmountWithFees(){return this.newAmount===0?0:x.calculateTotal(this.newAmount,this.coverFees)}get coveredFeesText(){var t,e;const i=this.querySelector("input#amount"),n=!(!((t=this.donationPaymentInfo)===null||t===void 0)&&t.feeAmountCovered);return!i||n?"I'll generously cover fees":`I'll generously add $${(e=this.donationPaymentInfo)===null||e===void 0?void 0:e.feeAmountCovered} to cover fees.`}closeForm(){const t=this.form.querySelector('input[name="amount"]');t.value="",this.donationPaymentInfo=void 0,this.currentlyEditing=!1,this.coverFees=!1,this.newAmount=0,this.errorMessage="",this.updateMessage="",this.updateStatus=""}requestAmountUpdate(t){var e,i,n,s,a;t.preventDefault();const l=this.form.querySelector('input[name="amount"]');this.newAmount=Number(l.value),this.captureAmountChanges(this.newAmount),console.log("<plan-amount> - update amount",{newValue:this.newAmount,oldValue:(e=this.plan)===null||e===void 0?void 0:e.plan.amount,display:(i=this.donationPaymentInfo)===null||i===void 0?void 0:i.amount});const r=Number(x.calculateTotal(Number((n=this.donationPaymentInfo)===null||n===void 0?void 0:n.amount),this.coverFees));this.dispatchEvent(new CustomEvent("updateAmount",{detail:{plan:this.plan,amount:r,baseAmount:(s=this.donationPaymentInfo)===null||s===void 0?void 0:s.amount,coverFees:this.coverFees,feeCovered:(a=this.donationPaymentInfo)===null||a===void 0?void 0:a.feeAmountCovered}})),this.errorMessage=""}async amountUpdated(t){if(this.updateStatus=t,this.updateMessage=t==="success"?"Amount updated":"Failed. Try again.",t==="success"){this.closeForm(),await this.updateComplete,this.updateStatus=t,this.updateMessage="Amount updated";return}this.form.querySelector("ia-button#update-amount").isDisabled=!1;const e=this.form.querySelector('input[name="amount"]');e.value="",this.newAmount=0,this.captureAmountChanges(),await this.updateComplete}get editAmountForm(){var t;return p`
+    `}totalAmountWithFees(){return this.newAmount===0?0:x.calculateTotal(this.newAmount,this.coverFees)}get coveredFeesText(){var t;return`I'll generously add $${(t=this.donationPaymentInfo)===null||t===void 0?void 0:t.feeAmountCovered} to cover fees.`}closeForm(){const t=this.form.querySelector('input[name="amount"]');t.value="",this.donationPaymentInfo=void 0,this.currentlyEditing=!1,this.coverFees=!1,this.newAmount=0,this.errorMessage="",this.updateMessage="",this.updateStatus=""}requestAmountUpdate(t){var e,i,n,s,a;t.preventDefault();const l=this.form.querySelector('input[name="amount"]');this.newAmount=Number(l.value),this.captureAmountChanges(this.newAmount),console.log("<plan-amount> - update amount",{newValue:this.newAmount,oldValue:(e=this.plan)===null||e===void 0?void 0:e.plan.amount,display:(i=this.donationPaymentInfo)===null||i===void 0?void 0:i.amount});const r=Number(x.calculateTotal(Number((n=this.donationPaymentInfo)===null||n===void 0?void 0:n.amount),this.coverFees));this.dispatchEvent(new CustomEvent("updateAmount",{detail:{plan:this.plan,amount:r,baseAmount:(s=this.donationPaymentInfo)===null||s===void 0?void 0:s.amount,coverFees:this.coverFees,feeCovered:(a=this.donationPaymentInfo)===null||a===void 0?void 0:a.feeAmountCovered}})),this.errorMessage=""}async amountUpdated(t){if(this.updateStatus=t,this.updateMessage=t==="success"?"Amount updated":"Failed. Try again.",t==="success"){this.closeForm(),await this.updateComplete,this.updateStatus=t,this.updateMessage="Amount updated";return}this.form.querySelector("ia-button#update-amount").isDisabled=!1;const e=this.form.querySelector('input[name="amount"]');e.value="",this.newAmount=0,this.captureAmountChanges(),await this.updateComplete}get editAmountForm(){var t;return p`
       <section>
         <form id="edit-plan-amount">
           <p>Current donation amount: $${(t=this.plan)===null||t===void 0?void 0:t.amount}</p>
@@ -944,7 +944,7 @@
                 type="checkbox"
                 id="cover-fees"
                 tabindex="0"
-                @change=${e=>{const n=e.target.checked;this.coverFees=n}}
+                @change=${e=>{const n=e.target.checked;this.coverFees=n,this.captureAmountChanges()}}
               />
               <label for="cover-fees">${this.coveredFeesText}</label>
             </div>
@@ -960,7 +960,7 @@
                 id="update-amount"
                 class="ia-button primary"
                 type="submit"
-                .clickHandler=${async(e,i)=>{if(this.errorMessage="",!this.newAmount){this.errorMessage="Please enter a new amount";return}i.isDisabled=!0,await i.updateComplete;const n=this.form.querySelector('input[name="amount"]'),s=Number(n.value);if((s??0)>=9999){this.errorMessage="Amount must be less than $9,999",i.isDisabled=!1,await i.updateComplete;return}this.requestAmountUpdate(e)}}
+                .clickHandler=${async(e,i)=>{var n;if(this.errorMessage="",!this.newAmount){this.errorMessage="Please enter a new amount";return}i.isDisabled=!0,await i.updateComplete;const s=this.form.querySelector('input[name="amount"]'),a=(n=Number(s.value))!==null&&n!==void 0?n:0,l=a<1,r=a>=9999;if(l&&(this.errorMessage="Please enter a valid amount"),r&&(this.errorMessage="Amount must be less than $9,999. Would you like to donate more? Please contact us at donations@archive.org"),r||l){i.isDisabled=!1,await i.updateComplete;return}this.requestAmountUpdate(e)}}
               >
                 Update
               </ia-button>
@@ -988,7 +988,7 @@
     }
 
     p.error {
-      color: red;
+      color: var(--mgc-warning-color-dark, #bb0505);
     }
 
     ia-mgc-update-status {
