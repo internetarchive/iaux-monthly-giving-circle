@@ -196,6 +196,7 @@ export class MGCEditPlanAmount extends LitElement {
     ) as HTMLInputElement;
     input.value = '';
     this.newAmount = 0;
+    this.donationPaymentInfo = undefined;
     this.captureAmountChanges();
 
     await this.updateComplete;
