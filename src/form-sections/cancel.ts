@@ -48,7 +48,7 @@ export class IauxMgcCancelPlan extends LitElement {
     return html`
       <ia-button
         class="clear-container slim"
-        .clickHandler=${(e: CustomEvent, iaButton: IauxButton) => {
+        .clickHandler=${(e: Event, iaButton: IauxButton) => {
           // eslint-disable-next-line no-param-reassign
           iaButton.isDisabled = true;
           if (this.initialCancelRequest) {

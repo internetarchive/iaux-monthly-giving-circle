@@ -36,12 +36,12 @@ export class MGCUpdateStatus extends LitElement {
       min-height: 20px;
     }
     .sent-status.success {
-      color: rgb(33, 149, 24);
-      border-left: 5px solid rgb(33, 149, 24);
+      color: var(--mgc-success-color, rgb(33, 149, 24));
+      border-left: 5px solid var(--mgc-success-color, rgb(33, 149, 24));
     }
     .sent-status.fail {
-      color: #bb0505;
-      border-left: 5px solid #bb0505;
+      color: var(--mgc-warning-color-dark, #bb0505);
+      border-left: 5px solid var(--mgc-warning-color-dark, #bb0505);
     }
   `;
 }
