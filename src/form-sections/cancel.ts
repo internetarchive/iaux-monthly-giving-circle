@@ -47,7 +47,7 @@ export class IauxMgcCancelPlan extends LitElement {
 
     return html`
       <ia-button
-        class="clear-container"
+        class="clear-container slim"
         .clickHandler=${(e: CustomEvent, iaButton: IauxButton) => {
           // eslint-disable-next-line no-param-reassign
           iaButton.isDisabled = true;
@@ -123,6 +123,9 @@ export class IauxMgcCancelPlan extends LitElement {
   }
 
   static styles = css`
+    :host {
+      --formSectionTitleFontSize: 1.4rem;
+    }
     .warning > * {
       margin: 5px 0;
     }
