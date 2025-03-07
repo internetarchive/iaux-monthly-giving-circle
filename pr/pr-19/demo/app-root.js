@@ -927,20 +927,17 @@
                 </p>
                 <ia-button
                   class="ia-button link"
-                  @click=${()=>{this.currentlyEditing=!0}}
+                  @click=${()=>{this.currentlyEditing=!0,this.updateStatus="",this.updateMessage=""}}
                 >
                   Edit...
                 </ia-button>`}
           ${this.currentlyEditing?this.editAmountForm:f}
         </donation-form-section>
       </section>
-    `}totalAmountWithFees(){return this.newAmount===0?0:x.calculateTotal(this.newAmount,this.coverFees)}get coveredFeesText(){var t,e;const i=this.querySelector("input#amount"),n=!(!((t=this.donationPaymentInfo)===null||t===void 0)&&t.feeAmountCovered);return!i||n?"I'll generously cover fees":`I'll generously add $${(e=this.donationPaymentInfo)===null||e===void 0?void 0:e.feeAmountCovered} to cover fees.`}async closeForm(){const t=this.form.querySelector('input[name="amount"]');t.value="",this.donationPaymentInfo=void 0,this.currentlyEditing=!1,this.coverFees=!1,this.newAmount=0,this.errorMessage="",this.updateMessage="",this.updateStatus="",await this.updateComplete}requestAmountUpdate(t){var e,i,n,s,a;t.preventDefault();const l=this.form.querySelector('input[name="amount"]');this.newAmount=Number(l.value),this.captureAmountChanges(this.newAmount),console.log("<plan-amount> - update amount",{newValue:this.newAmount,oldValue:(e=this.plan)===null||e===void 0?void 0:e.plan.amount,display:(i=this.donationPaymentInfo)===null||i===void 0?void 0:i.amount});const r=Number(x.calculateTotal(Number((n=this.donationPaymentInfo)===null||n===void 0?void 0:n.amount),this.coverFees));this.dispatchEvent(new CustomEvent("updateAmount",{detail:{plan:this.plan,amount:r,baseAmount:(s=this.donationPaymentInfo)===null||s===void 0?void 0:s.amount,coverFees:this.coverFees,feeCovered:(a=this.donationPaymentInfo)===null||a===void 0?void 0:a.feeAmountCovered}})),this.errorMessage=""}async amountUpdated(t){if(this.updateStatus=t,this.updateMessage=t==="success"?"Amount updated":"Failed. Try again.",t==="success"){this.closeForm(),await this.updateComplete,this.updateStatus=t,this.updateMessage="Amount updated";return}this.form.querySelector("ia-button#update-amount").isDisabled=!1;const e=this.form.querySelector('input[name="amount"]');e.value="",this.newAmount=0,this.captureAmountChanges(),await this.updateComplete}get editAmountForm(){var t,e,i;return p`
+    `}totalAmountWithFees(){return this.newAmount===0?0:x.calculateTotal(this.newAmount,this.coverFees)}get coveredFeesText(){var t,e;const i=this.querySelector("input#amount"),n=!(!((t=this.donationPaymentInfo)===null||t===void 0)&&t.feeAmountCovered);return!i||n?"I'll generously cover fees":`I'll generously add $${(e=this.donationPaymentInfo)===null||e===void 0?void 0:e.feeAmountCovered} to cover fees.`}closeForm(){const t=this.form.querySelector('input[name="amount"]');t.value="",this.donationPaymentInfo=void 0,this.currentlyEditing=!1,this.coverFees=!1,this.newAmount=0,this.errorMessage="",this.updateMessage="",this.updateStatus=""}requestAmountUpdate(t){var e,i,n,s,a;t.preventDefault();const l=this.form.querySelector('input[name="amount"]');this.newAmount=Number(l.value),this.captureAmountChanges(this.newAmount),console.log("<plan-amount> - update amount",{newValue:this.newAmount,oldValue:(e=this.plan)===null||e===void 0?void 0:e.plan.amount,display:(i=this.donationPaymentInfo)===null||i===void 0?void 0:i.amount});const r=Number(x.calculateTotal(Number((n=this.donationPaymentInfo)===null||n===void 0?void 0:n.amount),this.coverFees));this.dispatchEvent(new CustomEvent("updateAmount",{detail:{plan:this.plan,amount:r,baseAmount:(s=this.donationPaymentInfo)===null||s===void 0?void 0:s.amount,coverFees:this.coverFees,feeCovered:(a=this.donationPaymentInfo)===null||a===void 0?void 0:a.feeAmountCovered}})),this.errorMessage=""}async amountUpdated(t){if(this.updateStatus=t,this.updateMessage=t==="success"?"Amount updated":"Failed. Try again.",t==="success"){this.closeForm(),await this.updateComplete,this.updateStatus=t,this.updateMessage="Amount updated";return}this.form.querySelector("ia-button#update-amount").isDisabled=!1;const e=this.form.querySelector('input[name="amount"]');e.value="",this.newAmount=0,this.captureAmountChanges(),await this.updateComplete}get editAmountForm(){var t;return p`
       <section>
         <form id="edit-plan-amount">
           <p>Current donation amount: $${(t=this.plan)===null||t===void 0?void 0:t.amount}</p>
-          ${!((e=this.plan)===null||e===void 0)&&e.plan.oldAmount?p`<p>
-                Previous donation amount: $${(i=this.plan)===null||i===void 0?void 0:i.plan.oldAmount}
-              </p>`:f}
           <div>
             $
             <input
@@ -948,17 +945,17 @@
               id="amount"
               name="amount"
               required="true"
-              @input=${n=>{const s=Number(n.target.value);this.captureAmountChanges(s),this.newAmount=s}}
+              @input=${e=>{const i=Number(e.target.value);this.captureAmountChanges(i),this.newAmount=i}}
             />
             / month
           </div>
           <div>
-            <div class="checkbox-option-container" style="display: flex;">
+            <div class="checkbox-option-container">
               <input
                 type="checkbox"
                 id="cover-fees"
                 tabindex="0"
-                @change=${n=>{const a=n.target.checked;this.coverFees=a}}
+                @change=${e=>{const n=e.target.checked;this.coverFees=n}}
               />
               <label for="cover-fees">${this.coveredFeesText}</label>
             </div>
@@ -966,7 +963,7 @@
             <div class="cta-container">
               <ia-button
                 class="ia-button secondary"
-                .clickHandler=${n=>{n.preventDefault(),this.closeForm()}}
+                .clickHandler=${e=>{e.preventDefault(),this.closeForm()}}
               >
                 Cancel
               </ia-button>
@@ -974,7 +971,7 @@
                 id="update-amount"
                 class="ia-button primary"
                 type="submit"
-                .clickHandler=${async(n,s)=>{if(this.errorMessage="",!this.newAmount){this.errorMessage="Please enter a valid amount";return}s.isDisabled=!0,await s.updateComplete;const a=this.form.querySelector('input[name="amount"]'),l=Number(a.value);if((l??0)>=9999){this.errorMessage="Amount must be less than $9,999",s.isDisabled=!1,await s.updateComplete;return}this.requestAmountUpdate(n)}}
+                .clickHandler=${async(e,i)=>{if(this.errorMessage="",!this.newAmount){this.errorMessage="Please enter a new amount";return}i.isDisabled=!0,await i.updateComplete;const n=this.form.querySelector('input[name="amount"]'),s=Number(n.value);if((s??0)>=9999){this.errorMessage="Amount must be less than $9,999",i.isDisabled=!1,await i.updateComplete;return}this.requestAmountUpdate(e)}}
               >
                 Update
               </ia-button>
@@ -1008,6 +1005,11 @@
     ia-mgc-update-status {
       display: inline-block;
       margin-left: 1rem;
+    }
+
+    .checkbox-option-container {
+      margin: 10px 0;
+      display: flex;
     }
   `;d([g({type:Object})],E.prototype,"plan",void 0);d([g({type:Object})],E.prototype,"donationPaymentInfo",void 0);d([g({type:Number})],E.prototype,"newAmount",void 0);d([g({type:Boolean})],E.prototype,"currentlyEditing",void 0);d([g({type:Boolean})],E.prototype,"coverFees",void 0);d([g({type:String})],E.prototype,"updateMessage",void 0);d([g({type:String})],E.prototype,"errorMessage",void 0);d([g({type:String})],E.prototype,"updateStatus",void 0);d([b("form")],E.prototype,"form",void 0);E=d([w("ia-mgc-edit-plan-amount")],E);let rt=class extends S{createRenderRoot(){return this}amountUpdates(t){this.querySelector("ia-mgc-edit-plan-amount").amountUpdated(t)}render(){return p`
       <section class="mgc-edit-plan">
