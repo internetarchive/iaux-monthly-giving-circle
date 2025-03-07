@@ -20,7 +20,7 @@ export class MGCEditPlanAmount extends LitElement {
 
   @property({ type: Number }) newAmount: number = 0;
 
-  @property({ type: Boolean }) currentlyEditing: boolean = false;
+  @property({ type: Boolean, reflect: true }) currentlyEditing: boolean = false;
 
   @property({ type: Boolean }) coverFees: boolean = false;
 
@@ -85,15 +85,16 @@ export class MGCEditPlanAmount extends LitElement {
       <section>
         <donation-form-section badgemode="hidebadge" headline="Amount">
           ${!this.currentlyEditing
-            ? html` <p>
+            ? html` <p class="current-amount">
                   USD $${this.plan?.amount}
                   <ia-mgc-update-status .status=${this.updateStatus}
                     >${this.updateMessage}</ia-mgc-update-status
                   >
                 </p>
                 <ia-button
+                  id="edit-amount"
                   class="ia-button link"
-                  @click=${() => {
+                  .clickHandler=${() => {
                     this.currentlyEditing = true;
                     this.updateStatus = '';
                     this.updateMessage = '';
@@ -203,11 +204,6 @@ export class MGCEditPlanAmount extends LitElement {
     this.captureAmountChanges();
 
     await this.updateComplete;
-
-    // setTimeout(() => {
-    //   this.updateStatus = '';
-    //   this.updateMessage = '';
-    // }, 3000);
   }
 
   get editAmountForm() {
