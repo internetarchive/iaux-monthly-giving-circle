@@ -163,7 +163,8 @@ export class IauxMgcCancelPlan extends LitElement {
     }
 
     .checkbox-option-container {
-      margin-bottom: 5px;
+      display: flex;
+      margin: 10px 0;
     }
   `;
 }
