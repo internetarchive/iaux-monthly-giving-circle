@@ -20,6 +20,8 @@
 
       /* css vars for web component */
       --one-column-view-max-width: 500px;
+      --mgc-warning-color-dark: #bb0505;
+      --mgc-success-color: rgb(33, 149, 24);
     }
     
     body .dev-tools {
@@ -190,6 +192,9 @@
 
     let showReceipts = true;
 
+    const uxMessageInfoArea = document.getElementById('interaction-status-area');
+    const coinFlip = () => Math.floor(Math.random() + 0.5);
+
     const mgcComponent = document.querySelector('ia-monthly-giving-circle');
 
     // load start data
@@ -198,12 +203,11 @@
 
     // event handlers
     mgcComponent.addEventListener('EmailReceiptRequest', (e) => {
-      const uxMessageInfoArea = document.getElementById('interaction-status-area');
 
       const { donation } = e.detail;
-      const randomizer = Math.floor(Math.random() + 0.5);
-      const successOrFail = randomizer === 1 ? 'success' : 'fail';
-      const returnTiming = randomizer === 1 ? 3000 : 8000;
+      const heads = coinFlip() === 1;
+      const successOrFail = heads ? 'success' : 'fail';
+      const returnTiming = heads ? 3000 : 8000;
 
       uxMessageInfoArea.innerText = `Email receipt request for donation ${donation.id} will return ${successOrFail} in ${returnTiming} ms.`;
 
@@ -237,6 +241,40 @@
       mgcComponent.plans = newPlansList;
       await mgcComponent.updateComplete;
       console.log("plan cancelled & plan list updated", mgcComponent.plans);
+    })
+
+    mgcComponent.addEventListener('updateAmount', async (e) => {
+      const { plan, amountOptions } = e.detail;
+
+      // either error or succeed
+      const heads = coinFlip() === 1;
+      const successOrFail = heads ? 'success' : 'fail';
+      const returnTiming = heads ? 1500 : 5000;
+  
+      uxMessageInfoArea.innerText = `Amount Update Request received: will return ${successOrFail} in ${returnTiming} ms - Details: ${JSON.stringify(amountOptions)}`;
+
+      const message = successOrFail === 'success' ? 'Amount updated' : 'Amount failed to update';
+
+      if (heads) {
+        plan.setAmount(amountOptions.amount);
+      }
+
+      const update = {
+        message,
+        status: successOrFail,
+        plan,
+        donationId: plan.id,
+        action: 'amountUpdate'
+      };
+
+      updateNotices = [update, ...updateNotices];
+
+
+      setTimeout(() => {
+        mgcComponent.updateReceived(update);
+        console.log('Amount Update Request --- index.html ----', update);
+        uxMessageInfoArea.innerText = '';
+      }, returnTiming);
     })
 
     // options hooks

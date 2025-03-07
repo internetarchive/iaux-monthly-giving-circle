@@ -4,7 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 import '@internetarchive/icon-donate/icon-donate.js';
 
 @customElement('ia-mgc-title')
-export class MonthlyGivingCircle extends LitElement {
+export class MGCTitle extends LitElement {
   @property({ type: String }) titleStyle: 'heart' | 'default' = 'heart';
 
   get heart(): TemplateResult | typeof nothing {
@@ -77,10 +77,13 @@ export class MonthlyGivingCircle extends LitElement {
       align-items: flex-end;
     }
 
-    @media screen and (max-width: 500px) {
+    @media screen and (max-width: 450px) {
       h2,
       slot[name='action'] {
         display: block;
+      }
+      slot[name='action'] {
+        margin-top: 10px;
       }
     }
   `;

@@ -54,6 +54,11 @@ export class MonthlyPlan {
     return this.plan.amount;
   }
 
+  setAmount(newAmount: number) {
+    this.plan.oldAmount = this.plan.amount;
+    this.plan.amount = newAmount;
+  }
+
   get startDate(): string {
     const date = new Date(this.plan.start_date);
     return date.toLocaleDateString();
