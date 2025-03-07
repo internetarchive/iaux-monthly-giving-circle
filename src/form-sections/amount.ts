@@ -85,7 +85,12 @@ export class MGCEditPlanAmount extends LitElement {
       <section>
         <donation-form-section badgemode="hidebadge" headline="Amount">
           ${!this.currentlyEditing
-            ? html`<p>USD $${this.plan?.amount}</p>
+            ? html` <p>
+                  USD $${this.plan?.amount}
+                  <ia-mgc-update-status .status=${this.updateStatus}
+                    >${this.updateMessage}</ia-mgc-update-status
+                  >
+                </p>
                 <ia-button
                   class="ia-button link"
                   @click=${() => {
@@ -118,7 +123,7 @@ export class MGCEditPlanAmount extends LitElement {
     return `I'll generously add $${this.donationPaymentInfo?.feeAmountCovered} to cover fees.`;
   }
 
-  closeForm() {
+  async closeForm() {
     const input = this.form.querySelector(
       'input[name="amount"]'
     ) as HTMLInputElement;
@@ -130,6 +135,7 @@ export class MGCEditPlanAmount extends LitElement {
     this.errorMessage = '';
     this.updateMessage = '';
     this.updateStatus = '';
+    await this.updateComplete;
   }
 
   requestAmountUpdate(e: Event): void {
@@ -169,6 +175,20 @@ export class MGCEditPlanAmount extends LitElement {
   }
 
   async amountUpdated(status: 'success' | 'fail') {
+    this.updateStatus = status;
+    this.updateMessage =
+      status === 'success' ? 'Amount updated' : 'Failed. Try again.';
+
+    if (status === 'success') {
+      this.closeForm();
+      await this.updateComplete;
+
+      this.updateStatus = status;
+      this.updateMessage = 'Amount updated';
+
+      return;
+    }
+
     (
       this.form.querySelector('ia-button#update-amount') as IauxButton
     ).isDisabled = false;
@@ -180,10 +200,6 @@ export class MGCEditPlanAmount extends LitElement {
     input.value = '';
     this.newAmount = 0;
     this.captureAmountChanges();
-
-    this.updateStatus = status;
-    this.updateMessage =
-      status === 'success' ? 'Amount updated' : 'Failed. Try again.';
 
     await this.updateComplete;
 
@@ -209,7 +225,6 @@ export class MGCEditPlanAmount extends LitElement {
               type="number"
               id="amount"
               name="amount"
-              placeholder="Enter new amount"
               required="true"
               @input=${(e: Event) => {
                 const newAmount = Number((e.target as HTMLInputElement).value);
@@ -306,6 +321,11 @@ export class MGCEditPlanAmount extends LitElement {
 
     p.error {
       color: red;
+    }
+
+    ia-mgc-update-status {
+      display: inline-block;
+      margin-left: 1rem;
     }
   `;
 }
