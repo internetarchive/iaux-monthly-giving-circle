@@ -10,7 +10,6 @@ import './receipts';
 import type { IauxMgcReceipts } from './receipts';
 import './presentational/ia-button';
 import type { MonthlyPlan } from './models/plan';
-import './edit-plan-form';
 
 export type APlanUpdate = {
   plan?: MonthlyPlan;
@@ -35,8 +34,7 @@ export class MonthlyGivingCircle extends LitElement {
   @property({ type: String, reflect: true }) viewToDisplay:
     | 'welcome'
     | 'receipts'
-    | 'plans'
-    | 'editPlan' = 'welcome';
+    | 'plans' = 'welcome';
 
   protected createRenderRoot() {
     return this;
@@ -46,6 +44,10 @@ export class MonthlyGivingCircle extends LitElement {
     if (changed.has('plans')) {
       this.viewToDisplay = this.plans.length ? 'plans' : 'welcome';
     }
+  }
+
+  protected render() {
+    return html` ${this.sectionTitle} ${this.currentView} `;
   }
 
   get receiptListElement(): IauxMgcReceipts {
@@ -59,21 +61,6 @@ export class MonthlyGivingCircle extends LitElement {
 
     const { plan, donationId = '' } = update;
     const idToUse = plan?.id ?? donationId;
-    const editingPlanIsUpdating = this.editingThisPlan?.id === idToUse;
-
-    if (editingPlanIsUpdating) {
-      console.log('edit received, mismatch plans', {
-        planCurrentlyEditing: this.editingThisPlan,
-        planReceived: update.plan,
-      });
-      return;
-    }
-
-    if (plan?.hasBeenCancelled) {
-      this.editingThisPlan = undefined;
-      this.viewToDisplay = 'plans';
-      return;
-    }
 
     this.receiptListElement.emailSent({
       id: idToUse,
@@ -82,25 +69,36 @@ export class MonthlyGivingCircle extends LitElement {
   }
 
   /* VIEWS */
-  protected render() {
-    const isEditingPlan =
-      this.viewToDisplay === 'editPlan' && this.editingThisPlan;
-    return html`
-      ${this.sectionTitle}
-      ${isEditingPlan
-        ? html`<ia-mgc-edit-plan
-            .plan=${this.editingThisPlan}
-            .cancelPlanHandler=${(plan: MonthlyPlan) => {
-              console.log('cancelPlan', plan);
-              this.dispatchEvent(
-                new CustomEvent('cancelPlan', {
-                  detail: { plan },
-                })
-              );
-            }}
-          ></ia-mgc-edit-plan>`
-        : this.nonEditView}
-    `;
+  get currentView(): TemplateResult {
+    if (this.viewToDisplay === 'receipts') {
+      return this.receiptsView;
+    }
+
+    if (this.viewToDisplay === 'plans' && this.plans.length) {
+      return this.plansView;
+    }
+
+    return html`<ia-mgc-welcome
+      .patronName=${this.patronName}
+    ></ia-mgc-welcome>`;
+  }
+
+  get receiptsView(): TemplateResult {
+    return html` <ia-mgc-receipts
+      .receipts=${this.receipts}
+      @EmailReceiptRequest=${(event: CustomEvent) => {
+        console.log('EmailReceiptRequest', event.detail);
+        this.dispatchEvent(
+          new CustomEvent('EmailReceiptRequest', {
+            detail: { ...event.detail },
+          })
+        );
+      }}
+    ></ia-mgc-receipts>`;
+  }
+
+  get plansView(): TemplateResult {
+    return html` <ia-mgc-plans .plans=${this.plans}></ia-mgc-plans> `;
   }
 
   get sectionTitle(): TemplateResult {
@@ -143,23 +141,6 @@ export class MonthlyGivingCircle extends LitElement {
         </ia-button>`;
         break;
 
-      case 'editPlan':
-        title = 'Edit plan';
-        titleStyle = 'default';
-        cta = html`<ia-button
-          class="primary"
-          id="close-edit-plan"
-          .clickHandler=${async () => {
-            this.viewToDisplay = this.plans.length ? 'plans' : 'welcome';
-            this.dispatchEvent(new CustomEvent('ShowWelcome'));
-            this.updates = [];
-            await this.updateComplete;
-          }}
-        >
-          Back to account settings
-        </ia-button>`;
-        break;
-
       default:
         title = 'Monthly Giving Circle';
         titleStyle = 'heart';
@@ -174,42 +155,6 @@ export class MonthlyGivingCircle extends LitElement {
         <span slot="title">${title}</span>
         <span slot="action">${cta}</span>
       </ia-mgc-title>
-    `;
-  }
-
-  get nonEditView(): TemplateResult {
-    if (this.viewToDisplay === 'receipts') {
-      return html`
-        <ia-mgc-receipts
-          .receipts=${this.receipts}
-          @EmailReceiptRequest=${(event: CustomEvent) => {
-            console.log('EmailReceiptRequest', event.detail);
-            this.dispatchEvent(
-              new CustomEvent('EmailReceiptRequest', {
-                detail: { ...event.detail },
-              })
-            );
-          }}
-        ></ia-mgc-receipts>
-      `;
-    }
-
-    return html`
-      ${this.viewToDisplay === 'plans' && this.plans.length
-        ? html`
-            <ia-mgc-plans
-              @editThisPlan=${async (event: CustomEvent) => {
-                this.editingThisPlan = event.detail.plan;
-                this.viewToDisplay = 'editPlan';
-                this.dispatchEvent(new Event('ShowEditForm'));
-                await this.updateComplete;
-              }}
-              .plans=${this.plans}
-            ></ia-mgc-plans>
-          `
-        : html`<ia-mgc-welcome
-            .patronName=${this.patronName}
-          ></ia-mgc-welcome>`}
     `;
   }
 }

@@ -148,7 +148,10 @@ export class IauxMgcReceipts extends LitElement {
                         <ia-button
                           class="link slim"
                           style="--link-button-flex-align-items: center;"
-                          .clickHandler=${async (iauxButton: IauxButton) => {
+                          .clickHandler=${async (
+                            e: Event,
+                            iauxButton: IauxButton
+                          ) => {
                             const initialClick = !emailUnavailable;
                             if (initialClick) {
                               // eslint-disable-next-line no-param-reassign
