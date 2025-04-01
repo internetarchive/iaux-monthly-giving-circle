@@ -34,7 +34,7 @@ describe('IauxMonthlyGivingCircle', () => {
   });
 
   describe('Plans View:', () => {
-    it('displays list', async () => {
+    it('displays list & shows form', async () => {
       const el = await fixture<MonthlyGivingCircle>(
         html`<ia-monthly-giving-circle
           .plans=${[
@@ -66,6 +66,29 @@ describe('IauxMonthlyGivingCircle', () => {
 
       expect(el.viewToDisplay).to.equal('plans');
       expect(el.plans.length).to.equal(1);
+
+      // displays edit plan form
+      el.addEventListener('ShowEditForm', () => {
+        expect(el.viewToDisplay).to.equal('editPlan');
+      });
+
+      const mgcPlans = el.querySelector('ia-mgc-plans');
+      expect(mgcPlans).to.exist;
+
+      const editPlanButton = mgcPlans!.shadowRoot?.querySelector(
+        'ia-button.edit-donation'
+      ) as IauxButton;
+      expect(editPlanButton).to.exist;
+      const innerButton = editPlanButton.shadowRoot?.querySelector('button');
+      expect(innerButton).to.exist;
+      innerButton!.click();
+
+      await el.updateComplete;
+
+      expect(el.viewToDisplay).to.equal('editPlan');
+
+      const editPlanForm = el.querySelector('ia-mgc-edit-plan');
+      expect(editPlanForm).to.exist;
     });
   });
 

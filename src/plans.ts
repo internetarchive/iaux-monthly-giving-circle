@@ -4,13 +4,12 @@ import { customElement, property } from 'lit/decorators.js';
 
 import type { MonthlyPlan } from './models/plan';
 
+import './presentational/ia-button';
+import type { IauxButton } from './presentational/ia-button';
+
 @customElement('ia-mgc-plans')
 export class IauxMgcPlans extends LitElement {
   @property({ type: Array }) plans = [];
-
-  mailToText(): string {
-    return `mailto:donations@archive.org?subject=I'd like to update my monthly donation`;
-  }
 
   protected render() {
     return html`
@@ -26,6 +25,10 @@ export class IauxMgcPlans extends LitElement {
             const last4 = plan.payment?.last4
               ? `...${plan.payment?.last4}`
               : 'CC number not found';
+
+            const ctaText = plan.plan.isCancelled
+              ? 'Plan is cancelled'
+              : 'Manage this monthly donation';
 
             return html`
               <li class=${`${plan.plan.isCancelled ? 'cancelled' : ''}`}>
@@ -77,10 +80,20 @@ export class IauxMgcPlans extends LitElement {
                     <p>${plan.nextBillingDate}</p>
                   </div>
                 </div>
-                <p class="email-edit-plan">
-                  To update your monthly plan, please email us at
-                  <a href=${this.mailToText}>donations@archive.org</a>.
-                </p>
+                <ia-button
+                  class="ia-button link edit-donation"
+                  .isDisabled=${plan.plan.isCancelled}
+                  .clickHandler=${async (e: Event, iaButton: IauxButton) => {
+                    // disable button
+                    iaButton.isDisabled = true;
+                    // open form
+                    this.dispatchEvent(
+                      new CustomEvent('editThisPlan', { detail: { plan } })
+                    );
+                  }}
+                >
+                  ${ctaText}
+                </ia-button>
               </li>
             `;
           })}
@@ -166,9 +179,6 @@ export class IauxMgcPlans extends LitElement {
       margin: 0;
     }
 
-    p.email-edit-plan {
-      margin: 10px 0 0;
-    }
     @media screen and (max-width: 500px) {
       ul li .info {
         display: block;
