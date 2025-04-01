@@ -71,6 +71,7 @@ export class MGCEditPlanAmount extends LitElement {
                   class="ia-button link"
                   .clickHandler=${() => {
                     this.currentlyEditing = true;
+                    this.clearStatusMessaging();
                   }}
                 >
                   Edit...
