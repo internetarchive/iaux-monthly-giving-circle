@@ -21,6 +21,13 @@ export type APlanUpdate = {
   message: string;
 };
 
+enum DisplayChangeEvents {
+  welcome = 'ShowWelcome',
+  receipts = 'ShowReceipts',
+  plans = 'ShowPlans',
+  editPlan = 'ShowEditForm',
+}
+
 @customElement('ia-monthly-giving-circle')
 export class MonthlyGivingCircle extends LitElement {
   @property({ type: String }) patronName: string = '';
@@ -138,7 +145,7 @@ export class MonthlyGivingCircle extends LitElement {
         .clickHandler=${async () => {
           this.viewToDisplay = 'receipts';
           await this.updateComplete;
-          this.dispatchEvent(new CustomEvent('ShowReceipts'));
+          this.dispatchEvent(new Event(DisplayChangeEvents.receipts));
         }}
       >
         View recent donation history
@@ -158,7 +165,10 @@ export class MonthlyGivingCircle extends LitElement {
           id="close-receipts"
           .clickHandler=${async () => {
             this.viewToDisplay = this.plans.length ? 'plans' : 'welcome';
-            this.dispatchEvent(new CustomEvent('ShowWelcome'));
+            const eventType = this.plans.length
+              ? DisplayChangeEvents.plans
+              : DisplayChangeEvents.welcome;
+            this.dispatchEvent(new Event(eventType));
             this.updates = [];
             await this.updateComplete;
           }}
@@ -175,7 +185,10 @@ export class MonthlyGivingCircle extends LitElement {
           id="close-edit-plan"
           .clickHandler=${async () => {
             this.viewToDisplay = this.plans.length ? 'plans' : 'welcome';
-            this.dispatchEvent(new CustomEvent('ShowWelcome'));
+            const eventType = this.plans.length
+              ? DisplayChangeEvents.plans
+              : DisplayChangeEvents.welcome;
+            this.dispatchEvent(new Event(eventType));
             this.updates = [];
             await this.updateComplete;
           }}
@@ -225,7 +238,7 @@ export class MonthlyGivingCircle extends LitElement {
               @editThisPlan=${async (event: CustomEvent) => {
                 this.editingThisPlan = event.detail.plan;
                 this.viewToDisplay = 'editPlan';
-                this.dispatchEvent(new Event('ShowEditForm'));
+                this.dispatchEvent(new Event(DisplayChangeEvents.editPlan));
                 await this.updateComplete;
               }}
               .plans=${this.plans}
