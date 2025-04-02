@@ -33,6 +33,7 @@ export class MGCWelcome extends LitElement {
         >
         <p>
           Already a monthly donor but don't see your donation details here?
+          <br />
           <a class="link" href=${mailToString}
             >Contact us at donations@archive.org</a
           >
