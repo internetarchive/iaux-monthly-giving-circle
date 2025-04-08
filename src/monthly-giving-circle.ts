@@ -77,6 +77,13 @@ export class MonthlyGivingCircle extends LitElement {
 
     if (!updateIsForEditingPlan) {
       // error, handle
+      console.error('Update not for editing plan', {
+        idReceived: idToUse,
+        ExpectedId: this.editingThisPlan?.id,
+      });
+      // eslint-disable-next-line no-alert
+      alert('Something happened, please refresh and try again');
+      return;
     }
 
     if (update.action === 'amountUpdate') {
