@@ -37,6 +37,7 @@ describe('IauxMonthlyGivingCircle', () => {
     it('displays list & shows form', async () => {
       const el = await fixture<MonthlyGivingCircle>(
         html`<ia-monthly-giving-circle
+          .canEdit=${true}
           .plans=${[
             new MonthlyPlan({
               token: 'a.va.lid.T0ken',

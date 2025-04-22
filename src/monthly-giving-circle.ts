@@ -46,7 +46,7 @@ export class MonthlyGivingCircle extends LitElement {
     | 'plans'
     | 'editPlan' = 'welcome';
 
-  @property({ type: Boolean }) canEdit = false;
+  @property({ type: Boolean, reflect: true }) canEdit = false;
 
   protected createRenderRoot() {
     return this;

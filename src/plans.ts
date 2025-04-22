@@ -11,7 +11,7 @@ import type { IauxButton } from './presentational/ia-button';
 export class IauxMgcPlans extends LitElement {
   @property({ type: Array }) plans = [];
 
-  @property({ type: Boolean }) canEdit = false;
+  @property({ type: Boolean, reflect: true }) canEdit = false;
 
   protected render() {
     return html`
