@@ -72,20 +72,6 @@ export class MonthlyGivingCircle extends LitElement {
     const { plan, donationId = '' } = update;
     const idToUse = plan?.id ?? donationId;
 
-    const updateIsForEditingPlan =
-      this.editingThisPlan && this.editingThisPlan.id === idToUse;
-
-    if (!updateIsForEditingPlan) {
-      // error, handle
-      console.error('Update not for editing plan', {
-        idReceived: idToUse,
-        ExpectedId: this.editingThisPlan?.id,
-      });
-      // eslint-disable-next-line no-alert
-      alert('Something happened, please refresh and try again');
-      return;
-    }
-
     if (update.action === 'amountUpdate') {
       this.editFormElement.amountUpdates(update.status);
       return;
