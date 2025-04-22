@@ -45,6 +45,7 @@
       <button id="toggle-receipts">Toggle receipts</button>
       <button id="clear-updates">Clear updates</button>
       <button id="toggle-plans">Toggle plans</button>
+      <button id="toggle-editable-perms">Toggle Editable Permissions</button>
 
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
@@ -296,6 +297,11 @@
     });
     document.getElementById('toggle-plans').addEventListener('click', async () => {
       mgcComponent.plans = mgcComponent.plans.length ? [] : plansArray;
+      await mgcComponent.updateComplete;
+    });
+    
+    document.getElementById('toggle-editable-perms').addEventListener('click', async () => {
+      mgcComponent.canEdit = !mgcComponent.canEdit;
       await mgcComponent.updateComplete;
     });
   </script>

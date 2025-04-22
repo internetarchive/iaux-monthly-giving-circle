@@ -46,6 +46,8 @@ export class MonthlyGivingCircle extends LitElement {
     | 'plans'
     | 'editPlan' = 'welcome';
 
+  @property({ type: Boolean }) canEdit = false;
+
   protected createRenderRoot() {
     return this;
   }
@@ -235,6 +237,7 @@ export class MonthlyGivingCircle extends LitElement {
                 await this.updateComplete;
               }}
               .plans=${this.plans}
+              .canEdit=${this.canEdit}
             ></ia-mgc-plans>
           `
         : html`<ia-mgc-welcome
