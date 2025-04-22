@@ -46,6 +46,8 @@ export class MonthlyGivingCircle extends LitElement {
     | 'plans'
     | 'editPlan' = 'welcome';
 
+  @property({ type: Boolean, reflect: true }) canEdit = false;
+
   protected createRenderRoot() {
     return this;
   }
@@ -71,20 +73,6 @@ export class MonthlyGivingCircle extends LitElement {
 
     const { plan, donationId = '' } = update;
     const idToUse = plan?.id ?? donationId;
-
-    const updateIsForEditingPlan =
-      this.editingThisPlan && this.editingThisPlan.id === idToUse;
-
-    if (!updateIsForEditingPlan) {
-      // error, handle
-      console.error('Update not for editing plan', {
-        idReceived: idToUse,
-        ExpectedId: this.editingThisPlan?.id,
-      });
-      // eslint-disable-next-line no-alert
-      alert('Something happened, please refresh and try again');
-      return;
-    }
 
     if (update.action === 'amountUpdate') {
       this.editFormElement.amountUpdates(update.status);
@@ -249,6 +237,7 @@ export class MonthlyGivingCircle extends LitElement {
                 await this.updateComplete;
               }}
               .plans=${this.plans}
+              .canEdit=${this.canEdit}
             ></ia-mgc-plans>
           `
         : html`<ia-mgc-welcome

@@ -11,6 +11,8 @@ import type { IauxButton } from './presentational/ia-button';
 export class IauxMgcPlans extends LitElement {
   @property({ type: Array }) plans = [];
 
+  @property({ type: Boolean, reflect: true }) canEdit = false;
+
   protected render() {
     return html`
       <section class="monthly-giving-circle">
@@ -25,10 +27,6 @@ export class IauxMgcPlans extends LitElement {
             const last4 = plan.payment?.last4
               ? `...${plan.payment?.last4}`
               : 'CC number not found';
-
-            const ctaText = plan.plan.isCancelled
-              ? 'Plan is cancelled'
-              : 'Manage this monthly donation';
 
             return html`
               <li class=${`${plan.plan.isCancelled ? 'cancelled' : ''}`}>
@@ -80,26 +78,41 @@ export class IauxMgcPlans extends LitElement {
                     <p>${plan.nextBillingDate}</p>
                   </div>
                 </div>
-                <ia-button
-                  class="ia-button link edit-donation"
-                  .isDisabled=${plan.plan.isCancelled}
-                  .clickHandler=${async (e: Event, iaButton: IauxButton) => {
-                    // disable button
-                    iaButton.isDisabled = true;
-                    // open form
-                    this.dispatchEvent(
-                      new CustomEvent('editThisPlan', { detail: { plan } })
-                    );
-                  }}
-                >
-                  ${ctaText}
-                </ia-button>
+                ${this.planCTA(plan)}
               </li>
             `;
           })}
         </ul>
       </section>
     `;
+  }
+
+  planCTA(plan: MonthlyPlan) {
+    if (!this.canEdit) {
+      const mailToText = `mailto:donations@archive.org?subject=I'd like to update my monthly donation`;
+      return html`<p class="email-edit-plan">
+        Need to update your plan further? Please email us at
+        <a href=${mailToText}>donations@archive.org</a>.
+      </p>`;
+    }
+
+    const ctaText = plan.plan.isCancelled
+      ? 'Plan is cancelled'
+      : 'Manage this monthly donation';
+
+    return html`<ia-button
+      class="ia-button link edit-donation"
+      .isDisabled=${plan.plan.isCancelled}
+      .clickHandler=${async (e: Event, iaButton: IauxButton) => {
+        // disable button
+        iaButton.isDisabled = true;
+        // open form
+        this.dispatchEvent(
+          new CustomEvent('editThisPlan', { detail: { plan } })
+        );
+      }}
+      >${ctaText}</ia-button
+    >`;
   }
 
   static styles = css`
@@ -177,6 +190,10 @@ export class IauxMgcPlans extends LitElement {
 
     ul li .info > * > * {
       margin: 0;
+    }
+
+    .email-edit-plan {
+      margin-bottom: 0;
     }
 
     @media screen and (max-width: 500px) {
