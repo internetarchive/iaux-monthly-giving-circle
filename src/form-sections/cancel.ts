@@ -47,8 +47,8 @@ export class IauxMgcCancelPlan extends LitElement {
 
     return html`
       <ia-button
-        class="clear-container"
-        .clickHandler=${(e: CustomEvent, iaButton: IauxButton) => {
+        class="clear-container slim"
+        .clickHandler=${(e: Event, iaButton: IauxButton) => {
           // eslint-disable-next-line no-param-reassign
           iaButton.isDisabled = true;
           if (this.initialCancelRequest) {
@@ -123,6 +123,9 @@ export class IauxMgcCancelPlan extends LitElement {
   }
 
   static styles = css`
+    :host {
+      --formSectionTitleFontSize: 1.4rem;
+    }
     .warning > * {
       margin: 5px 0;
     }
@@ -160,7 +163,8 @@ export class IauxMgcCancelPlan extends LitElement {
     }
 
     .checkbox-option-container {
-      margin-bottom: 5px;
+      display: flex;
+      margin: 10px 0;
     }
   `;
 }

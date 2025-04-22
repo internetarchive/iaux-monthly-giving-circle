@@ -93,9 +93,9 @@ export class IauxMgcReceipts extends LitElement {
   emailStatusMessageToDisplay(receiptSentStatus: ReceiptEmailStatus): string {
     switch (receiptSentStatus.emailStatus) {
       case 'success':
-        return '✓ Sent';
+        return 'Sent';
       case 'fail':
-        return '✖ Failed';
+        return 'Failed';
       default:
         return '';
     }
@@ -126,9 +126,11 @@ export class IauxMgcReceipts extends LitElement {
                 const emailStatusToDisplay =
                   !emailStatus || !emailStatus.emailStatus
                     ? nothing
-                    : html`<span
-                        class=${`sent-status ${emailStatus.emailStatus}`}
-                        >${this.emailStatusMessageToDisplay(emailStatus)}</span
+                    : html`<ia-mgc-update-status
+                        .status=${emailStatus.emailStatus}
+                        >${this.emailStatusMessageToDisplay(
+                          emailStatus
+                        )}</ia-mgc-update-status
                       >`;
                 return html`
                   <tr
@@ -149,7 +151,7 @@ export class IauxMgcReceipts extends LitElement {
                           class="link slim"
                           style="--link-button-flex-align-items: center;"
                           .clickHandler=${async (
-                            e: Event,
+                            event: Event,
                             iauxButton: IauxButton
                           ) => {
                             const initialClick = !emailUnavailable;
@@ -219,22 +221,6 @@ export class IauxMgcReceipts extends LitElement {
       justify-content: flex-start;
       align-items: center;
       gap: 10px;
-    }
-
-    .sent-status.success,
-    .sent-status.fail {
-      padding: 5px;
-      background: rgb(238, 253, 238);
-      width: 55px;
-      min-height: 20px;
-    }
-    .sent-status.success {
-      color: rgb(33, 149, 24);
-      border-left: 5px solid rgb(33, 149, 24);
-    }
-    .sent-status.fail {
-      color: #bb0505;
-      border-left: 5px solid #bb0505;
     }
   `;
 }

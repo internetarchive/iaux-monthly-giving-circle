@@ -74,6 +74,7 @@ export class IauxButton extends LitElement {
 
     :host(.secondary) button {
       background: #333;
+      color: #ffeeee;
     }
 
     :host(.cancel) button {
