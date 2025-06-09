@@ -51,6 +51,15 @@ export class IauxEditPlanForm extends LitElement {
           }}
         ></ia-mgc-edit-plan-amount>
         <hr />
+        <ia-mgc-cancel-plan
+          .plan=${this.plan}
+          @cancelPlan=${() => {
+            if (this.plan) {
+              this.cancelPlanHandler?.(this.plan);
+            }
+          }}
+        ></ia-mgc-cancel-plan>
+        <hr />
         <p class="email-edit-plan">
           Need to update your plan further? Please email us at
           <a href=${this.mailToText}>donations@archive.org</a>.
