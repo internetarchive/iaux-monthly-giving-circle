@@ -59,7 +59,7 @@
         max-width: 800px;
       }
     </style>
-    <ia-monthly-giving-circle></ia-monthly-giving-circle>
+    <ia-monthly-giving-circle canEdit></ia-monthly-giving-circle>
   </div>
 
   <script type="module" src="../dist/src/monthly-giving-circle.js"></script>
@@ -67,6 +67,31 @@
     import { MonthlyPlan, Receipt } from '../dist/index.js';
 
     let updateNotices = [];
+
+    const nextPaymentIn25Days = new Date();
+    nextPaymentIn25Days.setDate(nextPaymentIn25Days.getDate() + 25);
+    nextPaymentIn25Days.setMinutes(0);
+    nextPaymentIn25Days.setSeconds(0);
+    nextPaymentIn25Days.setMilliseconds(0);
+    console.log('nextPaymentIn25Days', nextPaymentIn25Days.toISOString());
+    
+    const lastPaymentInTheSameMonth = new Date();
+    lastPaymentInTheSameMonth.setMinutes(0);
+    lastPaymentInTheSameMonth.setSeconds(0);
+    lastPaymentInTheSameMonth.setMilliseconds(0);
+    lastPaymentInTheSameMonth.setDate(1);
+    console.log('lastPaymentInTheSameMonth', lastPaymentInTheSameMonth.toISOString());
+
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    const nextPaymentFirstOfMonth = new Date(nextMonth);
+    nextPaymentFirstOfMonth.setMinutes(0);
+    nextPaymentFirstOfMonth.setSeconds(0);
+    nextPaymentFirstOfMonth.setMilliseconds(0);
+    nextPaymentFirstOfMonth.setDate(1);
+    console.log('nextPaymentFirstOfMonth', nextPaymentFirstOfMonth.toISOString());
+  
 
     const plans = {
       "41": {
@@ -76,8 +101,13 @@
         "is_test": true,
         "btdata": {
           "billingDayOfMonth": 22,
+            "lastBillingDate": {
+            "date": lastPaymentInTheSameMonth.toISOString(),
+            "timezone_type": 3,
+            "timezone": "UTC"
+          },
           "nextBillingDate": {
-            "date": "2024-08-22 00:00:00.000000",
+            "date": nextMonth.toISOString(),
             "timezone_type": 3,
             "timezone": "UTC"
           },
@@ -97,8 +127,13 @@
         "is_test": true,
         "btdata": {
           "billingDayOfMonth": 9,
+          "lastBillingDate": {
+            "date": lastPaymentInTheSameMonth.toISOString(),
+            "timezone_type": 3,
+            "timezone": "UTC"
+          },
           "nextBillingDate": {
-            "date": "2024-09-09 00:00:00.000000",
+            "date": nextPaymentFirstOfMonth.toISOString(),
             "timezone_type": 3,
             "timezone": "UTC"
           },
@@ -277,6 +312,39 @@
         uxMessageInfoArea.innerText = '';
       }, returnTiming);
     })
+
+    mgcComponent.addEventListener('updateDate', (e) => {
+      const { newDate, plan } = e.detail;
+
+
+      const heads = coinFlip() === 1;
+      const successOrFail = heads ? 'success' : 'fail';
+      const returnTiming = heads ? 3000 : 8000;
+
+      uxMessageInfoArea.innerText = `Updating next billing date for plan: ${newDate}, plan: ${JSON.stringify(plan.id)} -- Update will return ${successOrFail} in ${returnTiming} ms`; 
+      const message = successOrFail === 'success' ? 'Date updated' : 'Date failed to update';
+
+      if (heads) {
+        plan.setNextBillingDate(newDate);
+      }
+
+      const update = {
+        message,
+        status: successOrFail,
+        plan,
+        donationId: plan.id,
+        action: 'dateUpdate'
+      };
+
+      updateNotices = [update, ...updateNotices];
+
+
+      setTimeout(() => {
+        mgcComponent.updateReceived(update);
+        console.log('Amount Update Request --- index.html ----', update);
+        uxMessageInfoArea.innerText = '';
+      }, returnTiming);
+    });
 
     // options hooks
     document.getElementById('toggle-receipts').addEventListener('click', async () => {
