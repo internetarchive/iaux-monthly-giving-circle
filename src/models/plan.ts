@@ -75,7 +75,7 @@ export class MonthlyPlan {
     return date.toLocaleDateString();
   }
 
-  get nextBillingDate(): string {
+  get nextBillingDateLocale(): string {
     const nextBillingDate = new Date(
       this.payment.nextBillingDate.date
     ).toLocaleDateString(undefined, {

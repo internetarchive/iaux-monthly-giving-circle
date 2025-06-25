@@ -75,7 +75,7 @@ export class IauxMgcPlans extends LitElement {
                   </div>
                   <div class="next-donation">
                     <h3>Next Donation</h3>
-                    <p>${plan.nextBillingDate}</p>
+                    <p>${plan.nextBillingDateLocale}</p>
                   </div>
                 </div>
                 ${this.planCTA(plan)}

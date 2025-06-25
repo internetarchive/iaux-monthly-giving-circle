@@ -48,7 +48,7 @@ export class MGCEditPlanDate extends LitElement {
 
   updated(changed: PropertyValues) {
     if (changed.has('currentlyEditing') && this.currentlyEditing) {
-      this.form.focus();
+      this.dateInput.focus();
     }
   }
 
@@ -61,13 +61,13 @@ export class MGCEditPlanDate extends LitElement {
         >
           ${!this.currentlyEditing
             ? html` <p class="current-date">
-                  ${this.plan?.nextBillingDate}
+                  ${this.plan?.nextBillingDateLocale}
                   <ia-mgc-update-status .status=${this.updateStatus}
                     >${this.updateMessage}</ia-mgc-update-status
                   >
                 </p>
                 <ia-button
-                  id="edit-date"
+                  id="open-edit-date-form"
                   class="ia-button link"
                   .clickHandler=${() => {
                     this.currentlyEditing = true;
@@ -99,18 +99,13 @@ export class MGCEditPlanDate extends LitElement {
       return;
     }
 
-    (this.form.querySelector('ia-button#edit-date') as IauxButton).isDisabled =
-      false;
-
+    this.allowEditing = false;
     await this.updateComplete;
   }
 
   /* Dispatches edit-date change request */
   requestDateUpdate(e: Event): void {
     e.preventDefault();
-    console.log('<plan-date> - requestDateUpdate', {
-      newValue: this.newDate,
-    });
     this.dispatchEvent(
       new CustomEvent('updateDate', {
         detail: {
@@ -125,13 +120,11 @@ export class MGCEditPlanDate extends LitElement {
     this.clearInputField();
     this.clearStatusMessaging();
     this.currentlyEditing = false;
+    this.allowEditing = false;
   }
 
   clearInputField() {
-    const input = this.form.querySelector(
-      'input[name="edit-date"]'
-    ) as HTMLInputElement;
-    input.value = '';
+    this.dateInput.value = '';
     this.newDate = undefined;
   }
 
@@ -157,26 +150,23 @@ export class MGCEditPlanDate extends LitElement {
     const today = new Date();
     const year = today.getFullYear() + 1; // Allow up to one year in the future
     const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    const lastDayOfMonth = new Date(year, today.getMonth() + 1, 0).getDate();
-    return `${year}-${month}-${lastDayOfMonth}`; // Last day of the month
+    return `${year}-${month}-${today.getDate()}`;
   }
 
   get editDateForm(): TemplateResult {
-    console.log('editdate', {
-      min: this.minDate,
-      max: this.maxDate,
-      plan: this.plan,
-      nextBillingDate: this.plan?.nextBillingDate,
-      lastBillingDate: this.plan?.lastBillingDateLocale,
-    });
     return html`
       <section>
         <form id="edit-date">
-          <p>Last donation date: ${this.plan?.lastBillingDateLocale}</p>
+          <p id="form-info-last-donation-date">
+            Last donation date: ${this.plan?.lastBillingDateLocale}
+          </p>
 
-          <p>Next donation date: ${this.plan?.nextBillingDate}</p>
+          <p id="form-info-next-donation-date">
+            Next donation date: ${this.plan?.nextBillingDateLocale}
+          </p>
           <div class="date-holder">
             <input
+              required
               type="date"
               id="edit-date"
               name="edit-date"
@@ -184,30 +174,27 @@ export class MGCEditPlanDate extends LitElement {
               max=${this.maxDate}
               value=""
               @focus=${() => this.clearStatusMessaging()}
-              @change=${async (e: Event) => {
+              @change=${async () => {
                 this.clearStatusMessaging();
                 await this.updateComplete;
 
+                const inputValue = this.dateInput.value;
                 console.log(
-                  'date changed',
-                  (e.target as HTMLInputElement).value
+                  ' ----- date input changed ----- ',
+                  inputValue,
+                  this.errorMessage
                 );
-                console.log('date changed THIS', this);
 
-                const inputValue = (e.target as HTMLInputElement).value;
                 if (!inputValue) {
                   this.errorMessage = 'Please enter a date';
-                  this.allowEditing = true;
+                  this.allowEditing = false;
                   return; // wait until date field returns a valid string
                 }
 
                 let validDate;
                 try {
-                  validDate = new Date(
-                    (e.target as HTMLInputElement)?.value as string
-                  );
+                  validDate = new Date(`${inputValue}T00:00:00`);
                 } catch (error) {
-                  console.error('Invalid date format:', error);
                   this.errorMessage =
                     'Please enter a valid date format (YYYY-MM-DD)';
                   return; // wait until date field returns a valid string
@@ -227,16 +214,10 @@ export class MGCEditPlanDate extends LitElement {
                   return;
                 }
 
-                console.log('validDate', validDate);
-
                 const newDate = new Date(validDate).toISOString();
                 this.newDate = newDate;
-                console.log('newDate', newDate);
-
-                // Check if the date is in the past
 
                 // Check if there has been a donation in the last month
-
                 const hasLastDonationInfo =
                   this.plan?.payment.lastBillingDate.date &&
                   new Date(this.plan?.payment.lastBillingDate.date);
@@ -256,13 +237,25 @@ export class MGCEditPlanDate extends LitElement {
 
                   if (isInLastMonth) {
                     this.warningMessage =
-                      'You have already made a donation this month. Is that cool with you?';
+                      'New donation date is in the same month as your last payment.';
                     this.allowEditing = true;
                     return;
                   }
                 }
-                // Check if there has been a donation in the last 30 days
-                console.log('newDate', newDate);
+
+                // Check if the new date is within the next 12 months
+                const twelveMonthsFromNow = new Date();
+                twelveMonthsFromNow.setFullYear(
+                  twelveMonthsFromNow.getFullYear() + 1
+                );
+                twelveMonthsFromNow.setHours(0, 0, 0, 0);
+
+                if (chosenDate > twelveMonthsFromNow) {
+                  this.errorMessage =
+                    'New donation date must be within the next 12 months.';
+                  this.allowEditing = false;
+                  return;
+                }
 
                 this.allowEditing = true;
               }}
@@ -296,8 +289,6 @@ export class MGCEditPlanDate extends LitElement {
                   (iaButton as IauxButton).isDisabled = true;
                   await iaButton.updateComplete;
 
-                  // check if request is in range
-
                   this.requestDateUpdate(e);
                 }}
               >
@@ -308,8 +299,8 @@ export class MGCEditPlanDate extends LitElement {
               >
             </div>
           </div>
-          <p class="error">${this.warningMessage}</p>
-          <p class="error">${this.errorMessage}</p>
+          <p class="error warning-msg">${this.warningMessage}</p>
+          <p class="error error-msg">${this.errorMessage}</p>
         </form>
       </section>
     `;
