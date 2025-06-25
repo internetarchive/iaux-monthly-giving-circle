@@ -237,7 +237,9 @@ export class MGCEditPlanDate extends LitElement {
 
                   if (isInLastMonth) {
                     this.warningMessage =
-                      'New donation date is in the same month as your last payment.';
+                      'You have already made a donation this month.';
+                    this.errorMessage =
+                      'The date you selected will result in an addition donation for this month.';
                     this.allowEditing = true;
                     return;
                   }

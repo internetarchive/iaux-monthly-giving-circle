@@ -166,9 +166,11 @@ describe('<ia-mgc-edit-date>', () => {
     dateInput!.dispatchEvent(new Event('change'));
     await el.updateComplete;
 
-    expect(el.errorMessage).to.contain('');
     expect(el.warningMessage).to.contain(
-      'New donation date is in the same month as your last payment.'
+      'You have already made a donation this month.'
+    );
+    expect(el.errorMessage).to.contain(
+      'The date you selected will result in an addition donation for this month.'
     );
     expect(el.allowEditing).to.be.true;
     expect(requestDateUpdateButton!.hasAttribute('isdisabled')).to.be.true;
