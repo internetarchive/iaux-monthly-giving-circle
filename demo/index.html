@@ -92,6 +92,18 @@
     nextPaymentFirstOfMonth.setDate(1);
     console.log('nextPaymentFirstOfMonth', nextPaymentFirstOfMonth.toISOString());
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastMonth = new Date();
+    lastMonth.setHours(0, 0, 0, 0);
+    lastMonth.setDate(0);
+
+    const lastDayOfCurrentMonth = new Date();
+    lastDayOfCurrentMonth.setHours(0, 0, 0, 0);
+    lastDayOfCurrentMonth.setMonth(lastDayOfCurrentMonth.getMonth() + 1);
+    lastDayOfCurrentMonth.setDate(0);
+
     const plans = {
       "41": {
         "token": "Acbdcdcadsfdasf.1234alphanumeric.3foobarXyZ",
@@ -101,12 +113,12 @@
         "btdata": {
           "billingDayOfMonth": 22,
           "lastBillingDate": {
-            "date": lastPaymentInTheSameMonth.toISOString(),
+            "date": lastMonth.toISOString(),
             "timezone_type": 3,
             "timezone": "UTC"
           },
           "nextBillingDate": {
-            "date": nextMonth.toISOString(),
+            "date": lastDayOfCurrentMonth.toISOString(),
             "timezone_type": 3,
             "timezone": "UTC"
           },
