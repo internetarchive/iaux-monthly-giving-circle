@@ -332,8 +332,12 @@ export class MGCEditPlanDate extends LitElement {
               >
             </div>
           </div>
-          <p class="error warning-msg">${this.warningMessage}</p>
-          <p class="error error-msg">${this.errorMessage}</p>
+          <p class="error error-msg">
+            ${this.warningMessage
+              ? html`<span>${this.warningMessage}</span><br />`
+              : ''}
+            ${this.errorMessage}
+          </p>
         </form>
       </section>
     `;
