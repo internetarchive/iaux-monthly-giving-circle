@@ -223,6 +223,8 @@ export class MGCEditPlanAmount extends LitElement {
           <div>
             $
             <input
+              min="1"
+              max="9999"
               type="number"
               id="amount"
               name="amount"
