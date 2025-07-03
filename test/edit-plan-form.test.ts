@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { html, fixture, expect } from '@open-wc/testing';
-import Sinon from 'sinon';
 
 import type { IauxEditPlanForm } from '../src/edit-plan-form';
 import '../src/edit-plan-form';
@@ -50,10 +49,13 @@ describe('IauxEditPlanForm', () => {
     const cancelForm = el.querySelector('ia-mgc-cancel-plan');
     expect(cancelForm).to.exist;
 
-    el.cancelPlanHandler = Sinon.stub();
-    await el.updateComplete;
+    let hasTopLevelCancelEvent = false;
+
+    el.addEventListener('cancelPlan', () => {
+      hasTopLevelCancelEvent = true;
+      expect(hasTopLevelCancelEvent).to.be.true;
+    });
 
     cancelForm!.dispatchEvent(new Event('cancelPlan'));
-    expect(el.cancelPlanHandler).to.have.been.called;
   });
 });

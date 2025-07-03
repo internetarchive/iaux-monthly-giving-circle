@@ -67,7 +67,7 @@ const plan = new MonthlyPlan({
 });
 
 describe('<ia-mgc-edit-date>', () => {
-  it('can toggle form', async () => {
+  it('input validates before allowing form submission', async () => {
     const el = await fixture<MGCEditPlanDate>(
       html`<ia-mgc-edit-date .plan=${plan}></ia-mgc-edit-date>`
     );
@@ -170,7 +170,7 @@ describe('<ia-mgc-edit-date>', () => {
       'You have already made a donation this month.'
     );
     expect(el.errorMessage).to.contain(
-      'The date you selected will result in an addition donation for this month.'
+      'The date you selected will result in an additional donation for this month.'
     );
     expect(el.allowEditing).to.be.true;
     expect(requestDateUpdateButton!.hasAttribute('isdisabled')).to.be.true;
@@ -186,7 +186,7 @@ describe('<ia-mgc-edit-date>', () => {
     // can submit when date is valid
     const nextMonthStr = `${nextMonth.getFullYear()}-${String(
       nextMonth.getMonth() + 1
-    ).padStart(2, '0')}-${nextMonth.getDate()}`;
+    ).padStart(2, '0')}-${String(nextMonth.getDate()).padStart(2, '0')}`;
     dateInput!.setAttribute('value', nextMonthStr);
     dateInput!.dispatchEvent(new Event('change'));
 

@@ -14,6 +14,19 @@ import '../presentational/ia-button';
 import type { IauxButton } from '../presentational/ia-button';
 import '../presentational/mgc-update-status';
 
+type InvalidDateErrorCode =
+  | 'invalid_date'
+  | 'date_too_early'
+  | 'second_donation_this_month'
+  | 'date_out_of_range'
+  | '';
+
+enum InvalidDateErrorMessages {
+  invalid_date = 'Please enter a valid date format (YYYY-MM-DD)',
+  date_too_early = 'Date must be at least tomorrow.',
+  second_donation_this_month = 'The date you selected will result in an additional donation for this month.',
+  date_out_of_range = 'New donation date must be within the next 12 months.',
+}
 @customElement('ia-mgc-edit-date')
 export class MGCEditPlanDate extends LitElement {
   @property({ type: Object }) plan?: MonthlyPlan;
@@ -136,6 +149,83 @@ export class MGCEditPlanDate extends LitElement {
     await this.updateComplete;
   }
 
+  /* @param string dateString -  YYYYY-MM-DD */
+  validateChosenDate(dateString: string): {
+    valid: boolean;
+    errorCode: InvalidDateErrorCode | '';
+  } {
+    if (!dateString) {
+      return {
+        valid: false,
+        errorCode: 'invalid_date',
+      };
+    }
+
+    let validDate;
+    try {
+      validDate = new Date(`${dateString}T00:00:00`);
+    } catch (error) {
+      return {
+        valid: false,
+        errorCode: 'invalid_date',
+      };
+    }
+
+    // Check if minimum date is at least tomorrow
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1); // Set to tomorrow
+
+    const chosenDate = new Date(validDate);
+    chosenDate.setHours(0, 0, 0, 0);
+
+    if (chosenDate < today) {
+      return {
+        valid: false,
+        errorCode: 'date_too_early',
+      };
+    }
+
+    // Check if the new date is within the next 12 months
+    const twelveMonthsFromNow = new Date(today);
+    twelveMonthsFromNow.setFullYear(twelveMonthsFromNow.getFullYear() + 1);
+
+    if (chosenDate > twelveMonthsFromNow) {
+      return {
+        valid: false,
+        errorCode: 'date_out_of_range',
+      };
+    }
+
+    // Check if there has been a donation in the last month
+    const lastDonationDate = this.plan?.payment.lastBillingDate.date
+      ? new Date(this.plan?.payment.lastBillingDate.date)
+      : null;
+
+    if (lastDonationDate) {
+      const lastDonationMonth = lastDonationDate.getMonth();
+      const lastDonationYear = lastDonationDate.getFullYear();
+
+      const thisYear = validDate.getFullYear();
+      const thisMonth = validDate.getMonth();
+      const isInLastMonth =
+        thisYear === lastDonationYear && thisMonth === lastDonationMonth;
+
+      if (isInLastMonth) {
+        return {
+          valid: true,
+          errorCode: 'second_donation_this_month',
+        };
+      }
+    }
+
+    return {
+      valid: true,
+      errorCode: '',
+    };
+  }
+
   /* DISPLAY */
   get minDate(): string {
     const today = new Date();
@@ -143,14 +233,16 @@ export class MGCEditPlanDate extends LitElement {
     tomorrow.setDate(today.getDate() + 1); // Set to tomorrow
     const year = tomorrow.getFullYear();
     const month = String(tomorrow.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    return `${year}-${month}-${tomorrow.getDate()}`;
+    const dateString = String(tomorrow.getDate()).padStart(2, '0');
+    return `${year}-${month}-${dateString}`;
   }
 
   get maxDate(): string {
     const today = new Date();
     const year = today.getFullYear() + 1; // Allow up to one year in the future
     const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    return `${year}-${month}-${today.getDate()}`;
+    const dateString = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${dateString}`;
   }
 
   get editDateForm(): TemplateResult {
@@ -179,87 +271,26 @@ export class MGCEditPlanDate extends LitElement {
                 await this.updateComplete;
 
                 const inputValue = this.dateInput.value;
-                console.log(
-                  ' ----- date input changed ----- ',
-                  inputValue,
-                  this.errorMessage
-                );
+                const { valid, errorCode } =
+                  this.validateChosenDate(inputValue);
 
-                if (!inputValue) {
-                  this.errorMessage = 'Please enter a date';
-                  this.allowEditing = false;
-                  return; // wait until date field returns a valid string
-                }
+                this.allowEditing = valid;
 
-                let validDate;
-                try {
-                  validDate = new Date(`${inputValue}T00:00:00`);
-                } catch (error) {
-                  this.errorMessage =
-                    'Please enter a valid date format (YYYY-MM-DD)';
-                  return; // wait until date field returns a valid string
-                }
-
-                // Check if minimum date is at least tomorrow
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const tomorrow = new Date(today);
-                tomorrow.setDate(today.getDate() + 1); // Set to tomorrow
-                tomorrow.setHours(0, 0, 0, 0);
-                const chosenDate = new Date(validDate);
-                chosenDate.setHours(0, 0, 0, 0);
-                if (chosenDate < today) {
-                  this.errorMessage = 'Date must be at least tomorrow.';
-                  this.allowEditing = false;
-                  return;
-                }
-
-                const newDate = new Date(validDate).toISOString();
-                this.newDate = newDate;
-
-                // Check if there has been a donation in the last month
-                const hasLastDonationInfo =
-                  this.plan?.payment.lastBillingDate.date &&
-                  new Date(this.plan?.payment.lastBillingDate.date);
-
-                if (hasLastDonationInfo) {
-                  const lastDonationDate = new Date(
-                    this.plan?.payment.lastBillingDate.date ?? ''
-                  );
-                  const lastDonationMonth = lastDonationDate.getMonth();
-                  const lastDonationYear = lastDonationDate.getFullYear();
-
-                  const thisYear = validDate.getFullYear();
-                  const thisMonth = validDate.getMonth();
-                  const isInLastMonth =
-                    thisYear === lastDonationYear &&
-                    thisMonth === lastDonationMonth;
-
-                  if (isInLastMonth) {
+                if (errorCode) {
+                  if (errorCode === 'second_donation_this_month') {
+                    this.errorMessage = InvalidDateErrorMessages[errorCode];
                     this.warningMessage =
                       'You have already made a donation this month.';
-                    this.errorMessage =
-                      'The date you selected will result in an addition donation for this month.';
-                    this.allowEditing = true;
+                  } else {
+                    this.errorMessage = InvalidDateErrorMessages[errorCode];
+                    this.newDate = undefined;
                     return;
                   }
                 }
 
-                // Check if the new date is within the next 12 months
-                const twelveMonthsFromNow = new Date();
-                twelveMonthsFromNow.setFullYear(
-                  twelveMonthsFromNow.getFullYear() + 1
-                );
-                twelveMonthsFromNow.setHours(0, 0, 0, 0);
-
-                if (chosenDate > twelveMonthsFromNow) {
-                  this.errorMessage =
-                    'New donation date must be within the next 12 months.';
-                  this.allowEditing = false;
-                  return;
-                }
-
-                this.allowEditing = true;
+                const chosenDate = new Date(`${inputValue}T00:00:00`);
+                const newDate = new Date(chosenDate).toISOString();
+                this.newDate = newDate;
               }}
             />
           </div>
