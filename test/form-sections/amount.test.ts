@@ -18,6 +18,11 @@ const plan = new MonthlyPlan({
       timezone_type: 3,
       timezone: 'UTC',
     },
+    lastBillingDate: {
+      date: '2024-07-22 00:00:00.000000',
+      timezone_type: 3,
+      timezone: 'UTC',
+    },
     status: 'Active',
     paymentMethodType: 'Venmo',
     last4: null,

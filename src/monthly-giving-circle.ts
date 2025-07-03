@@ -1,5 +1,3 @@
-/* eslint-disable no-debugger */
-
 import { LitElement, html, TemplateResult, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
@@ -17,7 +15,7 @@ export type APlanUpdate = {
   plan?: MonthlyPlan;
   donationId?: string;
   status: 'success' | 'fail';
-  action: 'receiptSent' | 'cancel' | 'amountUpdate';
+  action: 'receiptSent' | 'cancel' | 'amountUpdate' | 'dateUpdate';
   message: string;
 };
 
@@ -79,6 +77,12 @@ export class MonthlyGivingCircle extends LitElement {
       return;
     }
 
+    if (update.action === 'dateUpdate') {
+      this.editingThisPlan = plan;
+      this.editFormElement.dateUpdates(update.status);
+      return;
+    }
+
     if (update.action === 'cancel' || plan?.hasBeenCancelled) {
       this.editingThisPlan = undefined;
       this.viewToDisplay = 'plans';
@@ -100,11 +104,10 @@ export class MonthlyGivingCircle extends LitElement {
       ${isEditingPlan
         ? html`<ia-mgc-edit-plan
             .plan=${this.editingThisPlan}
-            .cancelPlanHandler=${(plan: MonthlyPlan) => {
-              console.log('cancelPlan', plan);
+            @cancelPlan=${() => {
               this.dispatchEvent(
                 new CustomEvent('cancelPlan', {
-                  detail: { plan },
+                  detail: { plan: this.editingThisPlan },
                 })
               );
             }}
@@ -121,6 +124,15 @@ export class MonthlyGivingCircle extends LitElement {
               this.dispatchEvent(
                 new CustomEvent('updateAmount', {
                   detail: { plan, amountOptions: options },
+                })
+              );
+            }}
+            @updateDate=${(event: CustomEvent) => {
+              const { newDate } = event.detail;
+              console.log('updateDate', newDate);
+              this.dispatchEvent(
+                new CustomEvent('updateDate', {
+                  detail: { plan: this.editingThisPlan, newDate },
                 })
               );
             }}

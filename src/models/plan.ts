@@ -4,6 +4,12 @@ type BtData = {
     date: string;
     timezone_type: number;
     timezone: string;
+    oldDate?: string; // optional for updates ISO UTC date string
+  };
+  lastBillingDate: {
+    date: string;
+    timezone_type: number;
+    timezone: string;
   };
   status: string; // active, inactive
   paymentMethodType: string; // cc, paypal, venmo, etc
@@ -59,12 +65,17 @@ export class MonthlyPlan {
     this.plan.amount = newAmount;
   }
 
+  setNextBillingDate(newDate: string): void {
+    this.payment.nextBillingDate.oldDate = this.payment.nextBillingDate.date;
+    this.payment.nextBillingDate.date = newDate;
+  }
+
   get startDate(): string {
     const date = new Date(this.plan.start_date);
     return date.toLocaleDateString();
   }
 
-  get nextBillingDate(): string {
+  get nextBillingDateLocale(): string {
     const nextBillingDate = new Date(
       this.payment.nextBillingDate.date
     ).toLocaleDateString(undefined, {
@@ -74,6 +85,20 @@ export class MonthlyPlan {
     });
 
     return nextBillingDate ?? 'not found';
+  }
+
+  get lastBillingDateLocale(): string {
+    const lastBillingDate = new Date(
+      this.payment.lastBillingDate.date
+    ).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+
+    console.log('lastBillingDate from model', lastBillingDate);
+
+    return lastBillingDate ?? 'not found';
   }
 
   get hasBeenCancelled(): boolean {

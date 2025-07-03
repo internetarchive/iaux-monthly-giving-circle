@@ -2,15 +2,15 @@ import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import type { MonthlyPlan } from './models/plan';
-import './form-sections/cancel';
 import './form-sections/amount';
+import './form-sections/date';
+import './form-sections/cancel';
 import type { MGCEditPlanAmount } from './form-sections/amount';
+import type { MGCEditPlanDate } from './form-sections/date';
 
 @customElement('ia-mgc-edit-plan')
 export class IauxEditPlanForm extends LitElement {
   @property({ type: Object }) plan?: MonthlyPlan;
-
-  @property({ type: Object }) cancelPlanHandler?: (plan: MonthlyPlan) => void;
 
   @property({ type: Object }) updateAmountHandler?: (
     plan: MonthlyPlan,
@@ -33,6 +33,11 @@ export class IauxEditPlanForm extends LitElement {
     amountForm!.amountUpdated(status);
   }
 
+  dateUpdates(status: 'success' | 'fail') {
+    const dateForm = this.querySelector('ia-mgc-edit-date') as MGCEditPlanDate;
+    dateForm!.dateUpdated(status);
+  }
+
   render() {
     return html`
       <section class="mgc-edit-plan">
@@ -50,6 +55,27 @@ export class IauxEditPlanForm extends LitElement {
             }
           }}
         ></ia-mgc-edit-plan-amount>
+        <hr />
+        <ia-mgc-edit-date
+          @updateDate=${(e: CustomEvent) => {
+            const { newDate } = e.detail;
+            if (this.plan) {
+              this.dispatchEvent(
+                new CustomEvent('updateDate', {
+                  detail: { plan: this.plan, newDate },
+                })
+              );
+            }
+          }}
+          .plan=${this.plan}
+        ></ia-mgc-edit-date>
+        <hr />
+        <ia-mgc-cancel-plan
+          .plan=${this.plan}
+          @cancelPlan=${() => {
+            this.dispatchEvent(new Event('cancelPlan'));
+          }}
+        ></ia-mgc-cancel-plan>
         <hr />
         <p class="email-edit-plan">
           Need to update your plan further? Please email us at

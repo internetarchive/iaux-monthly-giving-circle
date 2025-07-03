@@ -18,6 +18,11 @@ const plan = new MonthlyPlan({
       timezone_type: 3,
       timezone: 'UTC',
     },
+    lastBillingDate: {
+      date: '2024-07-22 00:00:00.000000',
+      timezone_type: 3,
+      timezone: 'UTC',
+    },
     status: 'Active',
     paymentMethodType: 'Venmo',
     last4: null,
@@ -42,13 +47,15 @@ describe('IauxEditPlanForm', () => {
     );
 
     const cancelForm = el.querySelector('ia-mgc-cancel-plan');
-    expect(cancelForm).to.not.exist;
+    expect(cancelForm).to.exist;
 
-    // we will re-enable when the cancel section is live
-    // el.cancelPlanHandler = Sinon.stub();
-    // await el.updateComplete;
+    let hasTopLevelCancelEvent = false;
 
-    // cancelForm!.dispatchEvent(new Event('cancelPlan'));
-    // expect(el.cancelPlanHandler).to.have.been.called;
+    el.addEventListener('cancelPlan', () => {
+      hasTopLevelCancelEvent = true;
+      expect(hasTopLevelCancelEvent).to.be.true;
+    });
+
+    cancelForm!.dispatchEvent(new Event('cancelPlan'));
   });
 });
