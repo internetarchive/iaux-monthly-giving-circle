@@ -750,8 +750,10 @@
               >
             </div>
           </div>
-          <p class="error warning-msg">${this.warningMessage}</p>
-          <p class="error error-msg">${this.errorMessage}</p>
+          <p class="error error-msg">
+            ${this.warningMessage?p`<span>${this.warningMessage}</span><br />`:""}
+            ${this.errorMessage}
+          </p>
         </form>
       </section>
     `}};w.styles=v`
