@@ -12,8 +12,6 @@ import type { MGCEditPlanDate } from './form-sections/date';
 export class IauxEditPlanForm extends LitElement {
   @property({ type: Object }) plan?: MonthlyPlan;
 
-  @property({ type: Object }) cancelPlanHandler?: (plan: MonthlyPlan) => void;
-
   @property({ type: Object }) updateAmountHandler?: (
     plan: MonthlyPlan,
     amountUpdates: {
@@ -75,9 +73,7 @@ export class IauxEditPlanForm extends LitElement {
         <ia-mgc-cancel-plan
           .plan=${this.plan}
           @cancelPlan=${() => {
-            if (this.plan) {
-              this.cancelPlanHandler?.(this.plan);
-            }
+            this.dispatchEvent(new Event('cancelPlan'));
           }}
         ></ia-mgc-cancel-plan>
         <hr />
