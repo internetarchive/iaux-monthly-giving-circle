@@ -66,6 +66,13 @@ const plan = new MonthlyPlan({
   },
 });
 
+const nextBillingDateYYYYMMDD = `${nextPaymentFirstOfMonth.getFullYear()}-${String(
+  nextPaymentFirstOfMonth.getMonth() + 1
+).padStart(2, '0')}-${String(nextPaymentFirstOfMonth.getDate()).padStart(
+  2,
+  '0'
+)}`;
+
 describe('<ia-mgc-edit-date>', () => {
   it('input validates before allowing form submission', async () => {
     const el = await fixture<MGCEditPlanDate>(
@@ -130,6 +137,7 @@ describe('<ia-mgc-edit-date>', () => {
         '0'
       )}`
     );
+    expect(dateInput!.value).to.equal(nextBillingDateYYYYMMDD);
 
     // checks if input value is invalid
     // date before today
