@@ -66,6 +66,13 @@ const plan = new MonthlyPlan({
   },
 });
 
+const nextBillingDateYYYYMMDD = `${nextPaymentFirstOfMonth.getFullYear()}-${String(
+  nextPaymentFirstOfMonth.getMonth() + 1
+).padStart(2, '0')}-${String(nextPaymentFirstOfMonth.getDate()).padStart(
+  2,
+  '0'
+)}`;
+
 describe('<ia-mgc-edit-date>', () => {
   it('input validates before allowing form submission', async () => {
     const el = await fixture<MGCEditPlanDate>(
@@ -130,10 +137,11 @@ describe('<ia-mgc-edit-date>', () => {
         '0'
       )}`
     );
+    expect(dateInput!.value).to.equal(nextBillingDateYYYYMMDD);
 
     // checks if input value is invalid
     // date before today
-    dateInput!.setAttribute('value', '2008-11-11');
+    dateInput!.value = '2008-11-11';
     dateInput!.dispatchEvent(new Event('change'));
     await el.updateComplete;
 
@@ -144,7 +152,7 @@ describe('<ia-mgc-edit-date>', () => {
     const twoYearsFromNowStr = `${twoYearsFromNow.getFullYear()}-${String(
       twoYearsFromNow.getMonth() + 1
     ).padStart(2, '0')}-${String(twoYearsFromNow.getDate()).padStart(2, '0')}`;
-    dateInput!.setAttribute('value', twoYearsFromNowStr);
+    dateInput!.value = twoYearsFromNowStr;
     dateInput!.dispatchEvent(new Event('change'));
     await el.updateComplete;
 
@@ -162,7 +170,7 @@ describe('<ia-mgc-edit-date>', () => {
     const lastDayOfCurrentMonthStr = `${lastDayOfCurrentMonth.getFullYear()}-${String(
       lastDayOfCurrentMonth.getMonth() + 1
     ).padStart(2, '0')}-${lastDayOfCurrentMonth.getDate()}`;
-    dateInput!.setAttribute('value', lastDayOfCurrentMonthStr);
+    dateInput!.value = lastDayOfCurrentMonthStr;
     dateInput!.dispatchEvent(new Event('change'));
     await el.updateComplete;
 
@@ -187,7 +195,7 @@ describe('<ia-mgc-edit-date>', () => {
     const nextMonthStr = `${nextMonth.getFullYear()}-${String(
       nextMonth.getMonth() + 1
     ).padStart(2, '0')}-${String(nextMonth.getDate()).padStart(2, '0')}`;
-    dateInput!.setAttribute('value', nextMonthStr);
+    dateInput!.value = nextMonthStr;
     dateInput!.dispatchEvent(new Event('change'));
 
     await el.updateComplete;

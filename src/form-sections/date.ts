@@ -19,6 +19,7 @@ type InvalidDateErrorCode =
   | 'date_too_early'
   | 'second_donation_this_month'
   | 'date_out_of_range'
+  | 'same_next_billing_date'
   | '';
 
 enum InvalidDateErrorMessages {
@@ -26,6 +27,7 @@ enum InvalidDateErrorMessages {
   date_too_early = 'Date must be at least tomorrow.',
   second_donation_this_month = 'The date you selected will result in an additional donation for this month.',
   date_out_of_range = 'New donation date must be within the next 12 months.',
+  same_next_billing_date = '',
 }
 @customElement('ia-mgc-edit-date')
 export class MGCEditPlanDate extends LitElement {
@@ -141,6 +143,13 @@ export class MGCEditPlanDate extends LitElement {
     this.newDate = undefined;
   }
 
+  formatDateToYYYYMMDD(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const dateNum = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${dateNum}`;
+  }
+
   async clearStatusMessaging() {
     this.errorMessage = '';
     this.warningMessage = '';
@@ -179,6 +188,18 @@ export class MGCEditPlanDate extends LitElement {
 
     const chosenDate = new Date(validDate);
     chosenDate.setHours(0, 0, 0, 0);
+
+    // check input value against next billing date
+    const isNextBillingDate = this.plan?.nextBillingDate
+      ? this.formatDateToYYYYMMDD(new Date(this.plan.nextBillingDate)) ===
+        this.formatDateToYYYYMMDD(chosenDate)
+      : false;
+    if (isNextBillingDate) {
+      return {
+        valid: false,
+        errorCode: 'same_next_billing_date',
+      };
+    }
 
     if (chosenDate < today) {
       return {
@@ -246,6 +267,10 @@ export class MGCEditPlanDate extends LitElement {
   }
 
   get editDateForm(): TemplateResult {
+    const nextBillingDateYYYYMMDD = this.plan?.nextBillingDate
+      ? this.formatDateToYYYYMMDD(new Date(this.plan.nextBillingDate))
+      : '';
+    const inputValueToUse = this.dateInput?.value ?? nextBillingDateYYYYMMDD;
     return html`
       <section>
         <form id="edit-date">
@@ -264,7 +289,7 @@ export class MGCEditPlanDate extends LitElement {
               name="edit-date"
               min=${this.minDate}
               max=${this.maxDate}
-              value=""
+              .value=${inputValueToUse}
               @focus=${() => this.clearStatusMessaging()}
               @change=${async () => {
                 this.clearStatusMessaging();

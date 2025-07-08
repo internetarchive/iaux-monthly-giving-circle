@@ -65,14 +65,15 @@ export class MonthlyPlan {
     this.plan.amount = newAmount;
   }
 
-  setNextBillingDate(newDate: string): void {
-    this.payment.nextBillingDate.oldDate = this.payment.nextBillingDate.date;
-    this.payment.nextBillingDate.date = newDate;
+  get nextBillingDate(): string {
+    // iso08601 date string
+    return this.payment.nextBillingDate.date;
   }
 
-  get startDate(): string {
-    const date = new Date(this.plan.start_date);
-    return date.toLocaleDateString();
+  setNextBillingDate(newDate: string) {
+    // iso08601 date string
+    this.payment.nextBillingDate.oldDate = this.payment.nextBillingDate.date;
+    this.payment.nextBillingDate.date = newDate;
   }
 
   get nextBillingDateLocale(): string {
