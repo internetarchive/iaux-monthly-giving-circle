@@ -79,11 +79,11 @@ describe('<ia-mgc-edit-date>', () => {
       html`<ia-mgc-edit-date .plan=${plan}></ia-mgc-edit-date>`
     );
 
-    const amountLabel = el.shadowRoot?.querySelector('.current-date');
-    expect(amountLabel).to.exist;
-    expect(amountLabel?.textContent).to.contain(plan.nextBillingDateLocale);
+    const holder = el.shadowRoot?.querySelector('ia-mgc-form-section-info');
+    expect(holder).to.equal(3);
+    expect(holder?.textContent).to.contain(plan.nextBillingDateLocale);
 
-    const cta = el.shadowRoot?.querySelector('ia-button#open-edit-date-form');
+    const cta = holder?.shadowRoot?.querySelector('ia-button');
     expect(cta).to.exist;
 
     // does not show form
