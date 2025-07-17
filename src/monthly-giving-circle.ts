@@ -6,7 +6,7 @@ import './plans';
 import './presentational/mgc-title';
 import './receipts';
 import type { IauxMgcReceipts } from './receipts';
-import './presentational/ia-button';
+import './presentational/mgc-button';
 import type { MonthlyPlan } from './models/plan';
 import './edit-plan-form';
 import type { IauxEditPlanForm } from './edit-plan-form';
@@ -147,7 +147,7 @@ export class MonthlyGivingCircle extends LitElement {
     let cta = html``;
 
     const receiptsCTA = html`
-      <ia-button
+      <ia-mgc-button
         class="link slim"
         .clickHandler=${async () => {
           this.viewToDisplay = 'receipts';
@@ -156,7 +156,7 @@ export class MonthlyGivingCircle extends LitElement {
         }}
       >
         View recent donation history
-      </ia-button>
+      </ia-mgc-button>
     `;
 
     const displayReceiptsLink =
@@ -167,7 +167,7 @@ export class MonthlyGivingCircle extends LitElement {
       case 'receipts':
         title = 'Recent donations';
         titleStyle = 'default';
-        cta = html`<ia-button
+        cta = html`<ia-mgc-button
           class="link slim"
           id="close-receipts"
           .clickHandler=${async () => {
@@ -181,13 +181,13 @@ export class MonthlyGivingCircle extends LitElement {
           }}
         >
           Back to account settings
-        </ia-button>`;
+        </ia-mgc-button>`;
         break;
 
       case 'editPlan':
         title = 'Monthly Giving Circle';
         titleStyle = 'default';
-        cta = html`<ia-button
+        cta = html`<ia-mgc-button
           class="primary"
           id="close-edit-plan"
           .clickHandler=${async () => {
@@ -201,7 +201,7 @@ export class MonthlyGivingCircle extends LitElement {
           }}
         >
           Back to account settings
-        </ia-button>`;
+        </ia-mgc-button>`;
         break;
 
       default:
