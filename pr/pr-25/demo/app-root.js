@@ -211,7 +211,7 @@
       opacity: 0.5;
       color: #222 !important;
     }
-  `;l([m({type:Boolean,reflect:!0})],Q.prototype,"isDisabled",void 0);l([m({type:Object})],Q.prototype,"clickHandler",void 0);l([$("button")],Q.prototype,"button",void 0);Q=l([C("ia-button")],Q);let ut=class extends A{constructor(){super(...arguments),this.plans=[],this.canEdit=!1}render(){return p`
+  `;l([m({type:Boolean,reflect:!0})],Q.prototype,"isDisabled",void 0);l([m({type:Object})],Q.prototype,"clickHandler",void 0);l([$("button")],Q.prototype,"button",void 0);Q=l([C("ia-mgc-button")],Q);let ut=class extends A{constructor(){super(...arguments),this.plans=[],this.canEdit=!1}render(){return p`
       <section class="monthly-giving-circle">
         <ul>
           ${this.plans.map(t=>{var e,i,n,a,s,d,r,c,u,h,g,y,M,w,vt,It,Tt,Pt;let kt=(i=(e=t.payment)===null||e===void 0?void 0:e.paymentMethodType)!==null&&i!==void 0?i:"Method not found";kt==="creditCard"&&(kt="Credit card");const Qe=(a=(n=t.payment)===null||n===void 0?void 0:n.cardType)!==null&&a!==void 0?a:"Card type not found",Xe=!((s=t.payment)===null||s===void 0)&&s.last4?`...${(d=t.payment)===null||d===void 0?void 0:d.last4}`:"CC number not found";return p`
@@ -260,11 +260,11 @@
     `}planCTA(t){if(!this.canEdit)return p`<p class="email-edit-plan">
         Need to update your plan further? Please email us at
         <a href=${"mailto:donations@archive.org?subject=I'd like to update my monthly donation"}>donations@archive.org</a>.
-      </p>`;const e=t.plan.isCancelled?"Plan is cancelled":"Manage this monthly donation";return p`<ia-button
+      </p>`;const e=t.plan.isCancelled?"Plan is cancelled":"Manage this monthly donation";return p`<ia-mgc-button
       class="ia-button link edit-donation"
       .isDisabled=${t.plan.isCancelled}
       .clickHandler=${async(i,n)=>{n.isDisabled=!0,this.dispatchEvent(new CustomEvent("editThisPlan",{detail:{plan:t}}))}}
-      >${e}</ia-button
+      >${e}</ia-mgc-button
     >`}};ut.styles=v`
     :host {
       max-height: 500px;
@@ -420,7 +420,7 @@
         margin-top: 10px;
       }
     }
-  `;l([m({type:String})],wt.prototype,"titleStyle",void 0);wt=l([C("ia-mgc-title")],wt);let ht=class extends A{constructor(){super(...arguments),this.receipts=[],this.receiptDispatcher=null}shouldUpdate(t){return!!t.has("receiptDispatcher")}updated(t){t.has("receipts")&&this.updateReceiptSentMap(),t.has("receiptDispatcher")&&console.log("receiptDispatcher UPDATED ---- ",this.receiptDispatcher)}updateReceiptSentMap(){if(!this.receipts.length)this.receiptDispatcher=null;else{const t={};this.receipts.forEach(e=>{t[e.id]={id:e.id,emailStatus:""}}),this.receiptDispatcher=t}}emailReceipt(t){this.dispatchEvent(new CustomEvent("EmailReceiptRequest",{detail:{donation:t}}))}async emailSent(t){var e;const i=this.receiptDispatcher;this.receiptDispatcher=null,await this.updateComplete;const n={...i},{id:a}=t;n[a]=t,this.receiptDispatcher={...n},console.log("RECEIPTS -- emailSent",this.receiptDispatcher,t);const s=CSS.escape(a),d=(e=this.shadowRoot)===null||e===void 0?void 0:e.querySelector(`#donation-${s} ia-button`);d.isDisabled=!1}emailStatusMessageToDisplay(t){switch(t.emailStatus){case"success":return"Sent";case"fail":return"Failed";default:return""}}ctaButtonText(t,e){return e?.emailStatus==="pending"?"Sending...":"Email receipt"}render(){return p`
+  `;l([m({type:String})],wt.prototype,"titleStyle",void 0);wt=l([C("ia-mgc-title")],wt);let ht=class extends A{constructor(){super(...arguments),this.receipts=[],this.receiptDispatcher=null}shouldUpdate(t){return!!t.has("receiptDispatcher")}updated(t){t.has("receipts")&&this.updateReceiptSentMap(),t.has("receiptDispatcher")&&console.log("receiptDispatcher UPDATED ---- ",this.receiptDispatcher)}updateReceiptSentMap(){if(!this.receipts.length)this.receiptDispatcher=null;else{const t={};this.receipts.forEach(e=>{t[e.id]={id:e.id,emailStatus:""}}),this.receiptDispatcher=t}}emailReceipt(t){this.dispatchEvent(new CustomEvent("EmailReceiptRequest",{detail:{donation:t}}))}async emailSent(t){var e;const i=this.receiptDispatcher;this.receiptDispatcher=null,await this.updateComplete;const n={...i},{id:a}=t;n[a]=t,this.receiptDispatcher={...n},console.log("RECEIPTS -- emailSent",this.receiptDispatcher,t);const s=CSS.escape(a),d=(e=this.shadowRoot)===null||e===void 0?void 0:e.querySelector(`#donation-${s} ia-mgc-button`);d.isDisabled=!1}emailStatusMessageToDisplay(t){switch(t.emailStatus){case"success":return"Sent";case"fail":return"Failed";default:return""}}ctaButtonText(t,e){return e?.emailStatus==="pending"?"Sending...":"Email receipt"}render(){return p`
       <section id="recent-donations-list">
         <table>
           <tr>
@@ -446,13 +446,13 @@
                     </td>
                     <td>
                       <div class="request-receipt">
-                        <ia-button
+                        <ia-mgc-button
                           class="link slim"
                           style="--link-button-flex-align-items: center;"
                           .clickHandler=${async(s,d)=>{if(!n&&(d.isDisabled=!0,await d.updateComplete),!n&&(this.emailReceipt(t),this.receiptDispatcher)){const c={...this.receiptDispatcher};c[t.id].emailStatus="pending",this.receiptDispatcher=c}}}
                         >
                           ${this.ctaButtonText(t,i)}
-                        </ia-button>
+                        </ia-mgc-button>
                         ${a}
                       </div>
                     </td>
@@ -484,7 +484,7 @@
     th.action {
       width: 200px;
     }
-    ia-button-style {
+    ia-mgc-button-style {
       display: inline-block;
     }
 
@@ -567,12 +567,12 @@
     `}};l([m({type:String})],pt.prototype,"sectionBadge",void 0);l([m({type:String})],pt.prototype,"headline",void 0);l([m({type:String})],pt.prototype,"badgeMode",void 0);pt=l([C("donation-form-section")],pt);class ki{constructor(t){this.streetAddress=t?.streetAddress,this.extendedAddress=t?.extendedAddress,this.locality=t?.locality,this.region=t?.region,this.postalCode=t?.postalCode,this.countryCodeAlpha2=t?.countryCodeAlpha2}}class Ni{constructor(t){this.email=t?.email,this.firstName=t?.firstName,this.lastName=t?.lastName}}class Bi{constructor(t){this.customer=t.customer,this.billing=t.billing}}var Ie;(function(o){o.CreditCard="Credit Card",o.PayPal="PayPal",o.GooglePay="Google Pay",o.Venmo="Venmo",o.ApplePay="Apple Pay"})(Ie||(Ie={}));class D{get feeAmountCovered(){return this.coverFees?this.fee:0}get fee(){return D.calculateFeeAmount(this.amount)}get total(){return D.calculateTotal(this.amount,this.coverFees)}static calculateTotal(t,e){const i=e?this.calculateFeeAmount(t):0,n=t+i;return isNaN(n)?0:this.roundAmount(n)}static calculateFeeAmount(t){const e=t*.02+.49;return isNaN(e)?0:this.roundAmount(e)}static roundAmount(t){return Math.round(t*100)/100}constructor(t){this.donationType=t.donationType,this.amount=t.amount,this.coverFees=t.coverFees}}var j;(function(o){o.OneTime="one-time",o.Monthly="monthly",o.Upsell="up_sell"})(j||(j={}));new D({donationType:j.OneTime,amount:10,coverFees:!1});let Te=class extends A{render(){return p`
       <div class="mgc-donation-section-info">
         <p><slot></slot></p>
-        <ia-button
+        <ia-mgc-button
           class="ia-button link"
           .clickHandler=${(t,e)=>{e.isDisabled=!0,this.dispatchEvent(new Event("editingRequested"))}}
         >
           Edit...
-        </ia-button>
+        </ia-mgc-button>
       </div>
     `}};Te=l([C("ia-mgc-form-section-info")],Te);let Ct=class extends A{constructor(){super(...arguments),this.status=""}get glyph(){return this.status==="success"?"✓":this.status==="fail"?"✖":""}render(){return this.status?p`
       <span class="sent-status ${this.status}"
@@ -604,7 +604,7 @@
           ${this.currentlyEditing?this.editAmountForm:f}
         </donation-form-section>
       </section>
-    `}async amountUpdated(t){if(this.clearInputField(),this.updateStatus=t,this.updateMessage=t==="success"?"Amount updated":"Failed. Try again.",t==="success"){this.closeForm(),await this.updateComplete,this.updateStatus=t,this.updateMessage="Amount updated";return}this.form.querySelector("ia-button#update-amount").isDisabled=!1,this.captureAmountChanges(),await this.updateComplete}requestAmountUpdate(t){var e,i,n,a,s;t.preventDefault();const d=this.form.querySelector('input[name="amount"]');this.newAmount=Number(d.value),this.captureAmountChanges(this.newAmount),console.log("<plan-amount> - update amount",{newValue:this.newAmount,oldValue:(e=this.plan)===null||e===void 0?void 0:e.plan.amount,display:(i=this.donationPaymentInfo)===null||i===void 0?void 0:i.amount});const r=Number(D.calculateTotal(Number((n=this.donationPaymentInfo)===null||n===void 0?void 0:n.amount),this.coverFees));this.dispatchEvent(new CustomEvent("updateAmount",{detail:{plan:this.plan,amount:r,baseAmount:(a=this.donationPaymentInfo)===null||a===void 0?void 0:a.amount,coverFees:this.coverFees,feeCovered:(s=this.donationPaymentInfo)===null||s===void 0?void 0:s.feeAmountCovered}}))}captureAmountChanges(t){if(!this.donationPaymentInfo&&this.plan){this.donationPaymentInfo=new D({donationType:j.Monthly,amount:0,coverFees:!0});return}let e;if(t)e=new D({donationType:j.Monthly,amount:t,coverFees:!0});else{const i=this.donationPaymentInfo?this.donationPaymentInfo.amount:this.plan.amount;e=new D({donationType:j.Monthly,amount:i,coverFees:!0})}this.donationPaymentInfo=e}closeForm(){this.clearInputField(),this.clearStatusMessaging(),this.currentlyEditing=!1,this.coverFees=!1,this.errorMessage=""}clearInputField(){const t=this.form.querySelector('input[name="amount"]');t.value="",this.newAmount=0,this.donationPaymentInfo=void 0}async clearStatusMessaging(){this.errorMessage="",this.updateMessage="",this.updateStatus="",await this.updateComplete}totalAmountWithFees(){return this.newAmount===0?0:D.calculateTotal(this.newAmount,this.coverFees)}get coveredFeesText(){var t;return`I'll generously add $${(t=this.donationPaymentInfo)===null||t===void 0?void 0:t.feeAmountCovered} to cover fees.`}get editAmountForm(){var t;return p`
+    `}async amountUpdated(t){if(this.clearInputField(),this.updateStatus=t,this.updateMessage=t==="success"?"Amount updated":"Failed. Try again.",t==="success"){this.closeForm(),await this.updateComplete,this.updateStatus=t,this.updateMessage="Amount updated";return}this.form.querySelector("ia-mgc-button#update-amount").isDisabled=!1,this.captureAmountChanges(),await this.updateComplete}requestAmountUpdate(t){var e,i,n,a,s;t.preventDefault();const d=this.form.querySelector('input[name="amount"]');this.newAmount=Number(d.value),this.captureAmountChanges(this.newAmount),console.log("<plan-amount> - update amount",{newValue:this.newAmount,oldValue:(e=this.plan)===null||e===void 0?void 0:e.plan.amount,display:(i=this.donationPaymentInfo)===null||i===void 0?void 0:i.amount});const r=Number(D.calculateTotal(Number((n=this.donationPaymentInfo)===null||n===void 0?void 0:n.amount),this.coverFees));this.dispatchEvent(new CustomEvent("updateAmount",{detail:{plan:this.plan,amount:r,baseAmount:(a=this.donationPaymentInfo)===null||a===void 0?void 0:a.amount,coverFees:this.coverFees,feeCovered:(s=this.donationPaymentInfo)===null||s===void 0?void 0:s.feeAmountCovered}}))}captureAmountChanges(t){if(!this.donationPaymentInfo&&this.plan){this.donationPaymentInfo=new D({donationType:j.Monthly,amount:0,coverFees:!0});return}let e;if(t)e=new D({donationType:j.Monthly,amount:t,coverFees:!0});else{const i=this.donationPaymentInfo?this.donationPaymentInfo.amount:this.plan.amount;e=new D({donationType:j.Monthly,amount:i,coverFees:!0})}this.donationPaymentInfo=e}closeForm(){this.clearInputField(),this.clearStatusMessaging(),this.currentlyEditing=!1,this.coverFees=!1,this.errorMessage=""}clearInputField(){const t=this.form.querySelector('input[name="amount"]');t.value="",this.newAmount=0,this.donationPaymentInfo=void 0}async clearStatusMessaging(){this.errorMessage="",this.updateMessage="",this.updateStatus="",await this.updateComplete}totalAmountWithFees(){return this.newAmount===0?0:D.calculateTotal(this.newAmount,this.coverFees)}get coveredFeesText(){var t;return`I'll generously add $${(t=this.donationPaymentInfo)===null||t===void 0?void 0:t.feeAmountCovered} to cover fees.`}get editAmountForm(){var t;return p`
       <section>
         <form id="edit-plan-amount">
           <p>Current donation amount: $${(t=this.plan)===null||t===void 0?void 0:t.amount}</p>
@@ -634,20 +634,20 @@
             </div>
             <p>Total: USD $${this.totalAmountWithFees()}</p>
             <div class="cta-container">
-              <ia-button
+              <ia-mgc-button
                 class="ia-button secondary"
                 .clickHandler=${e=>{e.preventDefault(),this.closeForm()}}
               >
                 Cancel
-              </ia-button>
-              <ia-button
+              </ia-mgc-button>
+              <ia-mgc-button
                 id="update-amount"
                 class="ia-button primary"
                 type="submit"
                 .clickHandler=${async(e,i)=>{var n;if(this.clearStatusMessaging(),!this.newAmount){this.errorMessage="Please enter a new amount";return}i.isDisabled=!0,await i.updateComplete;const a=this.form.querySelector('input[name="amount"]'),s=(n=Number(a.value))!==null&&n!==void 0?n:0,d=s<1,r=s>=9999;if(d&&(this.errorMessage="Please enter a valid amount"),r&&(this.errorMessage="Amount must be less than $9,999. Would you like to donate more? Please contact us at donations@archive.org"),r||d){i.isDisabled=!1,await i.updateComplete;return}this.requestAmountUpdate(e)}}
               >
                 Update
-              </ia-button>
+              </ia-mgc-button>
               <ia-mgc-update-status .status=${this.updateStatus}
                 >${this.updateMessage}</ia-mgc-update-status
               >
@@ -722,13 +722,13 @@
           </div>
           <div>
             <div class="cta-container">
-              <ia-button
+              <ia-mgc-button
                 class="ia-button secondary"
                 .clickHandler=${r=>{r.preventDefault(),this.closeForm()}}
               >
                 Cancel
-              </ia-button>
-              <ia-button
+              </ia-mgc-button>
+              <ia-mgc-button
                 id="edit-date"
                 class="ia-button primary"
                 type="submit"
@@ -736,7 +736,7 @@
                 .clickHandler=${async(r,c)=>{if(this.clearStatusMessaging(),!this.newDate){this.errorMessage="Please enter a valid date";return}c.isDisabled=!0,await c.updateComplete,this.requestDateUpdate(r)}}
               >
                 Update
-              </ia-button>
+              </ia-mgc-button>
               <ia-mgc-update-status .status=${this.updateStatus}
                 >${this.updateMessage}</ia-mgc-update-status
               >
@@ -777,7 +777,7 @@
       margin: 10px 0;
       display: flex;
     }
-  `;l([m({type:Object})],E.prototype,"plan",void 0);l([m({type:String})],E.prototype,"newDate",void 0);l([m({type:Boolean,reflect:!0})],E.prototype,"currentlyEditing",void 0);l([m({type:Boolean})],E.prototype,"allowEditing",void 0);l([m({type:String})],E.prototype,"updateMessage",void 0);l([m({type:String})],E.prototype,"errorMessage",void 0);l([m({type:String})],E.prototype,"warningMessage",void 0);l([m({type:String})],E.prototype,"updateStatus",void 0);l([$("form")],E.prototype,"form",void 0);l([$("form ia-button#edit-date")],E.prototype,"formSubmitButton",void 0);l([$('form input[name="edit-date"]')],E.prototype,"dateInput",void 0);E=l([C("ia-mgc-edit-date")],E);/**
+  `;l([m({type:Object})],E.prototype,"plan",void 0);l([m({type:String})],E.prototype,"newDate",void 0);l([m({type:Boolean,reflect:!0})],E.prototype,"currentlyEditing",void 0);l([m({type:Boolean})],E.prototype,"allowEditing",void 0);l([m({type:String})],E.prototype,"updateMessage",void 0);l([m({type:String})],E.prototype,"errorMessage",void 0);l([m({type:String})],E.prototype,"warningMessage",void 0);l([m({type:String})],E.prototype,"updateStatus",void 0);l([$("form")],E.prototype,"form",void 0);l([$("form ia-mgc-button#edit-date")],E.prototype,"formSubmitButton",void 0);l([$('form input[name="edit-date"]')],E.prototype,"dateInput",void 0);E=l([C("ia-mgc-edit-date")],E);/**
  * @license
  * Copyright 2018 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
@@ -1012,7 +1012,7 @@
         }
       </style>
     `}};l([$("badged-input.donation-contact-form-email")],_.prototype,"emailBadgedInput",void 0);l([$("#donation-contact-form-email")],_.prototype,"emailField",void 0);l([$("badged-input.donation-contact-form-first-name")],_.prototype,"firstNameBadgedInput",void 0);l([$("#donation-contact-form-first-name")],_.prototype,"firstNameField",void 0);l([$("badged-input.donation-contact-form-last-name")],_.prototype,"lastNameBadgedInput",void 0);l([$("#donation-contact-form-last-name")],_.prototype,"lastNameField",void 0);l([$("badged-input.donation-contact-form-postal-code")],_.prototype,"postalBadgedInput",void 0);l([$("#donation-contact-form-postal-code")],_.prototype,"postalCodeField",void 0);l([$("badged-input.donation-contact-form-street-address")],_.prototype,"streetAddressBadgedInput",void 0);l([$("#donation-contact-form-street-address")],_.prototype,"streetAddressField",void 0);l([$("badged-input.donation-contact-form-extended-address")],_.prototype,"extendedAddressBadgedInput",void 0);l([$("#donation-contact-form-extended-address")],_.prototype,"extendedAddressField",void 0);l([$("badged-input.donation-contact-form-locality")],_.prototype,"localityBadgedInput",void 0);l([$("#donation-contact-form-locality")],_.prototype,"localityField",void 0);l([$("badged-input.donation-contact-form-region")],_.prototype,"regionBadgedInput",void 0);l([$("#donation-contact-form-region")],_.prototype,"regionField",void 0);l([$("#donation-contact-form-countryCodeAlpha2")],_.prototype,"countryCodeAlpha2Field",void 0);l([$("#donation-contact-form-error-message")],_.prototype,"errorMessage",void 0);l([$("form")],_.prototype,"form",void 0);l([m({type:String})],_.prototype,"selectedCountry",void 0);l([m({type:String})],_.prototype,"donorEmail",void 0);_=l([C("contact-form")],_);let q=class extends A{constructor(){super(...arguments),this.patronWantsToKeepPlan=!0,this.initialCancelRequest=!1}updated(t){t.has("plan")&&console.log("plan updated",this.plan)}async cancelThisPlan(t){t.preventDefault(),this.patronWantsToKeepPlan=!1,this.dispatchEvent(new Event("cancelPlan"))}get formId(){var t;return`cancel-donation-form-${(t=this.plan)===null||t===void 0?void 0:t.id}`}render(){return this.initialCancelRequest?this.confirmCancelation:p`
-      <ia-button
+      <ia-mgc-button
         class="clear-container slim"
         .clickHandler=${(t,e)=>{if(e.isDisabled=!0,this.initialCancelRequest){this.initialCancelRequest=!1,this.patronWantsToKeepPlan=!0;return}this.initialCancelRequest=!0}}
       >
@@ -1028,14 +1028,14 @@
             <p>Let's cancel my donation</p>
           </div>
         </donation-form-section>
-      </ia-button>
+      </ia-mgc-button>
 
       ${this.initialCancelRequest?this.confirmCancelation:f}
     `}get confirmCancelation(){return p`
     <section class="cancel-donation">
     <donation-form-section badgemode="hidebadge" headline="Cancel recurring donation">
 
-      <ia-button class='text exit-cancel'  @click=${()=>{this.initialCancelRequest=!1,this.patronWantsToKeepPlan=!0}}>X</ia-button>
+      <ia-mgc-button class='text exit-cancel'  @click=${()=>{this.initialCancelRequest=!1,this.patronWantsToKeepPlan=!0}}>X</ia-mgc-button>
 
       <p>Canceling ends your monthly recurring donation to the Internet Archive, effective immediately. You will not be charged moving forward.</p>
       <p>Canceling does not affect your account or access to the Internet Archive, although you will no longer have access to any of the Monthly Giving Circle perks.</p>
@@ -1051,13 +1051,13 @@
           <label for=${`confirm-${this.formId}`}><b>I'm sure I want to cancel my subscription</b></label>
         </div>
 
-        <ia-button
+        <ia-mgc-button
           class="cancel"
           .isDisabled=${this.patronWantsToKeepPlan}
           id=${`submit-${this.formId}`}
           type="submit"
           .clickHandler=${(t,e)=>{e.isDisabled=!0,this.cancelThisPlan(t)}}
-        >I'm sure I want to cancel my recurring donation.</ia-button>
+        >I'm sure I want to cancel my recurring donation.</ia-mgc-button>
       </form>
     </section>
     `}};q.styles=v`
@@ -1079,7 +1079,7 @@
       position: relative;
     }
 
-    ia-button.exit-cancel {
+    ia-mgc-button.exit-cancel {
       --button-border: 1px solid;
       --button-border-radius: 50%;
       position: absolute;
@@ -1087,11 +1087,11 @@
       right: -10px;
     }
 
-    ia-button {
+    ia-mgc-button {
       --button-height: auto;
     }
 
-    ia-button > * {
+    ia-mgc-button > * {
       text-align: left;
       text-wrap: wrap;
     }
@@ -1135,25 +1135,25 @@
             @updateDate=${e=>{const{newDate:i}=e.detail;console.log("updateDate",i),this.dispatchEvent(new CustomEvent("updateDate",{detail:{plan:this.editingThisPlan,newDate:i}}))}}
           ></ia-mgc-edit-plan>`:this.nonEditView}
     `}get sectionTitle(){let t="",e="",i=p``;const n=p`
-      <ia-button
+      <ia-mgc-button
         class="link slim"
         .clickHandler=${async()=>{this.viewToDisplay="receipts",await this.updateComplete,this.dispatchEvent(new Event(T.receipts))}}
       >
         View recent donation history
-      </ia-button>
-    `,a=this.receipts.length&&(this.viewToDisplay==="plans"||this.viewToDisplay==="welcome");switch(this.viewToDisplay){case"receipts":t="Recent donations",e="default",i=p`<ia-button
+      </ia-mgc-button>
+    `,a=this.receipts.length&&(this.viewToDisplay==="plans"||this.viewToDisplay==="welcome");switch(this.viewToDisplay){case"receipts":t="Recent donations",e="default",i=p`<ia-mgc-button
           class="link slim"
           id="close-receipts"
           .clickHandler=${async()=>{this.viewToDisplay=this.plans.length?"plans":"welcome";const s=this.plans.length?T.plans:T.welcome;this.dispatchEvent(new Event(s)),this.updates=[],await this.updateComplete}}
         >
           Back to account settings
-        </ia-button>`;break;case"editPlan":t="Monthly Giving Circle",e="default",i=p`<ia-button
+        </ia-mgc-button>`;break;case"editPlan":t="Monthly Giving Circle",e="default",i=p`<ia-mgc-button
           class="primary"
           id="close-edit-plan"
           .clickHandler=${async()=>{this.viewToDisplay=this.plans.length?"plans":"welcome";const s=this.plans.length?T.plans:T.welcome;this.dispatchEvent(new Event(s)),this.updates=[],await this.updateComplete}}
         >
           Back to account settings
-        </ia-button>`;break;default:t="Monthly Giving Circle",e="heart",a&&(i=n);break}return p`
+        </ia-mgc-button>`;break;default:t="Monthly Giving Circle",e="heart",a&&(i=n);break}return p`
       <ia-mgc-title titleStyle=${e}>
         <span slot="title">${t}</span>
         <span slot="action">${i}</span>
