@@ -14,6 +14,7 @@ import {
 } from '@internetarchive/donation-form-data-models';
 
 import type { MonthlyPlan } from '../models/plan';
+import '../presentational/donation-section-info';
 import '../presentational/mgc-button';
 import type { MGCButton } from '../presentational/mgc-button';
 import '../presentational/mgc-update-status';
@@ -60,22 +61,13 @@ export class MGCEditPlanAmount extends LitElement {
       <section>
         <donation-form-section badgemode="hidebadge" headline="Amount">
           ${!this.currentlyEditing
-            ? html` <p class="current-amount">
-                  USD $${this.plan?.amount}
-                  <ia-mgc-update-status .status=${this.updateStatus}
-                    >${this.updateMessage}</ia-mgc-update-status
-                  >
-                </p>
-                <ia-mgc-button
-                  id="edit-amount"
-                  class="ia-button link"
-                  .clickHandler=${() => {
-                    this.currentlyEditing = true;
-                    this.clearStatusMessaging();
-                  }}
-                >
-                  Edit...
-                </ia-mgc-button>`
+            ? html`<ia-mgc-form-section-info
+                @editingRequested=${() => {
+                  this.currentlyEditing = true;
+                  this.clearStatusMessaging();
+                }}
+                ><span>USD $${this.plan?.amount}</span>
+              </ia-mgc-form-section-info>`
             : nothing}
           ${this.currentlyEditing ? this.editAmountForm : nothing}
         </donation-form-section>

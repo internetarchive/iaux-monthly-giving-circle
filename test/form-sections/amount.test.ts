@@ -38,11 +38,11 @@ describe('<ia-mgc-edit-plan-amount>', () => {
       html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`
     );
 
-    const amountLabel = el.shadowRoot?.querySelector('.current-amount');
-    expect(amountLabel).to.exist;
-    expect(amountLabel?.textContent).to.contain('$5');
+    const holder = el.shadowRoot?.querySelector('ia-mgc-form-section-info');
+    expect(holder).to.exist;
+    expect(holder?.textContent).to.contain('$5');
 
-    const cta = el.shadowRoot?.querySelector('ia-mgc-button#edit-amount');
+    const cta = holder?.shadowRoot?.querySelector('ia-mgc-button');
     expect(cta).to.exist;
 
     // do not show form

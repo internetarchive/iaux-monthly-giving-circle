@@ -75,22 +75,13 @@ export class MGCEditPlanDate extends LitElement {
           headline="Change next donation date"
         >
           ${!this.currentlyEditing
-            ? html` <p class="current-date">
-                  ${this.plan?.nextBillingDateLocale}
-                  <ia-mgc-update-status .status=${this.updateStatus}
-                    >${this.updateMessage}</ia-mgc-update-status
-                  >
-                </p>
-                <ia-mgc-button
-                  id="open-edit-date-form"
-                  class="ia-button link"
-                  .clickHandler=${() => {
-                    this.currentlyEditing = true;
-                    this.clearStatusMessaging();
-                  }}
-                >
-                  Edit...
-                </ia-mgc-button>`
+            ? html`<ia-mgc-form-section-info
+                @editingRequested=${() => {
+                  this.currentlyEditing = true;
+                  this.clearStatusMessaging();
+                }}
+                ><span>${this.plan?.nextBillingDateLocale}</span>
+              </ia-mgc-form-section-info>`
             : nothing}
           ${this.currentlyEditing ? this.editDateForm : nothing}
         </donation-form-section>
