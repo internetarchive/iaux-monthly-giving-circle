@@ -3,14 +3,14 @@ import { customElement, property, query } from 'lit/decorators.js';
 
 import '@internetarchive/icon-donate/icon-donate.js';
 
-@customElement('ia-button')
-export class IauxButton extends LitElement {
+@customElement('ia-mgc-button')
+export class MGCButton extends LitElement {
   @property({ type: Boolean, reflect: true }) isDisabled = false;
 
   @property({ type: Object }) clickHandler?: (
     e: Event,
     // eslint-disable-next-line no-use-before-define
-    self: IauxButton
+    self: MGCButton
   ) => void;
 
   @query('button') button!: HTMLButtonElement;

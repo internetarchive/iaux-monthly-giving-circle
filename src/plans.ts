@@ -4,8 +4,8 @@ import { customElement, property } from 'lit/decorators.js';
 
 import type { MonthlyPlan } from './models/plan';
 
-import './presentational/ia-button';
-import type { IauxButton } from './presentational/ia-button';
+import './presentational/mgc-button';
+import type { MGCButton } from './presentational/mgc-button';
 
 @customElement('ia-mgc-plans')
 export class IauxMgcPlans extends LitElement {
@@ -100,10 +100,10 @@ export class IauxMgcPlans extends LitElement {
       ? 'Plan is cancelled'
       : 'Manage this monthly donation';
 
-    return html`<ia-button
+    return html`<ia-mgc-button
       class="ia-button link edit-donation"
       .isDisabled=${plan.plan.isCancelled}
-      .clickHandler=${async (e: Event, iaButton: IauxButton) => {
+      .clickHandler=${async (e: Event, iaButton: MGCButton) => {
         // disable button
         iaButton.isDisabled = true;
         // open form
@@ -111,7 +111,7 @@ export class IauxMgcPlans extends LitElement {
           new CustomEvent('editThisPlan', { detail: { plan } })
         );
       }}
-      >${ctaText}</ia-button
+      >${ctaText}</ia-mgc-button
     >`;
   }
 

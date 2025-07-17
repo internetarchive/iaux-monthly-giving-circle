@@ -3,8 +3,8 @@ import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Receipt } from './models/receipt';
 
-import './presentational/ia-button';
-import type { IauxButton } from './presentational/ia-button';
+import './presentational/mgc-button';
+import type { MGCButton } from './presentational/mgc-button';
 
 type ReceiptEmailStatus = {
   id: string;
@@ -84,8 +84,8 @@ export class IauxMgcReceipts extends LitElement {
     // re-enable email request button
     const escapedId = CSS.escape(id);
     const button = this.shadowRoot?.querySelector(
-      `#donation-${escapedId} ia-button`
-    ) as IauxButton;
+      `#donation-${escapedId} ia-mgc-button`
+    ) as MGCButton;
     button.isDisabled = false;
   }
 
@@ -147,18 +147,18 @@ export class IauxMgcReceipts extends LitElement {
                     </td>
                     <td>
                       <div class="request-receipt">
-                        <ia-button
+                        <ia-mgc-button
                           class="link slim"
                           style="--link-button-flex-align-items: center;"
                           .clickHandler=${async (
                             event: Event,
-                            iauxButton: IauxButton
+                            MGCButton: MGCButton
                           ) => {
                             const initialClick = !emailUnavailable;
                             if (initialClick) {
                               // eslint-disable-next-line no-param-reassign
-                              iauxButton.isDisabled = true;
-                              await iauxButton.updateComplete;
+                              MGCButton.isDisabled = true;
+                              await MGCButton.updateComplete;
                             }
 
                             if (emailUnavailable) return;
@@ -173,7 +173,7 @@ export class IauxMgcReceipts extends LitElement {
                           }}
                         >
                           ${this.ctaButtonText(donation, emailStatus)}
-                        </ia-button>
+                        </ia-mgc-button>
                         ${emailStatusToDisplay}
                       </div>
                     </td>
@@ -210,7 +210,7 @@ export class IauxMgcReceipts extends LitElement {
     th.action {
       width: 200px;
     }
-    ia-button-style {
+    ia-mgc-button-style {
       display: inline-block;
     }
 

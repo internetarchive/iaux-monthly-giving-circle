@@ -15,8 +15,8 @@ import {
 
 import type { MonthlyPlan } from '../models/plan';
 import '../presentational/donation-section-info';
-import '../presentational/ia-button';
-import type { IauxButton } from '../presentational/ia-button';
+import '../presentational/mgc-button';
+import type { MGCButton } from '../presentational/mgc-button';
 import '../presentational/mgc-update-status';
 
 @customElement('ia-mgc-edit-plan-amount')
@@ -94,7 +94,7 @@ export class MGCEditPlanAmount extends LitElement {
     }
 
     (
-      this.form.querySelector('ia-button#update-amount') as IauxButton
+      this.form.querySelector('ia-mgc-button#update-amount') as MGCButton
     ).isDisabled = false;
 
     this.captureAmountChanges();
@@ -247,7 +247,7 @@ export class MGCEditPlanAmount extends LitElement {
             </div>
             <p>Total: USD $${this.totalAmountWithFees()}</p>
             <div class="cta-container">
-              <ia-button
+              <ia-mgc-button
                 class="ia-button secondary"
                 .clickHandler=${(e: Event) => {
                   e.preventDefault();
@@ -255,12 +255,12 @@ export class MGCEditPlanAmount extends LitElement {
                 }}
               >
                 Cancel
-              </ia-button>
-              <ia-button
+              </ia-mgc-button>
+              <ia-mgc-button
                 id="update-amount"
                 class="ia-button primary"
                 type="submit"
-                .clickHandler=${async (e: Event, iaButton: IauxButton) => {
+                .clickHandler=${async (e: Event, iaButton: MGCButton) => {
                   this.clearStatusMessaging();
 
                   if (!this.newAmount) {
@@ -269,7 +269,7 @@ export class MGCEditPlanAmount extends LitElement {
                   }
 
                   // eslint-disable-next-line no-param-reassign
-                  (iaButton as IauxButton).isDisabled = true;
+                  (iaButton as MGCButton).isDisabled = true;
                   await iaButton.updateComplete;
 
                   // check if request is in range
@@ -288,7 +288,7 @@ export class MGCEditPlanAmount extends LitElement {
                   }
                   if (amountTooHigh || amountTooLow) {
                     // eslint-disable-next-line no-param-reassign
-                    (iaButton as IauxButton).isDisabled = false;
+                    (iaButton as MGCButton).isDisabled = false;
                     await iaButton.updateComplete;
                     return;
                   }
@@ -297,7 +297,7 @@ export class MGCEditPlanAmount extends LitElement {
                 }}
               >
                 Update
-              </ia-button>
+              </ia-mgc-button>
               <ia-mgc-update-status .status=${this.updateStatus}
                 >${this.updateMessage}</ia-mgc-update-status
               >

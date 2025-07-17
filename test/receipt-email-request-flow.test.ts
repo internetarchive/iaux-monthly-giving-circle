@@ -9,7 +9,7 @@ import type {
 
 import '../src/monthly-giving-circle';
 import type { IauxMgcReceipts } from '../src/receipts';
-import type { IauxButton } from '../src/presentational/ia-button';
+import type { MGCButton } from '../src/presentational/mgc-button';
 import { Receipt } from '../src/models/receipt';
 
 describe('Receipts: When requesting an email', () => {
@@ -38,8 +38,8 @@ describe('Receipts: When requesting an email', () => {
       // open receipt view
       const titleEl = el.querySelector('ia-mgc-title');
       const receiptsDisplayButton = titleEl!.querySelector(
-        'ia-button'
-      ) as IauxButton;
+        'ia-mgc-button'
+      ) as MGCButton;
       const innerButton = receiptsDisplayButton.shadowRoot?.querySelector(
         'button'
       ) as HTMLButtonElement;
@@ -74,8 +74,8 @@ describe('Receipts: When requesting an email', () => {
       });
       // request an email
       const requestReceiptButton = receiptsEl!.shadowRoot!.querySelector(
-        'tr#donation-foo-token-3 ia-button'
-      ) as IauxButton;
+        'tr#donation-foo-token-3 ia-mgc-button'
+      ) as MGCButton;
 
       requestReceiptButton!.click();
     });

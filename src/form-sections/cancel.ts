@@ -9,7 +9,7 @@ import {
 import { customElement, property, query } from 'lit/decorators.js';
 import type { MonthlyPlan } from '../models/plan';
 
-import type { IauxButton } from '../presentational/ia-button';
+import type { MGCButton } from '../presentational/mgc-button';
 import '@internetarchive/donation-form/dist/src/form-elements/contact-form/contact-form.js';
 
 import '@internetarchive/donation-form-section';
@@ -46,9 +46,9 @@ export class IauxMgcCancelPlan extends LitElement {
     }
 
     return html`
-      <ia-button
+      <ia-mgc-button
         class="clear-container slim"
-        .clickHandler=${(e: Event, iaButton: IauxButton) => {
+        .clickHandler=${(e: Event, iaButton: MGCButton) => {
           // eslint-disable-next-line no-param-reassign
           iaButton.isDisabled = true;
           if (this.initialCancelRequest) {
@@ -71,7 +71,7 @@ export class IauxMgcCancelPlan extends LitElement {
             <p>Let's cancel my donation</p>
           </div>
         </donation-form-section>
-      </ia-button>
+      </ia-mgc-button>
 
       ${this.initialCancelRequest ? this.confirmCancelation : nothing}
     `;
@@ -82,10 +82,10 @@ export class IauxMgcCancelPlan extends LitElement {
     <section class="cancel-donation">
     <donation-form-section badgemode="hidebadge" headline="Cancel recurring donation">
 
-      <ia-button class='text exit-cancel'  @click=${() => {
+      <ia-mgc-button class='text exit-cancel'  @click=${() => {
         this.initialCancelRequest = false;
         this.patronWantsToKeepPlan = true;
-      }}>X</ia-button>
+      }}>X</ia-mgc-button>
 
       <p>Canceling ends your monthly recurring donation to the Internet Archive, effective immediately. You will not be charged moving forward.</p>
       <p>Canceling does not affect your account or access to the Internet Archive, although you will no longer have access to any of the Monthly Giving Circle perks.</p>
@@ -106,17 +106,17 @@ export class IauxMgcCancelPlan extends LitElement {
           <label for=${`confirm-${this.formId}`}><b>I'm sure I want to cancel my subscription</b></label>
         </div>
 
-        <ia-button
+        <ia-mgc-button
           class="cancel"
           .isDisabled=${this.patronWantsToKeepPlan}
           id=${`submit-${this.formId}`}
           type="submit"
-          .clickHandler=${(e: Event, iaButton: IauxButton) => {
+          .clickHandler=${(e: Event, iaButton: MGCButton) => {
             // eslint-disable-next-line no-param-reassign
             iaButton.isDisabled = true;
             this.cancelThisPlan(e);
           }}
-        >I'm sure I want to cancel my recurring donation.</ia-button>
+        >I'm sure I want to cancel my recurring donation.</ia-mgc-button>
       </form>
     </section>
     `;
@@ -141,7 +141,7 @@ export class IauxMgcCancelPlan extends LitElement {
       position: relative;
     }
 
-    ia-button.exit-cancel {
+    ia-mgc-button.exit-cancel {
       --button-border: 1px solid;
       --button-border-radius: 50%;
       position: absolute;
@@ -149,11 +149,11 @@ export class IauxMgcCancelPlan extends LitElement {
       right: -10px;
     }
 
-    ia-button {
+    ia-mgc-button {
       --button-height: auto;
     }
 
-    ia-button > * {
+    ia-mgc-button > * {
       text-align: left;
       text-wrap: wrap;
     }
