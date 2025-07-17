@@ -83,7 +83,7 @@ describe('<ia-mgc-edit-date>', () => {
     expect(holder).to.equal(3);
     expect(holder?.textContent).to.contain(plan.nextBillingDateLocale);
 
-    const cta = holder?.shadowRoot?.querySelector('ia-button');
+    const cta = holder?.shadowRoot?.querySelector('ia-mgc-button');
     expect(cta).to.exist;
 
     // does not show form

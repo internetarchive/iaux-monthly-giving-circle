@@ -42,7 +42,7 @@ describe('<ia-mgc-edit-plan-amount>', () => {
     expect(holder).to.exist;
     expect(holder?.textContent).to.contain('$5');
 
-    const cta = holder?.shadowRoot?.querySelector('ia-button');
+    const cta = holder?.shadowRoot?.querySelector('ia-mgc-button');
     expect(cta).to.exist;
 
     // do not show form
