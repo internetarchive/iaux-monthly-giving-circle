@@ -10,8 +10,8 @@ import { customElement, property, query } from 'lit/decorators.js';
 import '@internetarchive/donation-form-section';
 
 import type { MonthlyPlan } from '../models/plan';
-import '../presentational/ia-button';
-import type { IauxButton } from '../presentational/ia-button';
+import '../presentational/mgc-button';
+import type { MGCButton } from '../presentational/mgc-button';
 import '../presentational/mgc-update-status';
 
 type InvalidDateErrorCode =
@@ -49,7 +49,7 @@ export class MGCEditPlanDate extends LitElement {
 
   @query('form') form!: HTMLFormElement;
 
-  @query('form ia-button#edit-date') formSubmitButton!: IauxButton;
+  @query('form ia-mgc-button#edit-date') formSubmitButton!: MGCButton;
 
   @query('form input[name="edit-date"]')
   dateInput!: HTMLInputElement;
@@ -81,7 +81,7 @@ export class MGCEditPlanDate extends LitElement {
                     >${this.updateMessage}</ia-mgc-update-status
                   >
                 </p>
-                <ia-button
+                <ia-mgc-button
                   id="open-edit-date-form"
                   class="ia-button link"
                   .clickHandler=${() => {
@@ -90,7 +90,7 @@ export class MGCEditPlanDate extends LitElement {
                   }}
                 >
                   Edit...
-                </ia-button>`
+                </ia-mgc-button>`
             : nothing}
           ${this.currentlyEditing ? this.editDateForm : nothing}
         </donation-form-section>
@@ -321,7 +321,7 @@ export class MGCEditPlanDate extends LitElement {
           </div>
           <div>
             <div class="cta-container">
-              <ia-button
+              <ia-mgc-button
                 class="ia-button secondary"
                 .clickHandler=${(e: Event) => {
                   e.preventDefault();
@@ -329,13 +329,13 @@ export class MGCEditPlanDate extends LitElement {
                 }}
               >
                 Cancel
-              </ia-button>
-              <ia-button
+              </ia-mgc-button>
+              <ia-mgc-button
                 id="edit-date"
                 class="ia-button primary"
                 type="submit"
                 .isDisabled=${!this.allowEditing}
-                .clickHandler=${async (e: Event, iaButton: IauxButton) => {
+                .clickHandler=${async (e: Event, iaButton: MGCButton) => {
                   this.clearStatusMessaging();
 
                   if (!this.newDate) {
@@ -344,14 +344,14 @@ export class MGCEditPlanDate extends LitElement {
                   }
 
                   // eslint-disable-next-line no-param-reassign
-                  (iaButton as IauxButton).isDisabled = true;
+                  (iaButton as MGCButton).isDisabled = true;
                   await iaButton.updateComplete;
 
                   this.requestDateUpdate(e);
                 }}
               >
                 Update
-              </ia-button>
+              </ia-mgc-button>
               <ia-mgc-update-status .status=${this.updateStatus}
                 >${this.updateMessage}</ia-mgc-update-status
               >

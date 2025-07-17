@@ -4,7 +4,7 @@ import { html, fixture, expect } from '@open-wc/testing';
 import type { MonthlyGivingCircle } from '../src/monthly-giving-circle';
 
 import '../src/monthly-giving-circle';
-import type { IauxButton } from '../src/presentational/ia-button';
+import type { MGCButton } from '../src/presentational/mgc-button';
 import { MonthlyPlan } from '../src/models/plan';
 
 describe('IauxMonthlyGivingCircle', () => {
@@ -82,8 +82,8 @@ describe('IauxMonthlyGivingCircle', () => {
       expect(mgcPlans).to.exist;
 
       const editPlanButton = mgcPlans!.shadowRoot?.querySelector(
-        'ia-button.edit-donation'
-      ) as IauxButton;
+        'ia-mgc-button.edit-donation'
+      ) as MGCButton;
       expect(editPlanButton).to.exist;
       const innerButton = editPlanButton.shadowRoot?.querySelector('button');
       expect(innerButton).to.exist;
@@ -116,7 +116,9 @@ describe('IauxMonthlyGivingCircle', () => {
       );
 
       const titleEl = el.querySelector('ia-mgc-title');
-      const receiptsButton = titleEl!.querySelector('ia-button') as IauxButton;
+      const receiptsButton = titleEl!.querySelector(
+        'ia-mgc-button'
+      ) as MGCButton;
       expect(receiptsButton).to.exist;
       expect(receiptsButton!.innerText).to.equal(
         'View recent donation history'
@@ -151,7 +153,9 @@ describe('IauxMonthlyGivingCircle', () => {
       const titleEl = el.querySelector('ia-mgc-title');
       expect(titleEl).to.exist;
 
-      const receiptsButton = titleEl!.querySelector('ia-button') as IauxButton;
+      const receiptsButton = titleEl!.querySelector(
+        'ia-mgc-button'
+      ) as MGCButton;
 
       expect(receiptsButton.innerText).to.equal('View recent donation history');
 
@@ -179,8 +183,8 @@ describe('IauxMonthlyGivingCircle', () => {
 
       // shows back button
       const backButton = titleEl2?.querySelector(
-        'ia-button#close-receipts'
-      ) as IauxButton;
+        'ia-mgc-button#close-receipts'
+      ) as MGCButton;
       expect(backButton!.innerText).to.equal('Back to account settings');
 
       // shows receipts element

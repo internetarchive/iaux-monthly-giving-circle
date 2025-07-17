@@ -4,7 +4,7 @@ import { html, fixture, expect } from '@open-wc/testing';
 import '../../src/form-sections/date';
 import type { MGCEditPlanDate } from '../../src/form-sections/date';
 import { MonthlyPlan } from '../../src/models/plan';
-import type { IauxButton } from '../../src/presentational/ia-button';
+import type { MGCButton } from '../../src/presentational/mgc-button';
 
 const lastPaymentWasOnTheFirstOfThisMonth = new Date();
 lastPaymentWasOnTheFirstOfThisMonth.setHours(0, 0, 0, 0);
@@ -83,7 +83,9 @@ describe('<ia-mgc-edit-date>', () => {
     expect(amountLabel).to.exist;
     expect(amountLabel?.textContent).to.contain(plan.nextBillingDateLocale);
 
-    const cta = el.shadowRoot?.querySelector('ia-button#open-edit-date-form');
+    const cta = el.shadowRoot?.querySelector(
+      'ia-mgc-button#open-edit-date-form'
+    );
     expect(cta).to.exist;
 
     // does not show form
@@ -111,8 +113,8 @@ describe('<ia-mgc-edit-date>', () => {
     expect(nextDateLabel).to.contain.text(plan.nextBillingDateLocale);
 
     const requestDateUpdateButton = el.form.querySelector(
-      'ia-button#edit-date'
-    ) as IauxButton;
+      'ia-mgc-button#edit-date'
+    ) as MGCButton;
     expect(requestDateUpdateButton).to.exist;
     expect(requestDateUpdateButton!.hasAttribute('isdisabled')).to.be.true;
 
