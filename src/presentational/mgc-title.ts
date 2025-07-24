@@ -31,6 +31,7 @@ export class MGCTitle extends LitElement {
     :host {
       padding-bottom: 5px;
       display: block;
+      --link-button-padding: 0.5rem;
     }
 
     :host([titlestyle='default']) h2 {
@@ -51,7 +52,7 @@ export class MGCTitle extends LitElement {
       align-content: center;
       margin: 0;
       justify-content: space-between;
-      align-items: flex-end;
+      align-items: center;
       line-height: normal;
     }
 
@@ -75,6 +76,10 @@ export class MGCTitle extends LitElement {
       display: flex;
       justify-content: flex-end;
       align-items: flex-end;
+    }
+
+    ia-mgc-button {
+      --link-button-padding: 0.5rem;
     }
 
     @media screen and (max-width: 450px) {
