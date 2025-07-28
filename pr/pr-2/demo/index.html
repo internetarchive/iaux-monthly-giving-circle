@@ -20,6 +20,8 @@
 
       /* css vars for web component */
       --one-column-view-max-width: 500px;
+      --mgc-warning-color-dark: #bb0505;
+      --mgc-success-color: rgb(33, 149, 24);
     }
     
     body .dev-tools {
@@ -44,6 +46,7 @@
       <button id="toggle-receipts">Toggle receipts</button>
       <button id="clear-updates">Clear updates</button>
       <button id="toggle-plans">Toggle plans</button>
+      <button id="toggle-editable-perms">Toggle Editable Permissions</button>
 
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
@@ -57,7 +60,7 @@
         max-width: 800px;
       }
     </style>
-    <ia-monthly-giving-circle></ia-monthly-giving-circle>
+    <ia-monthly-giving-circle canEdit></ia-monthly-giving-circle>
   </div>
 
   
