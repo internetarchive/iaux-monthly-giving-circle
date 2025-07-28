@@ -168,7 +168,7 @@ export class MonthlyGivingCircle extends LitElement {
         title = 'Recent donations';
         titleStyle = 'default';
         cta = html`<ia-mgc-button
-          class="link slim"
+          class="primary"
           id="close-receipts"
           .clickHandler=${async () => {
             this.viewToDisplay = this.plans.length ? 'plans' : 'welcome';

@@ -118,7 +118,7 @@ export class IauxMgcPlans extends LitElement {
   static styles = css`
     :host {
       max-height: 500px;
-      overflow-y: scroll;
+      overflow-y: auto;
       display: block;
     }
 
