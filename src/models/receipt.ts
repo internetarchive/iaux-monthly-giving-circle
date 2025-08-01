@@ -1,4 +1,4 @@
-type AReceipt = {
+export type AReceipt = {
   currency: string;
   net_amount: number;
   total_amount: number;
@@ -7,6 +7,7 @@ type AReceipt = {
   date: string;
   isTest: boolean;
   token: string;
+  id?: string;
 };
 export class Receipt {
   receipt: AReceipt;

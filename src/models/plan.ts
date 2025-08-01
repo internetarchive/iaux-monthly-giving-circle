@@ -1,4 +1,4 @@
-type BtData = {
+export type BtData = {
   billingDayOfMonth: number;
   nextBillingDate: {
     date: string;
@@ -19,9 +19,10 @@ type BtData = {
   expirationYear: string | null;
   paypalEmail?: string;
   venmoUsername?: string;
+  processorId?: string; // used when editing date
 };
 
-type Plan = {
+export type Plan = {
   token: string;
   amount: number;
   currency: string;
