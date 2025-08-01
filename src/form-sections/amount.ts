@@ -187,6 +187,50 @@ export class MGCEditPlanAmount extends LitElement {
     this.donationPaymentInfo = undefined;
   }
 
+  handleSubmit(e: Event, iaButton?: MGCButton) {
+    e.preventDefault();
+    this.clearStatusMessaging();
+
+    const button =
+      iaButton ?? (this.form.querySelector('#update-amount') as MGCButton);
+    if (button) this.updateButtonState(button);
+
+    if (!this.newAmount) {
+      this.errorMessage = 'Please enter a new amount';
+      if (button) button.isDisabled = false;
+      return;
+    }
+
+    const input = this.form.querySelector(
+      'input[name="amount"]'
+    ) as HTMLInputElement;
+    const requestedAmount = Number(input.value) ?? 0;
+    const amountTooLow = requestedAmount < 1;
+    const amountTooHigh = requestedAmount >= 9999;
+
+    if (amountTooLow) {
+      this.errorMessage = 'Please enter a valid amount';
+    }
+
+    if (amountTooHigh) {
+      this.errorMessage =
+        'Amount must be less than $9,999. Would you like to donate more? Please contact us at donations@archive.org';
+    }
+
+    if (amountTooHigh || amountTooLow) {
+      if (button) this.updateButtonState(button);
+      return;
+    }
+
+    this.requestAmountUpdate(e);
+  }
+
+  private async updateButtonState(iaButton: MGCButton) {
+    // eslint-disable-next-line no-param-reassign
+    (iaButton as MGCButton).isDisabled = true;
+    await iaButton?.updateComplete;
+  }
+
   async clearStatusMessaging() {
     this.errorMessage = '';
     this.updateMessage = '';
@@ -210,7 +254,10 @@ export class MGCEditPlanAmount extends LitElement {
   get editAmountForm(): TemplateResult {
     return html`
       <section>
-        <form id="edit-plan-amount">
+        <form
+          id="edit-plan-amount"
+          @submit=${(e: Event) => this.handleSubmit(e)}
+        >
           <p>Current donation amount: $${this.plan?.amount}</p>
           <div>
             $
@@ -220,7 +267,7 @@ export class MGCEditPlanAmount extends LitElement {
               type="number"
               id="amount"
               name="amount"
-              required="true"
+              ?required=${true}
               @focus=${() => this.clearStatusMessaging()}
               @input=${(e: Event) => {
                 const newAmount = Number((e.target as HTMLInputElement).value);
@@ -260,41 +307,8 @@ export class MGCEditPlanAmount extends LitElement {
                 id="update-amount"
                 class="ia-button primary"
                 type="submit"
-                .clickHandler=${async (e: Event, iaButton: MGCButton) => {
-                  this.clearStatusMessaging();
-
-                  if (!this.newAmount) {
-                    this.errorMessage = 'Please enter a new amount';
-                    return;
-                  }
-
-                  // eslint-disable-next-line no-param-reassign
-                  (iaButton as MGCButton).isDisabled = true;
-                  await iaButton.updateComplete;
-
-                  // check if request is in range
-                  const input = this.form.querySelector(
-                    'input[name="amount"]'
-                  ) as HTMLInputElement;
-                  const requestedAmount = Number(input.value) ?? 0;
-                  const amountTooLow = requestedAmount < 1;
-                  const amountTooHigh = requestedAmount >= 9999;
-                  if (amountTooLow) {
-                    this.errorMessage = 'Please enter a valid amount';
-                  }
-                  if (amountTooHigh) {
-                    this.errorMessage =
-                      'Amount must be less than $9,999. Would you like to donate more? Please contact us at donations@archive.org';
-                  }
-                  if (amountTooHigh || amountTooLow) {
-                    // eslint-disable-next-line no-param-reassign
-                    (iaButton as MGCButton).isDisabled = false;
-                    await iaButton.updateComplete;
-                    return;
-                  }
-
-                  this.requestAmountUpdate(e);
-                }}
+                .clickHandler=${(e: Event, iaButton: MGCButton) =>
+                  this.handleSubmit(e, iaButton)}
               >
                 Update
               </ia-mgc-button>
