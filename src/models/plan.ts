@@ -19,7 +19,6 @@ export type BtData = {
   expirationYear: string | null;
   paypalEmail?: string;
   venmoUsername?: string;
-  processorId?: string; // used when editing date
 };
 
 export type Plan = {
@@ -33,6 +32,8 @@ export type Plan = {
   oldDate?: string;
   oldPaymentMethod?: string;
   isCancelled?: boolean;
+  processorId?: string; // used when editing date
+  oldProcessorId?: string;
 };
 
 export class MonthlyPlan {
@@ -113,6 +114,17 @@ export class MonthlyPlan {
 
   cancelPlan(): void {
     this.plan.isCancelled = true;
+  }
+
+  setNewProcessorId({
+    newProcessorId,
+    oldProcessorId,
+  }: {
+    newProcessorId: string;
+    oldProcessorId: string;
+  }): void {
+    this.plan.processorId = newProcessorId;
+    this.plan.oldProcessorId = oldProcessorId;
   }
 }
 
