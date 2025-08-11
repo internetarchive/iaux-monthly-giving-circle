@@ -17,6 +17,11 @@
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 14px;
       line-height: 1.42857143;
+
+      /* css vars for web component */
+      --one-column-view-max-width: 500px;
+      --mgc-warning-color-dark: #bb0505;
+      --mgc-success-color: rgb(33, 149, 24);
     }
     
     body .dev-tools {
@@ -39,7 +44,9 @@
   <div class="dev-tools">
     <div id="options">
       <button id="toggle-receipts">Toggle receipts</button>
-      <button id="toggle-buttons">Toggle button types</button>
+      <button id="clear-updates">Clear updates</button>
+      <button id="toggle-plans">Toggle plans</button>
+      <button id="toggle-editable-perms">Toggle Editable Permissions</button>
 
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
@@ -47,13 +54,13 @@
 
   <div id="demo">
     <style>
-      iaux-monthly-giving-circle {
+      ia-monthly-giving-circle {
         display: block;
         margin: 0 auto;
         max-width: 800px;
       }
     </style>
-    <iaux-monthly-giving-circle></iaux-monthly-giving-circle>
+    <ia-monthly-giving-circle canEdit></ia-monthly-giving-circle>
   </div>
 
   
