@@ -7,7 +7,7 @@ export type BtData = {
     oldDate?: string; // optional for updates ISO UTC date string
   };
   lastBillingDate: {
-    date: string;
+    date: string | null;
     timezone_type: number;
     timezone: string;
   };
@@ -32,7 +32,7 @@ export type Plan = {
   oldDate?: string;
   oldPaymentMethod?: string;
   isCancelled?: boolean;
-  processorId?: string; // used when editing date
+  processor_id?: string; // used when editing date
   oldProcessorId?: string;
 };
 
@@ -91,6 +91,10 @@ export class MonthlyPlan {
   }
 
   get lastBillingDateLocale(): string {
+    if (!this.payment.lastBillingDate.date) {
+      return '';
+    }
+
     const lastBillingDate = new Date(
       this.payment.lastBillingDate.date
     ).toLocaleDateString(undefined, {
@@ -123,7 +127,7 @@ export class MonthlyPlan {
     newProcessorId: string;
     oldProcessorId: string;
   }): void {
-    this.plan.processorId = newProcessorId;
+    this.plan.processor_id = newProcessorId;
     this.plan.oldProcessorId = oldProcessorId;
   }
 }
