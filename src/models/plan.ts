@@ -120,15 +120,10 @@ export class MonthlyPlan {
     this.plan.isCancelled = true;
   }
 
-  setNewProcessorId({
-    newProcessorId,
-    oldProcessorId,
-  }: {
-    newProcessorId: string;
-    oldProcessorId: string;
-  }): void {
+  setNewProcessorId(newProcessorId: string): void {
+    const currentProcessorId = this.plan.processor_id;
     this.plan.processor_id = newProcessorId;
-    this.plan.oldProcessorId = oldProcessorId;
+    this.plan.oldProcessorId = currentProcessorId;
   }
 }
 
