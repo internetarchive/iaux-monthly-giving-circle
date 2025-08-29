@@ -254,7 +254,7 @@
       const { donation } = e.detail;
       const heads = coinFlip() === 1;
       const successOrFail = heads ? 'success' : 'fail';
-      const returnTiming = heads ? 3000 : 8000;
+      const returnTiming = heads ? 1500 : 5000;
 
       uxMessageInfoArea.innerText = `Email receipt request for donation ${donation.id} will return ${successOrFail} in ${returnTiming} ms.`;
 
@@ -330,13 +330,14 @@
 
       const heads = coinFlip() === 1;
       const successOrFail = heads ? 'success' : 'fail';
-      const returnTiming = heads ? 3000 : 8000;
+      const returnTiming = heads ? 1500 : 5000;
 
       uxMessageInfoArea.innerText = `Updating next billing date for plan: ${newDate}, plan: ${JSON.stringify(plan.id)} -- Update will return ${successOrFail} in ${returnTiming} ms`; 
       const message = successOrFail === 'success' ? 'Date updated' : 'Date failed to update';
 
       if (heads) {
         plan.setNextBillingDate(newDate);
+        plan.setNewProcessorId('new-processor_id@1');
       }
 
       const update = {

@@ -7,7 +7,7 @@ export type BtData = {
     oldDate?: string; // optional for updates ISO UTC date string
   };
   lastBillingDate: {
-    date: string;
+    date: string | null;
     timezone_type: number;
     timezone: string;
   };
@@ -19,7 +19,6 @@ export type BtData = {
   expirationYear: string | null;
   paypalEmail?: string;
   venmoUsername?: string;
-  processorId?: string; // used when editing date
 };
 
 export type Plan = {
@@ -33,6 +32,8 @@ export type Plan = {
   oldDate?: string;
   oldPaymentMethod?: string;
   isCancelled?: boolean;
+  processor_id?: string; // used when editing date
+  oldProcessorId?: string;
 };
 
 export class MonthlyPlan {
@@ -90,6 +91,10 @@ export class MonthlyPlan {
   }
 
   get lastBillingDateLocale(): string {
+    if (!this.payment.lastBillingDate.date) {
+      return '';
+    }
+
     const lastBillingDate = new Date(
       this.payment.lastBillingDate.date
     ).toLocaleDateString(undefined, {
@@ -113,6 +118,12 @@ export class MonthlyPlan {
 
   cancelPlan(): void {
     this.plan.isCancelled = true;
+  }
+
+  setNewProcessorId(newProcessorId: string): void {
+    const currentProcessorId = this.plan.processor_id;
+    this.plan.processor_id = newProcessorId;
+    this.plan.oldProcessorId = currentProcessorId;
   }
 }
 
