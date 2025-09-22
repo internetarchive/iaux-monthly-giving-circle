@@ -10,7 +10,6 @@ import { customElement, property, query } from 'lit/decorators.js';
 import type { MonthlyPlan } from '../models/plan';
 
 import type { MGCButton } from '../presentational/mgc-button';
-import '@internetarchive/donation-form/dist/src/form-elements/contact-form/contact-form.js';
 
 import '@internetarchive/donation-form-section';
 

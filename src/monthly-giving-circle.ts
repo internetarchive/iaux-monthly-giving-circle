@@ -30,6 +30,8 @@ enum DisplayChangeEvents {
 export class MonthlyGivingCircle extends LitElement {
   @property({ type: String }) patronName: string = '';
 
+  @property({ type: String }) patronEmail: string = '';
+
   @property({ type: Array }) receipts = [];
 
   @property({ type: Array }) updates: APlanUpdate[] = [];
@@ -38,13 +40,20 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: Object }) editingThisPlan?: MonthlyPlan;
 
-  @property({ type: String, reflect: true }) viewToDisplay:
+  @property({ type: String, reflect: true, }) viewToDisplay:
     | 'welcome'
     | 'receipts'
     | 'plans'
     | 'editPlan' = 'welcome';
 
-  @property({ type: Boolean, reflect: true }) canEdit = false;
+  @property({ type: Boolean, reflect: true, }) canEdit = false;
+
+  @property({ type: String, reflect: true, }) braintreeAuthToken: string = '';
+
+  @property({ type: String }) venmoProfileId: string = '';
+
+  @property({ type: String }) googleMerchantId: string = '';
+
 
   protected createRenderRoot() {
     return this;
@@ -136,7 +145,8 @@ export class MonthlyGivingCircle extends LitElement {
                 }),
               );
             }}
-          ></ia-mgc-edit-plan>`
+          >
+          </ia-mgc-edit-plan>`
         : this.nonEditView}
     `;
   }
