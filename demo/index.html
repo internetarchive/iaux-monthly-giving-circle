@@ -382,6 +382,38 @@
       }, returnTiming);
     });
 
+    mgcComponent.addEventListener('UpdatePaymentMethod', (e) => {
+      const { plan, newPaymentMethodInfo } = e.detail;
+
+      const heads = coinFlip() === 1;
+      const successOrFail = heads ? 'success' : 'fail';
+      const returnTiming = heads ? 1500 : 4000;
+
+      uxMessageInfoArea.innerText = `Updating payment method for plan: ${plan ? plan.id : 'no plan'} -- Update will return ${successOrFail} in ${returnTiming} ms`; 
+      const message = successOrFail === 'success' ? 'Payment method updated' : 'Payment method failed to update';
+
+      if (heads && plan) {
+        console.log('demo - setting new payment method', newPaymentMethodInfo);
+        plan.setNewPaymentMethod(newPaymentMethodInfo);
+      }
+
+      const update = {
+        message,
+        status: successOrFail,
+        plan,
+        donationId: plan ? plan.id : null,
+        action: 'paymentMethodUpdate'
+      };
+
+      updateNotices = [update, ...updateNotices];
+
+      setTimeout(() => {
+        mgcComponent.updateReceived(update);
+        console.log('Amount Update Request --- index.html ----', update);
+        uxMessageInfoArea.innerText = '';
+      }, returnTiming);
+    });
+
     // options hooks
     document.getElementById('toggle-receipts').addEventListener('click', async () => {
       if (showReceipts) {

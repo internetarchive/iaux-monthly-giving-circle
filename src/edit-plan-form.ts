@@ -1,7 +1,6 @@
 import { LitElement, html, TemplateResult, css, CSSResult } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 
-import '@internetarchive/donation-form/dist/src/form-elements/contact-form/contact-form.js';
 import '@internetarchive/donation-form/dist/src/form-elements/badged-input';
 
 import {
@@ -23,9 +22,9 @@ import './form-sections/amount';
 import './form-sections/date';
 import './form-sections/cancel';
 import './form-sections/payment-method';
-import './form-sections/parts/braintree-cc-hosted-fields';
 import type { MGCEditPlanAmount } from './form-sections/amount';
 import type { MGCEditPlanDate } from './form-sections/date';
+import type { MGCEditPaymentMethod } from './form-sections/payment-method';
 
 @customElement('ia-mgc-edit-plan')
 export class IauxEditPlanForm extends LitElement {
@@ -88,6 +87,13 @@ export class IauxEditPlanForm extends LitElement {
     return this;
   }
 
+  paymentMethodUpdates(status: 'success' | 'fail') {
+    const paymentMethodForm = this.querySelector(
+      'ia-mgc-edit-payment-method'
+    ) as MGCEditPaymentMethod;
+    paymentMethodForm!.paymentMethodUpdated(status);
+  }
+
   amountUpdates(status: 'success' | 'fail') {
     const amountForm = this.querySelector(
       'ia-mgc-edit-plan-amount',
@@ -102,6 +108,7 @@ export class IauxEditPlanForm extends LitElement {
 
   render() {
     return html`
+
       <section class="mgc-edit-plan">
         <ia-mgc-edit-plan-amount
           .plan=${this.plan}
@@ -123,29 +130,16 @@ export class IauxEditPlanForm extends LitElement {
           .patronEmail=${this.patronEmail}
           .paymentConfig=${this.paymentConfig}
           @UpdatePaymentMethod=${(e: CustomEvent) => {
-            const { newPaymentMethod } = e.detail;
+            const { newPaymentMethodRequest } = e.detail;
             if (this.plan) {
               this.dispatchEvent(
-                new CustomEvent('updatePaymentMethod', {
-                  detail: { plan: this.plan, newPaymentMethod },
+                new CustomEvent('UpdatePaymentMethod', {
+                  detail: { plan: this.plan, newPaymentMethodRequest },
                 })
               );
             }
           }}
         >
-          <slot name="paypal-button" slot="paypal-button"></slot>
-          <div slot="contact-form">
-            <contact-form .donorEmail=${this.patronEmail}></contact-form>
-          </div>
-          <div slot="braintree-hosted-fields">
-            <ia-mgc-braintree-cc-hosted-fields
-              .plan=${this.plan}
-              .paymentConfig=${this.paymentConfig}
-              @BraintreeManagerSetupComplete=${() => {
-                debugger;
-              }}
-            ></ia-mgc-braintree-cc-hosted-fields>
-          </div>
         </ia-mgc-edit-payment-method>
       <hr />
       <ia-mgc-edit-date

@@ -1,3 +1,5 @@
+import type { PaymentMethodRequest } from "./payment-method-request";
+
 export type BtData = {
   billingDayOfMonth: number;
   nextBillingDate: {
@@ -30,10 +32,11 @@ export type Plan = {
   btdata: BtData;
   oldAmount?: number;
   oldDate?: string;
-  oldPaymentMethod?: string;
   isCancelled?: boolean;
   processor_id?: string; // used when editing date
   oldProcessorId?: string;
+  old_btData?: any;
+  new_payment_method_details?: PaymentMethodRequest; // used when updating payment method
 };
 
 export class MonthlyPlan {
@@ -41,7 +44,7 @@ export class MonthlyPlan {
 
   currency: string;
 
-  payment: BtData;
+  payment: BtData | null;
 
   constructor(plan: Plan) {
     this.plan = plan;
@@ -73,29 +76,32 @@ export class MonthlyPlan {
 
   get nextBillingDate(): string {
     // iso08601 date string
-    return this.payment.nextBillingDate.date;
+    return this.payment?.nextBillingDate?.date ?? '';
   }
 
   setNextBillingDate(newDate: string) {
     // iso08601 date string
-    this.payment.nextBillingDate.oldDate = this.payment.nextBillingDate.date;
-    this.payment.nextBillingDate.date = newDate;
+    if (this.payment) {
+      this.payment.nextBillingDate.oldDate = this.payment.nextBillingDate.date;
+      this.payment.nextBillingDate.date = newDate;
+    }
   }
 
   get nextBillingDateLocale(): string {
-    const nextBillingDate = new Date(
-      this.payment.nextBillingDate.date,
-    ).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    const dateStr = this.payment?.nextBillingDate.date ?? '';
+    const nextBillingDate = dateStr
+      ? new Date(dateStr).toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+      : 'not found';
 
-    return nextBillingDate ?? 'not found';
+    return nextBillingDate;
   }
 
   get lastBillingDateLocale(): string {
-    if (!this.payment.lastBillingDate.date) {
+    if (!this.payment?.lastBillingDate.date) {
       return '';
     }
 
@@ -128,6 +134,14 @@ export class MonthlyPlan {
     const currentProcessorId = this.plan.processor_id;
     this.plan.processor_id = newProcessorId;
     this.plan.oldProcessorId = currentProcessorId;
+  }
+
+  setNewPaymentMethod(newPaymentMethodRequest: PaymentMethodRequest): void {
+    debugger;
+    const currentPaymentMethod = this.payment;
+    this.plan.old_btData = currentPaymentMethod;
+    this.payment = null;
+    this.plan.new_payment_method_details = newPaymentMethodRequest;
   }
 }
 

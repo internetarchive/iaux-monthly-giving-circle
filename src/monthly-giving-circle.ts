@@ -15,7 +15,7 @@ export type APlanUpdate = {
   plan?: MonthlyPlan;
   donationId?: string;
   status: 'success' | 'fail';
-  action: 'receiptSent' | 'cancel' | 'amountUpdate' | 'dateUpdate';
+  action: 'receiptSent' | 'cancel' | 'amountUpdate' | 'dateUpdate' | 'paymentMethodUpdate';
   message: string;
 };
 
@@ -81,6 +81,11 @@ export class MonthlyGivingCircle extends LitElement {
     const { plan, donationId = '' } = update;
     const idToUse = plan?.id ?? donationId;
 
+    if (update.action === 'paymentMethodUpdate') {
+      this.editFormElement.paymentMethodUpdates(update.status);
+      return;
+    }
+
     if (update.action === 'amountUpdate') {
       this.editFormElement.amountUpdates(update.status);
       return;
@@ -143,6 +148,19 @@ export class MonthlyGivingCircle extends LitElement {
                 new CustomEvent('updateDate', {
                   detail: { plan: this.editingThisPlan, newDate },
                 }),
+              );
+            }}
+            @UpdatePaymentMethod=${(event: CustomEvent) => {
+              const { newPaymentMethodRequest } = event.detail;
+              console.log('UpdatePaymentMethod', newPaymentMethodRequest);
+              console.warn('UPDATE PAYMENT METHOD', {
+                plan: this.editingThisPlan,
+                newPaymentMethodRequest,
+              });
+              this.dispatchEvent(
+                new CustomEvent('UpdatePaymentMethod', {
+                  detail: { plan: this.editingThisPlan, newPaymentMethodRequest },
+                })
               );
             }}
           >
