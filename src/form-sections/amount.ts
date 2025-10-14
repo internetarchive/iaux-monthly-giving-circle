@@ -81,7 +81,7 @@ export class MGCEditPlanAmount extends LitElement {
 
     this.updateStatus = status;
     this.updateMessage =
-      status === 'success' ? 'Amount updated' : 'Failed. Try again.';
+      status === 'success' ? 'Amount updated' : 'Failed to update date, please try again';
 
     if (status === 'success') {
       this.closeForm();
