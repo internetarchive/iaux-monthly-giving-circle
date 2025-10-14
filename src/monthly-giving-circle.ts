@@ -15,7 +15,7 @@ export type APlanUpdate = {
   plan?: MonthlyPlan;
   donationId?: string;
   status: 'success' | 'fail';
-  action: 'receiptSent' | 'cancel' | 'amountUpdate' | 'dateUpdate';
+  action: 'receiptSent' | 'cancel' | 'amountUpdate' | 'dateUpdate' | 'paymentMethodUpdate';
   message: string;
 };
 
@@ -30,6 +30,8 @@ enum DisplayChangeEvents {
 export class MonthlyGivingCircle extends LitElement {
   @property({ type: String }) patronName: string = '';
 
+  @property({ type: String }) patronEmail: string = '';
+
   @property({ type: Array }) receipts = [];
 
   @property({ type: Array }) updates: APlanUpdate[] = [];
@@ -38,13 +40,20 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: Object }) editingThisPlan?: MonthlyPlan;
 
-  @property({ type: String, reflect: true }) viewToDisplay:
+  @property({ type: String, reflect: true, }) viewToDisplay:
     | 'welcome'
     | 'receipts'
     | 'plans'
     | 'editPlan' = 'welcome';
 
-  @property({ type: Boolean, reflect: true }) canEdit = false;
+  @property({ type: Boolean, reflect: true, }) canEdit = false;
+
+  @property({ type: String, reflect: true, }) braintreeAuthToken: string = '';
+
+  @property({ type: String }) venmoProfileId: string = '';
+
+  @property({ type: String }) googleMerchantId: string = '';
+
 
   protected createRenderRoot() {
     return this;
@@ -71,6 +80,11 @@ export class MonthlyGivingCircle extends LitElement {
 
     const { plan, donationId = '' } = update;
     const idToUse = plan?.id ?? donationId;
+
+    if (update.action === 'paymentMethodUpdate') {
+      this.editFormElement.paymentMethodUpdates(update.status);
+      return;
+    }
 
     if (update.action === 'amountUpdate') {
       this.editFormElement.amountUpdates(update.status);
@@ -136,7 +150,21 @@ export class MonthlyGivingCircle extends LitElement {
                 })
               );
             }}
-          ></ia-mgc-edit-plan>`
+            @UpdatePaymentMethod=${(event: CustomEvent) => {
+              const { newPaymentMethodRequest } = event.detail;
+              console.log('UpdatePaymentMethod', newPaymentMethodRequest);
+              console.warn('UPDATE PAYMENT METHOD', {
+                plan: this.editingThisPlan,
+                newPaymentMethodRequest,
+              });
+              this.dispatchEvent(
+                new CustomEvent('UpdatePaymentMethod', {
+                  detail: { plan: this.editingThisPlan, newPaymentMethodRequest },
+                })
+              );
+            }}
+          >
+          </ia-mgc-edit-plan>`
         : this.nonEditView}
     `;
   }
