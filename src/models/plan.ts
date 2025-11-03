@@ -62,6 +62,10 @@ export class MonthlyPlan {
     return this.plan.amount;
   }
 
+  get amountFormatted(): string {
+    return this.plan.amount.toFixed(2);
+  }
+
   setAmount(newAmount: number) {
     this.plan.oldAmount = this.plan.amount;
     this.plan.amount = newAmount;
