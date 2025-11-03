@@ -17,7 +17,9 @@ export class Receipt {
   }
 
   get amountFormatted(): string {
-    const value = this.receipt.total_amount ?? this.receipt.net_amount;
+    const value = (
+      (this.receipt.total_amount ?? this.receipt.net_amount) as number
+    ).toFixed(2);
     const currencyType = this.receipt.currency ?? 'CURR not found';
     if (value) {
       return `${currencyType} ${this.currencySymbol}${value}`;

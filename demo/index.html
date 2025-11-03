@@ -183,6 +183,22 @@
     const plansArray = Object.keys(plans).map((key) => new MonthlyPlan(plans[key]));
 
     const receiptsData = [
+          new Receipt({
+          currency: 'USD',
+          net_amount: 1,
+          fee_amount: 0,
+          date: (new Date('2019-01-22 14:26:34')).toLocaleString('US-EN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          }),
+          donor: 'John Doe',
+          paymentMethod: 'Credit Card',
+          status: 'Completed',
+          id: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtYWlsc3luYyIsImlhdCI6MTczNzk3MTgyNy45MDY1NDksIm5iZiI6MTczNzk3MTc2Ny45MDY1NDksImV4cCI6MTczNzk3MjQyNy45MDY1NDksImtleSI6IjEwOTY4MjEiLCJ1c2VyIjoiQGlzYS1hdC10aGUtYXJjaGl2ZSJ9.pMbayUlFgRhm3wDoJG1IPoltliTHDq0xH2W369JtdQA',
+          token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtYWlsc3luYyIsImlhdCI6MTczNzk3MTgyNy45MDY1NDksIm5iZiI6MTczNzk3MTc2Ny45MDY1NDksImV4cCI6MTczNzk3MjQyNy45MDY1NDksImtleSI6IjEwOTY4MjEiLCJ1c2VyIjoiQGlzYS1hdC10aGUtYXJjaGl2ZSJ9.pMbayUlFgRhm3wDoJG1IPoltliTHDq0xH2W369JtdQA',
+          is_test: false,
+        }),
         new Receipt({
           currency: 'USD',
           net_amount: 9999.99,
