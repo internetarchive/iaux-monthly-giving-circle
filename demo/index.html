@@ -185,8 +185,10 @@
     const receiptsData = [
           new Receipt({
           currency: 'USD',
+          total_amount: 1,
           net_amount: 1,
           fee_amount: 0,
+          fee_covered: false,
           date: (new Date('2019-01-22 14:26:34')).toLocaleString('US-EN', {
             year: 'numeric',
             month: 'short',
@@ -204,6 +206,7 @@
           net_amount: 9999.99,
           total_amount: 9999.99,
           fee_amount: 0,
+          fee_covered: false,
           date: (new Date('2019-01-22 14:26:34')).toLocaleString('US-EN', {
             year: 'numeric',
             month: 'short',
@@ -221,6 +224,7 @@
           net_amount: 100,
           total_amount: 105.86,
           fee_amount: 5.86,
+          fee_covered: true,
           date: (new Date('2022-09-22 14:26:34')).toLocaleString('US-EN', {
             year: 'numeric',
             month: 'short',

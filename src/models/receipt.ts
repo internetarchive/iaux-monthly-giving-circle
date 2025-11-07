@@ -3,12 +3,13 @@ export type AReceipt = {
   net_amount: number;
   total_amount: number;
   fee_amount: number;
-  receive_date?: Date;
+  fee_covered: boolean;
+  receive_date: Date;
   date: string;
   isTest: boolean;
   token: string;
-  id?: string;
 };
+
 export class Receipt {
   receipt: AReceipt;
 
@@ -17,9 +18,7 @@ export class Receipt {
   }
 
   get amountFormatted(): string {
-    const value = (
-      (this.receipt.total_amount ?? this.receipt.net_amount) as number
-    ).toFixed(2);
+    const value = this.receipt.total_amount.toFixed(2);
     const currencyType = this.receipt.currency ?? 'CURR not found';
     if (value) {
       return `${currencyType} ${this.currencySymbol}${value}`;
@@ -28,11 +27,7 @@ export class Receipt {
   }
 
   get amount(): string {
-    return (
-      `${this.receipt.total_amount}` ??
-      `${this.receipt.net_amount}` ??
-      "no amount found, can't find total_amount or net_amount"
-    );
+    return this.receipt.total_amount.toFixed(2);
   }
 
   get isTest(): boolean {
