@@ -30,6 +30,8 @@ describe('Receipts: When requesting an email', () => {
               }),
               isTest: false,
               token: 'foo-token-3',
+              fee_covered: true,
+              receive_date: new Date('2023-12-23 14:26:34'),
             }),
           ]}
         ></ia-monthly-giving-circle>`
