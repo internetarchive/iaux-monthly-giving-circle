@@ -79,7 +79,7 @@ export class IauxEditPlanForm extends LitElement {
         <hr />
         <p class="email-edit-plan">
           Need to update your plan further? Please email us at
-          <a href=${this.mailToText}>donations@archive.org</a>.
+          <a href=${this.mailToText()}>donations@archive.org</a>.
         </p>
       </section>
     `;
