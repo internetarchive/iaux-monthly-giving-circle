@@ -197,6 +197,10 @@
       height: inherit;
     }
 
+    :host(.link.cancel) button {
+      color: var(--link-cancel-color, #bb0505);
+    }
+
     :host(.text) button {
       color: #222;
     }
@@ -657,6 +661,7 @@
                 id="update-amount"
                 class="ia-button primary"
                 type="submit"
+                ?isDisabled=${!this.newAmount}
                 .clickHandler=${(e,i)=>this.handleSubmit(e,i)}
               >
                 Update
@@ -765,6 +770,7 @@
     input[name='edit-date'] {
       margin: 10px 0;
       min-width: 140px;
+      font-family: inherit;
     }
 
     .cta-container {
@@ -1025,23 +1031,22 @@
         }
       </style>
     `}};l([$("badged-input.donation-contact-form-email")],_.prototype,"emailBadgedInput",void 0);l([$("#donation-contact-form-email")],_.prototype,"emailField",void 0);l([$("badged-input.donation-contact-form-first-name")],_.prototype,"firstNameBadgedInput",void 0);l([$("#donation-contact-form-first-name")],_.prototype,"firstNameField",void 0);l([$("badged-input.donation-contact-form-last-name")],_.prototype,"lastNameBadgedInput",void 0);l([$("#donation-contact-form-last-name")],_.prototype,"lastNameField",void 0);l([$("badged-input.donation-contact-form-postal-code")],_.prototype,"postalBadgedInput",void 0);l([$("#donation-contact-form-postal-code")],_.prototype,"postalCodeField",void 0);l([$("badged-input.donation-contact-form-street-address")],_.prototype,"streetAddressBadgedInput",void 0);l([$("#donation-contact-form-street-address")],_.prototype,"streetAddressField",void 0);l([$("badged-input.donation-contact-form-extended-address")],_.prototype,"extendedAddressBadgedInput",void 0);l([$("#donation-contact-form-extended-address")],_.prototype,"extendedAddressField",void 0);l([$("badged-input.donation-contact-form-locality")],_.prototype,"localityBadgedInput",void 0);l([$("#donation-contact-form-locality")],_.prototype,"localityField",void 0);l([$("badged-input.donation-contact-form-region")],_.prototype,"regionBadgedInput",void 0);l([$("#donation-contact-form-region")],_.prototype,"regionField",void 0);l([$("#donation-contact-form-countryCodeAlpha2")],_.prototype,"countryCodeAlpha2Field",void 0);l([$("#donation-contact-form-error-message")],_.prototype,"errorMessage",void 0);l([$("form")],_.prototype,"form",void 0);l([m({type:String})],_.prototype,"selectedCountry",void 0);l([m({type:String})],_.prototype,"donorEmail",void 0);_=l([C("contact-form")],_);let q=class extends S{constructor(){super(...arguments),this.patronWantsToKeepPlan=!0,this.initialCancelRequest=!1}updated(t){t.has("plan")&&console.log("plan updated",this.plan)}async cancelThisPlan(t){t.preventDefault(),this.patronWantsToKeepPlan=!1,this.dispatchEvent(new Event("cancelPlan"))}get formId(){var t;return`cancel-donation-form-${(t=this.plan)===null||t===void 0?void 0:t.id}`}render(){return this.initialCancelRequest?this.confirmCancelation:p`
-      <ia-mgc-button
-        class="clear-container slim"
-        .clickHandler=${(t,e)=>{if(e.isDisabled=!0,this.initialCancelRequest){this.initialCancelRequest=!1,this.patronWantsToKeepPlan=!0;return}this.initialCancelRequest=!0}}
+      <donation-form-section
+        badgemode="hidebadge"
+        headline="Cancel recurring donation (requires confirmation)"
       >
-        <donation-form-section
-          badgemode="hidebadge"
-          headline="Cancel recurring donation (requires confirmation)"
-        >
-          <div class="warning">
-            <p>
-              You can also pause your recurring donation by setting the next
-              donation date up to 12 months in the future.
-            </p>
-            <p>Let's cancel my donation</p>
-          </div>
-        </donation-form-section>
-      </ia-mgc-button>
+        <div class="warning">
+          <p>
+            You can also pause your recurring donation by setting the next
+            donation date up to 12 months in the future.
+          </p>
+          <ia-mgc-button
+            class="link cancel"
+            .clickHandler=${(t,e)=>{if(e.isDisabled=!0,this.initialCancelRequest){this.initialCancelRequest=!1,this.patronWantsToKeepPlan=!0;return}this.initialCancelRequest=!0}}
+            >Let's cancel my donation</ia-mgc-button
+          >
+        </div>
+      </donation-form-section>
 
       ${this.initialCancelRequest?this.confirmCancelation:y}
     `}get confirmCancelation(){return p`
@@ -1100,6 +1105,10 @@
       right: -10px;
     }
 
+    ia-mgc-button.link.cancel {
+      --link-cancel-color: var(--mgc-warning-color-dark, #bb0505);
+    }
+
     ia-mgc-button {
       --button-height: auto;
     }
@@ -1136,7 +1145,7 @@
         <hr />
         <p class="email-edit-plan">
           Need to update your plan further? Please email us at
-          <a href=${this.mailToText}>donations@archive.org</a>.
+          <a href=${this.mailToText()}>donations@archive.org</a>.
         </p>
       </section>
     `}mailToText(){return"mailto:donations@archive.org?subject=I'd like to update my monthly donation"}};l([m({type:Object})],Mt.prototype,"plan",void 0);l([m({type:Object})],Mt.prototype,"updateAmountHandler",void 0);Mt=l([C("ia-mgc-edit-plan")],Mt);var T;(function(o){o.welcome="ShowWelcome",o.receipts="ShowReceipts",o.plans="ShowPlans",o.editPlan="ShowEditForm"})(T||(T={}));let I=class extends S{constructor(){super(...arguments),this.patronName="",this.receipts=[],this.updates=[],this.plans=[],this.viewToDisplay="welcome",this.canEdit=!1}createRenderRoot(){return this}updated(t){t.has("plans")&&(this.viewToDisplay=this.plans.length?"plans":"welcome")}get receiptListElement(){return this.querySelector("ia-mgc-receipts")}get editFormElement(){return this.querySelector("ia-mgc-edit-plan")}updateReceived(t){var e;this.updates.unshift(t);const{plan:i,donationId:n=""}=t,a=(e=i?.id)!==null&&e!==void 0?e:n;if(t.action==="amountUpdate"){this.editFormElement.amountUpdates(t.status);return}if(t.action==="dateUpdate"){this.editingThisPlan=i,this.editFormElement.dateUpdates(t.status);return}if(t.action==="cancel"||i?.hasBeenCancelled){this.editingThisPlan=void 0,this.viewToDisplay="plans";return}this.receiptListElement.emailSent({id:a,emailStatus:t.status})}render(){const t=this.viewToDisplay==="editPlan"&&this.editingThisPlan;return p`
