@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import './mgc-button';
 import type { MGCButton } from './mgc-button';
@@ -8,7 +8,7 @@ export class MGCFormSectionInfo extends LitElement {
   protected render() {
     return html`
       <div class="mgc-donation-section-info">
-        <p><slot></slot></p>
+        <span><slot></slot></span>
         <ia-mgc-button
           class="ia-button link"
           .clickHandler=${(_event: Event, iaButton: MGCButton) => {
@@ -22,4 +22,11 @@ export class MGCFormSectionInfo extends LitElement {
       </div>
     `;
   }
+
+  static styles = css`
+    span {
+      width: 95px;
+      margin-right: 20px;
+    }
+  `;
 }
