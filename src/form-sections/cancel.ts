@@ -46,32 +46,31 @@ export class IauxMgcCancelPlan extends LitElement {
     }
 
     return html`
-      <ia-mgc-button
-        class="clear-container slim"
-        .clickHandler=${(e: Event, iaButton: MGCButton) => {
-          // eslint-disable-next-line no-param-reassign
-          iaButton.isDisabled = true;
-          if (this.initialCancelRequest) {
-            this.initialCancelRequest = false;
-            this.patronWantsToKeepPlan = true;
-            return;
-          }
-          this.initialCancelRequest = true;
-        }}
+      <donation-form-section
+        badgemode="hidebadge"
+        headline="Cancel recurring donation (requires confirmation)"
       >
-        <donation-form-section
-          badgemode="hidebadge"
-          headline="Cancel recurring donation (requires confirmation)"
-        >
-          <div class="warning">
-            <p>
-              You can also pause your recurring donation by setting the next
-              donation date up to 12 months in the future.
-            </p>
-            <p>Let's cancel my donation</p>
-          </div>
-        </donation-form-section>
-      </ia-mgc-button>
+        <div class="warning">
+          <p>
+            You can also pause your recurring donation by setting the next
+            donation date up to 12 months in the future.
+          </p>
+          <ia-mgc-button
+            class="link cancel"
+            .clickHandler=${(e: Event, iaButton: MGCButton) => {
+              // eslint-disable-next-line no-param-reassign
+              iaButton.isDisabled = true;
+              if (this.initialCancelRequest) {
+                this.initialCancelRequest = false;
+                this.patronWantsToKeepPlan = true;
+                return;
+              }
+              this.initialCancelRequest = true;
+            }}
+            >Let's cancel my donation</ia-mgc-button
+          >
+        </div>
+      </donation-form-section>
 
       ${this.initialCancelRequest ? this.confirmCancelation : nothing}
     `;
@@ -147,6 +146,10 @@ export class IauxMgcCancelPlan extends LitElement {
       position: absolute;
       top: -5px;
       right: -10px;
+    }
+
+    ia-mgc-button.link.cancel {
+      --link-cancel-color: var(--mgc-warning-color-dark, #bb0505);
     }
 
     ia-mgc-button {
