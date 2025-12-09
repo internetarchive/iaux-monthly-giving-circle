@@ -96,6 +96,10 @@ export class MGCButton extends LitElement {
       height: inherit;
     }
 
+    :host(.link.cancel) button {
+      color: var(--link-cancel-color, #bb0505);
+    }
+
     :host(.text) button {
       color: #222;
     }
