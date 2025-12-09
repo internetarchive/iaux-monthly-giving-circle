@@ -307,6 +307,7 @@ export class MGCEditPlanAmount extends LitElement {
                 id="update-amount"
                 class="ia-button primary"
                 type="submit"
+                ?isDisabled=${!this.newAmount}
                 .clickHandler=${(e: Event, iaButton: MGCButton) =>
                   this.handleSubmit(e, iaButton)}
               >
