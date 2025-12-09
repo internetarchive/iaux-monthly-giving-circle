@@ -363,6 +363,7 @@ export class MGCEditPlanDate extends LitElement {
     input[name='edit-date'] {
       margin: 10px 0;
       min-width: 140px;
+      font-family: inherit;
     }
 
     .cta-container {
