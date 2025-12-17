@@ -112,7 +112,8 @@ export class MGCButton extends LitElement {
     :host([isdisabled]) button {
       cursor: not-allowed;
       opacity: 0.5;
-      color: #222 !important;
+      background-color: var(--primaryDisableCTAFill, #767676);
+      border: 1px solid var(--secondaryCTABorder, #999);
     }
   `;
 }
