@@ -213,7 +213,8 @@
     :host([isdisabled]) button {
       cursor: not-allowed;
       opacity: 0.5;
-      color: #222 !important;
+      background-color: var(--primaryDisableCTAFill, #767676);
+      border: 1px solid var(--secondaryCTABorder, #999);
     }
   `;l([m({type:Boolean,reflect:!0})],Q.prototype,"isDisabled",void 0);l([m({type:Object})],Q.prototype,"clickHandler",void 0);l([$("button")],Q.prototype,"button",void 0);Q=l([C("ia-mgc-button")],Q);let ut=class extends S{constructor(){super(...arguments),this.plans=[],this.canEdit=!1}render(){return p`
       <section class="monthly-giving-circle">
