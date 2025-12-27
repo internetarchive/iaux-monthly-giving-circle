@@ -4,3 +4,4 @@ export { Receipt } from './src/models/receipt';
 export type { AReceipt } from './src/models/receipt';
 export { MonthlyPlan } from './src/models/plan';
 export type { Plan, BtData } from './src/models/plan';
+export type { PaymentMethodRequest } from './src/models/payment-method-request';
