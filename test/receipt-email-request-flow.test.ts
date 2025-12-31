@@ -34,16 +34,16 @@ describe('Receipts: When requesting an email', () => {
               receive_date: new Date('2023-12-23 14:26:34'),
             }),
           ]}
-        ></ia-monthly-giving-circle>`
+        ></ia-monthly-giving-circle>`,
       );
 
       // open receipt view
       const titleEl = el.querySelector('ia-mgc-title');
       const receiptsDisplayButton = titleEl!.querySelector(
-        'ia-mgc-button'
+        'ia-mgc-button',
       ) as MGCButton;
       const innerButton = receiptsDisplayButton.shadowRoot?.querySelector(
-        'button'
+        'button',
       ) as HTMLButtonElement;
       innerButton.click();
 
@@ -76,7 +76,7 @@ describe('Receipts: When requesting an email', () => {
       });
       // request an email
       const requestReceiptButton = receiptsEl!.shadowRoot!.querySelector(
-        'tr#donation-foo-token-3 ia-mgc-button'
+        'tr#donation-foo-token-3 ia-mgc-button',
       ) as MGCButton;
 
       requestReceiptButton!.click();

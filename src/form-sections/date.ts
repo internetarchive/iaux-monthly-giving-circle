@@ -119,7 +119,7 @@ export class MGCEditPlanDate extends LitElement {
           plan: this.plan,
           newDate: this.newDate,
         },
-      })
+      }),
     );
   }
 

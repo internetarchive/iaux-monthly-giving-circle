@@ -59,7 +59,7 @@ export class IauxMgcReceipts extends LitElement {
         detail: {
           donation: receipt,
         },
-      })
+      }),
     );
   }
 
@@ -78,13 +78,13 @@ export class IauxMgcReceipts extends LitElement {
     console.log(
       'RECEIPTS -- emailSent',
       this.receiptDispatcher,
-      receiptEmailed
+      receiptEmailed,
     );
 
     // re-enable email request button
     const escapedId = CSS.escape(id);
     const button = this.shadowRoot?.querySelector(
-      `#donation-${escapedId} ia-mgc-button`
+      `#donation-${escapedId} ia-mgc-button`,
     ) as MGCButton;
     button.isDisabled = false;
   }
@@ -129,7 +129,7 @@ export class IauxMgcReceipts extends LitElement {
                     : html`<ia-mgc-update-status
                         .status=${emailStatus.emailStatus}
                         >${this.emailStatusMessageToDisplay(
-                          emailStatus
+                          emailStatus,
                         )}</ia-mgc-update-status
                       >`;
                 return html`
@@ -152,7 +152,7 @@ export class IauxMgcReceipts extends LitElement {
                           style="--link-button-flex-align-items: center;"
                           .clickHandler=${async (
                             event: Event,
-                            MGCButton: MGCButton
+                            MGCButton: MGCButton,
                           ) => {
                             const initialClick = !emailUnavailable;
                             if (initialClick) {

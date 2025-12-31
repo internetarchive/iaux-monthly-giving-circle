@@ -108,7 +108,7 @@ export class IauxMgcPlans extends LitElement {
         iaButton.isDisabled = true;
         // open form
         this.dispatchEvent(
-          new CustomEvent('editThisPlan', { detail: { plan } })
+          new CustomEvent('editThisPlan', { detail: { plan } }),
         );
       }}
       >${ctaText}</ia-mgc-button

@@ -10,7 +10,7 @@ export class MGCButton extends LitElement {
   @property({ type: Object }) clickHandler?: (
     e: Event,
     // eslint-disable-next-line no-use-before-define
-    self: MGCButton
+    self: MGCButton,
   ) => void;
 
   @query('button') button!: HTMLButtonElement;

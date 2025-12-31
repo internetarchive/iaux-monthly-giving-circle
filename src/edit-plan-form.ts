@@ -19,7 +19,7 @@ export class IauxEditPlanForm extends LitElement {
       baseAmount: number;
       coverFees: boolean;
       feeCovered: number;
-    }
+    },
   ) => void;
 
   createRenderRoot() {
@@ -28,7 +28,7 @@ export class IauxEditPlanForm extends LitElement {
 
   amountUpdates(status: 'success' | 'fail') {
     const amountForm = this.querySelector(
-      'ia-mgc-edit-plan-amount'
+      'ia-mgc-edit-plan-amount',
     ) as MGCEditPlanAmount;
     amountForm!.amountUpdated(status);
   }
@@ -63,7 +63,7 @@ export class IauxEditPlanForm extends LitElement {
               this.dispatchEvent(
                 new CustomEvent('updateDate', {
                   detail: { plan: this.plan, newDate },
-                })
+                }),
               );
             }
           }}
