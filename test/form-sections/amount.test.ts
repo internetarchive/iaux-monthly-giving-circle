@@ -35,7 +35,7 @@ const plan = new MonthlyPlan({
 describe('<ia-mgc-edit-plan-amount>', () => {
   it('displays with call to edit', async () => {
     const el = await fixture<MGCEditPlanAmount>(
-      html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`
+      html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`,
     );
 
     const holder = el.shadowRoot?.querySelector('ia-mgc-form-section-info');

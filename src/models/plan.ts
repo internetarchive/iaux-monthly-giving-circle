@@ -84,7 +84,7 @@ export class MonthlyPlan {
 
   get nextBillingDateLocale(): string {
     const nextBillingDate = new Date(
-      this.payment.nextBillingDate.date
+      this.payment.nextBillingDate.date,
     ).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
@@ -100,7 +100,7 @@ export class MonthlyPlan {
     }
 
     const lastBillingDate = new Date(
-      this.payment.lastBillingDate.date
+      this.payment.lastBillingDate.date,
     ).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',

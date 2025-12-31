@@ -11,7 +11,7 @@ lastPaymentWasOnTheFirstOfThisMonth.setHours(0, 0, 0, 0);
 lastPaymentWasOnTheFirstOfThisMonth.setDate(1);
 console.log(
   'lastPaymentWasOnTheFirstOfThisMonth',
-  lastPaymentWasOnTheFirstOfThisMonth.toISOString()
+  lastPaymentWasOnTheFirstOfThisMonth.toISOString(),
 );
 
 const nextMonth = new Date();
@@ -67,16 +67,16 @@ const plan = new MonthlyPlan({
 });
 
 const nextBillingDateYYYYMMDD = `${nextPaymentFirstOfMonth.getFullYear()}-${String(
-  nextPaymentFirstOfMonth.getMonth() + 1
+  nextPaymentFirstOfMonth.getMonth() + 1,
 ).padStart(2, '0')}-${String(nextPaymentFirstOfMonth.getDate()).padStart(
   2,
-  '0'
+  '0',
 )}`;
 
 describe('<ia-mgc-edit-date>', () => {
   it('input validates before allowing form submission', async () => {
     const el = await fixture<MGCEditPlanDate>(
-      html`<ia-mgc-edit-date .plan=${plan}></ia-mgc-edit-date>`
+      html`<ia-mgc-edit-date .plan=${plan}></ia-mgc-edit-date>`,
     );
 
     const holder = el.shadowRoot?.querySelector('ia-mgc-form-section-info');
@@ -101,17 +101,17 @@ describe('<ia-mgc-edit-date>', () => {
     expect(el.form.getAttribute('id')).to.equal('edit-date');
 
     const lastDateLabel = el.form.querySelector(
-      '#form-info-last-donation-date'
+      '#form-info-last-donation-date',
     );
     const nextDateLabel = el.form.querySelector(
-      '#form-info-next-donation-date'
+      '#form-info-next-donation-date',
     );
 
     expect(lastDateLabel).to.contain.text(plan.lastBillingDateLocale);
     expect(nextDateLabel).to.contain.text(plan.nextBillingDateLocale);
 
     const requestDateUpdateButton = el.form.querySelector(
-      'ia-mgc-button#edit-date'
+      'ia-mgc-button#edit-date',
     ) as MGCButton;
     expect(requestDateUpdateButton).to.exist;
     expect(requestDateUpdateButton!.hasAttribute('isdisabled')).to.be.true;
@@ -126,16 +126,16 @@ describe('<ia-mgc-edit-date>', () => {
     expect(dateInput!.getAttribute('min')).to.equal(
       `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(
         2,
-        '0'
-      )}-${String(tomorrow.getDate()).padStart(2, '0')}`
+        '0',
+      )}-${String(tomorrow.getDate()).padStart(2, '0')}`,
     );
     expect(dateInput!.getAttribute('max')).to.equal(
       `${twelveMonthsFromNow.getFullYear()}-${String(
-        twelveMonthsFromNow.getMonth() + 1
+        twelveMonthsFromNow.getMonth() + 1,
       ).padStart(2, '0')}-${String(twelveMonthsFromNow.getDate()).padStart(
         2,
-        '0'
-      )}`
+        '0',
+      )}`,
     );
     expect(dateInput!.value).to.equal(nextBillingDateYYYYMMDD);
 
@@ -150,14 +150,14 @@ describe('<ia-mgc-edit-date>', () => {
 
     // date within 12 months
     const twoYearsFromNowStr = `${twoYearsFromNow.getFullYear()}-${String(
-      twoYearsFromNow.getMonth() + 1
+      twoYearsFromNow.getMonth() + 1,
     ).padStart(2, '0')}-${String(twoYearsFromNow.getDate()).padStart(2, '0')}`;
     dateInput!.value = twoYearsFromNowStr;
     dateInput!.dispatchEvent(new Event('change'));
     await el.updateComplete;
 
     expect(el.errorMessage).to.contain(
-      'New donation date must be within the next 12 months.'
+      'New donation date must be within the next 12 months.',
     );
     expect(requestDateUpdateButton!.hasAttribute('isdisabled')).to.be.true;
 
@@ -168,32 +168,32 @@ describe('<ia-mgc-edit-date>', () => {
     lastDayOfCurrentMonth.setDate(0);
 
     const lastDayOfCurrentMonthStr = `${lastDayOfCurrentMonth.getFullYear()}-${String(
-      lastDayOfCurrentMonth.getMonth() + 1
+      lastDayOfCurrentMonth.getMonth() + 1,
     ).padStart(2, '0')}-${lastDayOfCurrentMonth.getDate()}`;
     dateInput!.value = lastDayOfCurrentMonthStr;
     dateInput!.dispatchEvent(new Event('change'));
     await el.updateComplete;
 
     expect(el.warningMessage).to.contain(
-      'You have already made a donation this month.'
+      'You have already made a donation this month.',
     );
     expect(el.errorMessage).to.contain(
-      'The date you selected will result in an additional donation for this month.'
+      'The date you selected will result in an additional donation for this month.',
     );
     expect(el.allowEditing).to.be.true;
     expect(requestDateUpdateButton!.hasAttribute('isdisabled')).to.be.true;
     expect(el.newDate).to.contain(
       `${lastDayOfCurrentMonth.getFullYear()}-${String(
-        lastDayOfCurrentMonth.getMonth() + 1
+        lastDayOfCurrentMonth.getMonth() + 1,
       ).padStart(2, '0')}-${String(lastDayOfCurrentMonth.getDate()).padStart(
         2,
-        '0'
-      )}`
+        '0',
+      )}`,
     );
 
     // can submit when date is valid
     const nextMonthStr = `${nextMonth.getFullYear()}-${String(
-      nextMonth.getMonth() + 1
+      nextMonth.getMonth() + 1,
     ).padStart(2, '0')}-${String(nextMonth.getDate()).padStart(2, '0')}`;
     dateInput!.value = nextMonthStr;
     dateInput!.dispatchEvent(new Event('change'));

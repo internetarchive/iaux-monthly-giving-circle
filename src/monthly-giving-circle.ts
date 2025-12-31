@@ -108,7 +108,7 @@ export class MonthlyGivingCircle extends LitElement {
               this.dispatchEvent(
                 new CustomEvent('cancelPlan', {
                   detail: { plan: this.editingThisPlan },
-                })
+                }),
               );
             }}
             .updateAmountHandler=${(
@@ -118,13 +118,13 @@ export class MonthlyGivingCircle extends LitElement {
                 baseAmount: number;
                 coverFees: boolean;
                 feeCovered: number;
-              }
+              },
             ) => {
               console.log('updateAmount', plan, { ...options });
               this.dispatchEvent(
                 new CustomEvent('updateAmount', {
                   detail: { plan, amountOptions: options },
-                })
+                }),
               );
             }}
             @updateDate=${(event: CustomEvent) => {
@@ -133,7 +133,7 @@ export class MonthlyGivingCircle extends LitElement {
               this.dispatchEvent(
                 new CustomEvent('updateDate', {
                   detail: { plan: this.editingThisPlan, newDate },
-                })
+                }),
               );
             }}
           ></ia-mgc-edit-plan>`
@@ -231,7 +231,7 @@ export class MonthlyGivingCircle extends LitElement {
             this.dispatchEvent(
               new CustomEvent('EmailReceiptRequest', {
                 detail: { ...event.detail },
-              })
+              }),
             );
           }}
         ></ia-mgc-receipts>
