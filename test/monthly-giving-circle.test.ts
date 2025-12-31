@@ -10,7 +10,7 @@ import { MonthlyPlan } from '../src/models/plan';
 describe('IauxMonthlyGivingCircle', () => {
   it('displays welcome message on load', async () => {
     const el = await fixture<MonthlyGivingCircle>(
-      html`<ia-monthly-giving-circle></ia-monthly-giving-circle>`
+      html`<ia-monthly-giving-circle></ia-monthly-giving-circle>`,
     );
 
     expect(el.viewToDisplay).to.equal('welcome');
@@ -20,16 +20,16 @@ describe('IauxMonthlyGivingCircle', () => {
     expect(titleEl!.getAttribute('titlestyle')).to.equal('heart');
     expect(titleEl!.children.length).to.equal(2);
     expect((titleEl!.children[0] as HTMLElement).innerText).to.equal(
-      'Monthly Giving Circle'
+      'Monthly Giving Circle',
     );
 
     const welcomeEl = el.querySelector('ia-mgc-welcome');
     const joinLink = welcomeEl!.shadowRoot?.querySelector(
-      'a.join-mgc'
+      'a.join-mgc',
     ) as HTMLAnchorElement;
     expect(joinLink).to.not.be.null;
     expect(joinLink.href).to.equal(
-      'https://archive.org/donate/?amt=5&contrib_type=monthly&origin=iawww-usrsttng'
+      'https://archive.org/donate/?amt=5&contrib_type=monthly&origin=iawww-usrsttng',
     );
   });
 
@@ -67,7 +67,7 @@ describe('IauxMonthlyGivingCircle', () => {
               },
             }),
           ]}
-        ></ia-monthly-giving-circle>`
+        ></ia-monthly-giving-circle>`,
       );
 
       expect(el.viewToDisplay).to.equal('plans');
@@ -82,7 +82,7 @@ describe('IauxMonthlyGivingCircle', () => {
       expect(mgcPlans).to.exist;
 
       const editPlanButton = mgcPlans!.shadowRoot?.querySelector(
-        'ia-mgc-button.edit-donation'
+        'ia-mgc-button.edit-donation',
       ) as MGCButton;
       expect(editPlanButton).to.exist;
       const innerButton = editPlanButton.shadowRoot?.querySelector('button');
@@ -112,16 +112,16 @@ describe('IauxMonthlyGivingCircle', () => {
               id: 'foo-id-1',
             },
           ]}
-        ></ia-monthly-giving-circle>`
+        ></ia-monthly-giving-circle>`,
       );
 
       const titleEl = el.querySelector('ia-mgc-title');
       const receiptsButton = titleEl!.querySelector(
-        'ia-mgc-button'
+        'ia-mgc-button',
       ) as MGCButton;
       expect(receiptsButton).to.exist;
       expect(receiptsButton!.innerText).to.equal(
-        'View recent donation history'
+        'View recent donation history',
       );
 
       el.receipts = [];
@@ -147,20 +147,20 @@ describe('IauxMonthlyGivingCircle', () => {
               id: 'foo-id-1',
             },
           ]}
-        ></ia-monthly-giving-circle>`
+        ></ia-monthly-giving-circle>`,
       );
 
       const titleEl = el.querySelector('ia-mgc-title');
       expect(titleEl).to.exist;
 
       const receiptsButton = titleEl!.querySelector(
-        'ia-mgc-button'
+        'ia-mgc-button',
       ) as MGCButton;
 
       expect(receiptsButton.innerText).to.equal('View recent donation history');
 
       const innerButton = receiptsButton.shadowRoot?.querySelector(
-        'button'
+        'button',
       ) as HTMLButtonElement;
       innerButton.click();
 
@@ -176,14 +176,14 @@ describe('IauxMonthlyGivingCircle', () => {
       expect(titleEl2).to.exist;
       expect(titleEl2!.getAttribute('titlestyle')).to.equal('default');
       const titleValueEl = titleEl2?.querySelector(
-        'span[slot="title"]'
+        'span[slot="title"]',
       ) as HTMLSpanElement;
       expect(titleValueEl).to.exist;
       expect(titleValueEl.innerText).to.equal('Recent donations');
 
       // shows back button
       const backButton = titleEl2?.querySelector(
-        'ia-mgc-button#close-receipts'
+        'ia-mgc-button#close-receipts',
       ) as MGCButton;
       expect(backButton!.innerText).to.equal('Back to account settings');
 
@@ -202,7 +202,7 @@ describe('IauxMonthlyGivingCircle', () => {
       expect(titleEl3).to.exist;
       expect(titleEl3!.getAttribute('titlestyle')).to.equal('heart');
       const welcomeTitle = titleEl3?.querySelector(
-        'span[slot="title"]'
+        'span[slot="title"]',
       ) as HTMLSpanElement;
       expect(welcomeTitle.innerText).to.equal('Monthly Giving Circle');
     });

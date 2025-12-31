@@ -107,7 +107,7 @@ export class MGCEditPlanAmount extends LitElement {
     e.preventDefault();
 
     const input = this.form.querySelector(
-      'input[name="amount"]'
+      'input[name="amount"]',
     ) as HTMLInputElement;
     this.newAmount = Number(input.value);
 
@@ -121,8 +121,8 @@ export class MGCEditPlanAmount extends LitElement {
     const newAmount = Number(
       DonationPaymentInfo.calculateTotal(
         Number(this.donationPaymentInfo?.amount),
-        this.coverFees
-      )
+        this.coverFees,
+      ),
     );
     this.dispatchEvent(
       new CustomEvent('updateAmount', {
@@ -133,7 +133,7 @@ export class MGCEditPlanAmount extends LitElement {
           coverFees: this.coverFees,
           feeCovered: this.donationPaymentInfo?.feeAmountCovered,
         },
-      })
+      }),
     );
   }
 
@@ -180,7 +180,7 @@ export class MGCEditPlanAmount extends LitElement {
 
   clearInputField() {
     const input = this.form.querySelector(
-      'input[name="amount"]'
+      'input[name="amount"]',
     ) as HTMLInputElement;
     input.value = '';
     this.newAmount = 0;
@@ -202,7 +202,7 @@ export class MGCEditPlanAmount extends LitElement {
     }
 
     const input = this.form.querySelector(
-      'input[name="amount"]'
+      'input[name="amount"]',
     ) as HTMLInputElement;
     const requestedAmount = Number(input.value) ?? 0;
     const amountTooLow = requestedAmount < 1;

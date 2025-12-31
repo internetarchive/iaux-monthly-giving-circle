@@ -35,7 +35,7 @@ const plan = new MonthlyPlan({
 describe('IauxEditPlanForm', () => {
   it('has edit amount form', async () => {
     const el = await fixture<IauxEditPlanForm>(
-      html`<ia-mgc-edit-plan .plan=${plan}></ia-mgc-edit-plan>`
+      html`<ia-mgc-edit-plan .plan=${plan}></ia-mgc-edit-plan>`,
     );
 
     const editAmountForm = el.querySelector('ia-mgc-edit-plan-amount');
@@ -43,7 +43,7 @@ describe('IauxEditPlanForm', () => {
   });
   it('has cancel form', async () => {
     const el = await fixture<IauxEditPlanForm>(
-      html`<ia-mgc-edit-plan .plan=${plan}></ia-mgc-edit-plan>`
+      html`<ia-mgc-edit-plan .plan=${plan}></ia-mgc-edit-plan>`,
     );
 
     const cancelForm = el.querySelector('ia-mgc-cancel-plan');
