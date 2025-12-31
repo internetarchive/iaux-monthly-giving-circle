@@ -6,6 +6,7 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "files": [
     "dist/**/*",
     "src/**/*",
@@ -16,8 +17,8 @@
     "start": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wds\"",
     "prepare": "rimraf dist && tsc && husky install",
     "build": "tsc",
-    "lint": "eslint --ext .ts,.html . --ignore-path .gitignore && prettier \"**/*.ts\" --check --ignore-path .gitignore",
-    "format": "eslint --ext .ts,.html . --fix --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
+    "lint": "eslint . && prettier \"**/*.ts\" --check",
+    "format": "eslint . --fix && prettier \"**/*.ts\" --write",
     "circular": "madge --circular --extensions ts .",
     "test": "tsc && yarn run lint && yarn run circular && wtr --coverage",
     "test:watch": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wtr --watch\"",
@@ -61,33 +62,6 @@
     "tslib": "^2.7.0",
     "typescript": "^5.0.0",
     "vite": "^5.1.0"
-  },
-  "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
-    "extends": [
-      "@open-wc",
-      "prettier"
-    ],
-    "plugins": [
-      "@typescript-eslint"
-    ],
-    "rules": {
-      "no-console": 1,
-      "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": 2,
-      "no-shadow": "off",
-      "@typescript-eslint/no-shadow": 2,
-      "class-methods-use-this": "off",
-      "import/no-unresolved": "off",
-      "import/extensions": [
-        "off",
-        "ignorePackages",
-        {
-          "js": "never",
-          "ts": "never"
-        }
-      ]
-    }
   },
   "prettier": {
     "singleQuote": true,
