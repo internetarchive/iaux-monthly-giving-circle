@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es2018",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noEmitOnError": true,
     "lib": ["es2017", "dom"],
     "strict": true,
@@ -15,7 +15,6 @@
     "inlineSources": true,
     "rootDir": "./",
     "declaration": true,
-    "importsNotUsedAsValues": "error",
     "plugins": [
       {
         "name": "ts-lit-plugin"
