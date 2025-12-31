@@ -80,7 +80,7 @@ describe('<ia-mgc-edit-date>', () => {
     );
 
     const holder = el.shadowRoot?.querySelector('ia-mgc-form-section-info');
-    expect(holder).to.equal(3);
+
     expect(holder?.textContent).to.contain(plan.nextBillingDateLocale);
 
     const cta = holder?.shadowRoot?.querySelector('ia-mgc-button');
@@ -90,7 +90,7 @@ describe('<ia-mgc-edit-date>', () => {
     expect(el.form).to.not.exist;
 
     // does show form on Edit... click
-    cta!.shadowRoot!.querySelector('button')!.click();
+    await cta!.shadowRoot!.querySelector('button')!.click();
     await el.updateComplete;
 
     expect(el.form).to.exist;
