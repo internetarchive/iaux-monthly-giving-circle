@@ -13,6 +13,7 @@ import type { MonthlyPlan } from '../models/plan';
 import '../presentational/mgc-button';
 import type { MGCButton } from '../presentational/mgc-button';
 import '../presentational/mgc-update-status';
+import '../presentational/donation-section-info';
 
 type InvalidDateErrorCode =
   | 'invalid_date'
