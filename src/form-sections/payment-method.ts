@@ -205,7 +205,7 @@ debugger;
               ><span>
                 ${this.plan?.payment?.paymentMethodType === 'creditCard' ? 'Credit Card' : this.plan?.payment?.paymentMethodType}:
                 ${this.plan?.payment?.cardType} - ${this.plan?.payment?.last4}
-              </span><br>
+              </span>
               <ia-mgc-update-status .status=${this.updateStatus}
                 >${this.updateMessage}</ia-mgc-update-status
               ></ia-mgc-form-section-info>`
