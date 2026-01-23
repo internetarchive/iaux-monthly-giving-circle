@@ -260,6 +260,7 @@ debugger;
                 id="edit-plan-payment-method-submit"
                 class="primary"
                 type="submit"
+                .isDisabled=${!this.selectedPaymentProvider}
                 .clickHandler=${async (event: Event, iaButton: MGCButton) => {
                   console.log({ iaButton, event });
 
