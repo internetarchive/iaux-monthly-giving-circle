@@ -212,9 +212,10 @@ export class MGCEditPlanDate extends LitElement {
     }
 
     // Check if there has been a donation in the last month
-    const lastDonationDate = this.plan?.payment.lastBillingDate.date
-      ? new Date(this.plan?.payment.lastBillingDate.date)
-      : null;
+    const lastDonationDate =
+      this.plan?.payment && this.plan.payment.lastBillingDate?.date
+        ? new Date(this.plan.payment.lastBillingDate.date)
+        : null;
 
     if (lastDonationDate) {
       const lastDonationMonth = lastDonationDate.getMonth();
