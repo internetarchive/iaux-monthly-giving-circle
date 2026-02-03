@@ -15,7 +15,12 @@ export type APlanUpdate = {
   plan?: MonthlyPlan;
   donationId?: string;
   status: 'success' | 'fail';
-  action: 'receiptSent' | 'cancel' | 'amountUpdate' | 'dateUpdate' | 'paymentMethodUpdate';
+  action:
+    | 'receiptSent'
+    | 'cancel'
+    | 'amountUpdate'
+    | 'dateUpdate'
+    | 'paymentMethodUpdate';
   message: string;
 };
 
@@ -40,20 +45,19 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: Object }) editingThisPlan?: MonthlyPlan;
 
-  @property({ type: String, reflect: true, }) viewToDisplay:
+  @property({ type: String, reflect: true }) viewToDisplay:
     | 'welcome'
     | 'receipts'
     | 'plans'
     | 'editPlan' = 'welcome';
 
-  @property({ type: Boolean, reflect: true, }) canEdit = false;
+  @property({ type: Boolean, reflect: true }) canEdit = false;
 
-  @property({ type: String, reflect: true, }) braintreeAuthToken: string = '';
+  @property({ type: String, reflect: true }) braintreeAuthToken: string = '';
 
   @property({ type: String }) venmoProfileId: string = '';
 
   @property({ type: String }) googleMerchantId: string = '';
-
 
   protected createRenderRoot() {
     return this;
@@ -117,6 +121,7 @@ export class MonthlyGivingCircle extends LitElement {
       ${this.sectionTitle}
       ${isEditingPlan
         ? html`<ia-mgc-edit-plan
+            .patronEmail=${this.patronEmail}
             .plan=${this.editingThisPlan}
             @cancelPlan=${() => {
               this.dispatchEvent(
@@ -159,8 +164,11 @@ export class MonthlyGivingCircle extends LitElement {
               });
               this.dispatchEvent(
                 new CustomEvent('UpdatePaymentMethod', {
-                  detail: { plan: this.editingThisPlan, newPaymentMethodRequest },
-                })
+                  detail: {
+                    plan: this.editingThisPlan,
+                    newPaymentMethodRequest,
+                  },
+                }),
               );
             }}
           >

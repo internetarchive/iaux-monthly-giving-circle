@@ -1,21 +1,18 @@
-import { LitElement, html, TemplateResult, css, CSSResult } from 'lit';
+import { LitElement, html } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 
 import '@internetarchive/donation-form/dist/src/form-elements/badged-input';
 
+import { LazyLoaderService } from '@internetarchive/lazy-loader-service';
 import {
-  LazyLoaderService,
-  LazyLoaderServiceInterface,
-} from '@internetarchive/lazy-loader-service';
-import type { BraintreeManagerInterface } from '@internetarchive/donation-form';
-// import { HostedFieldContainer, HostedFieldContainerInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-providers/credit-card/hosted-field-container';
-import { BraintreeEndpointManagerInterface, HostingEnvironment } from '@internetarchive/donation-form/dist/src/braintree-manager/braintree-interfaces.js';
-import { PaymentClients, PaymentClientsInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-clients.js';
-import type { DonationRequest, DonationResponse } from '@internetarchive/donation-form-data-models';
-
-import creditCardImg from '@internetarchive/icon-credit-card/index.js';
-import calendarImg from '@internetarchive/icon-calendar/index.js';
-import lockImg from '@internetarchive/icon-lock/index.js';
+  BraintreeEndpointManagerInterface,
+  HostingEnvironment,
+} from '@internetarchive/donation-form/dist/src/braintree-manager/braintree-interfaces.js';
+import {
+  PaymentClients,
+  PaymentClientsInterface,
+} from '@internetarchive/donation-form/dist/src/braintree-manager/payment-clients.js';
+import type { DonationRequest } from '@internetarchive/donation-form-data-models';
 
 import type { MonthlyPlan } from './models/plan';
 import './form-sections/amount';
@@ -58,21 +55,22 @@ export class IauxEditPlanForm extends LitElement {
     venmoProfileId: '1953896702662410263',
     googlePayMerchantId: '',
     environment: 'dev',
-    paymentClients: new PaymentClients(new LazyLoaderService(), HostingEnvironment.Development),
+    paymentClients: new PaymentClients(
+      new LazyLoaderService(),
+      HostingEnvironment.Development,
+    ),
     endpointManager: {
-      // eslint-disable-next-line arrow-body-style
-      submitData: async (request: DonationRequest) => {
-        // Implement your submit logic here
-        // Return a DonationResponse object with at least a 'value' property
-        return Promise.resolve({
-          value: {}, // Replace with actual donation response value
-          success: true,
-        } as DonationResponse);
+      // eslint-disable-next-line arrow-body-style, @typescript-eslint/no-unused-vars
+      submitData: async (_request: DonationRequest) => {
+        // eslint-disable-next-line no-debugger
+        debugger;
       },
-      donationSuccessful: (response: any) => 
-        // Implement your donation success logic here
-        true
-    } as BraintreeEndpointManagerInterface,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      donationSuccessful: (_response: any) => {
+        // eslint-disable-next-line no-debugger
+        debugger;
+      },
+    } as unknown as BraintreeEndpointManagerInterface,
   };
 
   @query('#braintree-creditcard') braintreeNumberInput!: HTMLDivElement;
@@ -89,7 +87,7 @@ export class IauxEditPlanForm extends LitElement {
 
   paymentMethodUpdates(status: 'success' | 'fail') {
     const paymentMethodForm = this.querySelector(
-      'ia-mgc-edit-payment-method'
+      'ia-mgc-edit-payment-method',
     ) as MGCEditPaymentMethod;
     paymentMethodForm!.paymentMethodUpdated(status);
   }
@@ -108,7 +106,6 @@ export class IauxEditPlanForm extends LitElement {
 
   render() {
     return html`
-
       <section class="mgc-edit-plan">
         <ia-mgc-edit-plan-amount
           .plan=${this.plan}
@@ -135,17 +132,17 @@ export class IauxEditPlanForm extends LitElement {
               this.dispatchEvent(
                 new CustomEvent('UpdatePaymentMethod', {
                   detail: { plan: this.plan, newPaymentMethodRequest },
-                })
+                }),
               );
             }
           }}
         >
         </ia-mgc-edit-payment-method>
-      <hr />
-      <ia-mgc-edit-date
-        @updateDate=${(e: CustomEvent) => {
-          const { newDate } = e.detail;
-          if (this.plan) {
+        <hr />
+        <ia-mgc-edit-date
+          @updateDate=${(e: CustomEvent) => {
+            const { newDate } = e.detail;
+            if (this.plan) {
               this.dispatchEvent(
                 new CustomEvent('updateDate', {
                   detail: { plan: this.plan, newDate },

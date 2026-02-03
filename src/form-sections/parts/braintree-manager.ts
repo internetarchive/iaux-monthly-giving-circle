@@ -1,8 +1,15 @@
 import { LitElement, html, css, CSSResult, PropertyValueMap } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import { HostedFieldContainer, HostedFieldName } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-providers/credit-card/hosted-field-container';
-import { BraintreeManager, BraintreeManagerInterface, HostingEnvironment } from '@internetarchive/donation-form';
+import {
+  HostedFieldContainer,
+  HostedFieldName,
+} from '@internetarchive/donation-form/dist/src/braintree-manager/payment-providers/credit-card/hosted-field-container';
+import {
+  BraintreeManager,
+  BraintreeManagerInterface,
+  HostingEnvironment,
+} from '@internetarchive/donation-form';
 import type { BraintreeEndpointManagerInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/braintree-interfaces.js';
 import type { PaymentClientsInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-clients.js';
 
@@ -11,7 +18,6 @@ import calendarImg from '@internetarchive/icon-calendar/index.js';
 import lockImg from '@internetarchive/icon-lock/index.js';
 
 import type { MonthlyPlan } from '../../models/plan';
-
 
 type PaymentConfig = {
   braintreeAuthToken?: string;
@@ -22,28 +28,38 @@ type PaymentConfig = {
   googlePayMerchantId?: string;
 };
 
-type PaymentMethodTypes = 'credit-card' | 'paypal' | 'venmo' | 'google-pay';
-
 @customElement('ia-mgc-braintree-manager')
 export class MGCBraintreeManager extends LitElement {
   @property({ type: Object }) plan?: MonthlyPlan;
 
-  @property({ type: Boolean, reflect: true }) displayCreditCard: boolean = false;
+  @property({ type: Boolean, reflect: true }) displayCreditCard: boolean =
+    false;
 
   @property({ type: String }) patronEmail: string = '';
 
-  @property({ type: Object}) paymentConfig?: PaymentConfig;
+  @property({ type: Object }) paymentConfig?: PaymentConfig;
 
   @property({ type: Object }) braintreeManager?: BraintreeManagerInterface;
 
   @state() private elementConnected: boolean = false;
 
-  get braintreeInputs(): { errorMessage: HTMLDivElement | null; number: HTMLDivElement | null; cvv: HTMLDivElement | null; expirationDate: HTMLDivElement | null } {
+  get braintreeInputs(): {
+    errorMessage: HTMLDivElement | null;
+    number: HTMLDivElement | null;
+    cvv: HTMLDivElement | null;
+    expirationDate: HTMLDivElement | null;
+  } {
     return {
-      errorMessage: this.querySelector('#braintree-error-message') as HTMLDivElement | null,
-      number: this.querySelector('#braintree-creditcard') as HTMLDivElement | null,
+      errorMessage: this.querySelector(
+        '#braintree-error-message',
+      ) as HTMLDivElement | null,
+      number: this.querySelector(
+        '#braintree-creditcard',
+      ) as HTMLDivElement | null,
       cvv: this.querySelector('#braintree-cvv') as HTMLDivElement | null,
-      expirationDate: this.querySelector('#braintree-expiration') as HTMLDivElement | null,
+      expirationDate: this.querySelector(
+        '#braintree-expiration',
+      ) as HTMLDivElement | null,
     };
   }
 
@@ -64,31 +80,44 @@ export class MGCBraintreeManager extends LitElement {
     this.elementConnected = true;
   }
 
-  protected updated(changed: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    const elementHasConnectedToDOM = changed.has('elementConnected') && this.elementConnected;
+  protected updated(
+    changed: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    const elementHasConnectedToDOM =
+      changed.has('elementConnected') && this.elementConnected;
     if (elementHasConnectedToDOM) {
       if (this.paymentConfig) {
-        const { braintreeAuthToken, endpointManager, paymentClients, environment } = this.paymentConfig || {};
-      
-        const needsBraintreeManager = !this.braintreeManager &&
-        braintreeAuthToken &&
-        endpointManager &&
-        paymentClients &&
-        environment;
+        const {
+          braintreeAuthToken,
+          endpointManager,
+          paymentClients,
+          environment,
+        } = this.paymentConfig || {};
+
+        const needsBraintreeManager =
+          !this.braintreeManager &&
+          braintreeAuthToken &&
+          endpointManager &&
+          paymentClients &&
+          environment;
         if (needsBraintreeManager) {
           this.setupBraintreeManager();
         }
-
       }
     }
 
-    if (this.braintreeManager && (changed.has('displayCreditCard') && this.displayCreditCard)) {
+    if (
+      this.braintreeManager &&
+      changed.has('displayCreditCard') &&
+      this.displayCreditCard
+    ) {
       this.setupCreditCardHandler();
     }
   }
 
   async validateCreditCardFields() {
-    const handler = await this.braintreeManager?.paymentProviders.creditCardHandler.get();
+    const handler =
+      await this.braintreeManager?.paymentProviders.creditCardHandler.get();
     let tokenized = false;
     let hostedFieldsResponse = null;
     try {
@@ -116,7 +145,7 @@ export class MGCBraintreeManager extends LitElement {
           // });
           break;
         case 'HOSTED_FIELDS_TOKENIZATION_FAIL_ON_DUPLICATE':
-          // occurs when:        
+          // occurs when:
           //   * the client token used for client authorization was generated
           //     with a customer ID and the fail on duplicate payment method
           //     option is set to true
@@ -143,7 +172,6 @@ export class MGCBraintreeManager extends LitElement {
       }
     }
 
-
     if (!tokenized) {
       return false;
     }
@@ -153,7 +181,8 @@ export class MGCBraintreeManager extends LitElement {
 
   async setupCreditCardHandler() {
     // braintree turn on hosted fields
-    const handler = await this.braintreeManager?.paymentProviders.creditCardHandler.get();
+    const handler =
+      await this.braintreeManager?.paymentProviders.creditCardHandler.get();
     try {
       await handler?.tokenizeHostedFields();
     } catch (e) {
@@ -161,16 +190,14 @@ export class MGCBraintreeManager extends LitElement {
     }
 
     handler?.removeFieldErrors([
-          HostedFieldName.Number,
-          HostedFieldName.CVV,
-          HostedFieldName.ExpirationDate,
-        ]);
+      HostedFieldName.Number,
+      HostedFieldName.CVV,
+      HostedFieldName.ExpirationDate,
+    ]);
   }
 
   render() {
-    return html`
-      <div>${this.creditCardTemplate}</div>
-    `;
+    return html` <div>${this.creditCardTemplate}</div> `;
   }
 
   lightDomCSS(): CSSResult {
@@ -186,7 +213,7 @@ export class MGCBraintreeManager extends LitElement {
         height: -webkit-fill-available;
       }
     `;
-  };
+  }
 
   get creditCardTemplate() {
     return html`
@@ -195,27 +222,37 @@ export class MGCBraintreeManager extends LitElement {
           ${this.lightDomCSS()}
         </style>
         <div id="braintree-error-message"></div>
-          <div class="braintree-row">
-            <badged-input .icon=${creditCardImg} ?required=${true} class="creditcard">
-              <div class="braintree-input" id="braintree-creditcard"></div>
-            </badged-input>
-          </div>
-          <div class="braintree-row">
-            <badged-input .icon=${calendarImg} ?required=${true} class="expiration">
-              <div class="braintree-input" id="braintree-expiration"></div>
-            </badged-input>
-            <badged-input .icon=${lockImg} ?required=${true} class="cvv">
-              <div class="braintree-input" id="braintree-cvv"></div>
-            </badged-input>
-          </div>
+        <div class="braintree-row">
+          <badged-input
+            .icon=${creditCardImg}
+            ?required=${true}
+            class="creditcard"
+          >
+            <div class="braintree-input" id="braintree-creditcard"></div>
+          </badged-input>
+        </div>
+        <div class="braintree-row">
+          <badged-input
+            .icon=${calendarImg}
+            ?required=${true}
+            class="expiration"
+          >
+            <div class="braintree-input" id="braintree-expiration"></div>
+          </badged-input>
+          <badged-input .icon=${lockImg} ?required=${true} class="cvv">
+            <div class="braintree-input" id="braintree-cvv"></div>
+          </badged-input>
+        </div>
       </div>
     `;
   }
 
   private async setupBraintreeManager(): Promise<void> {
     this.braintreeManager = new BraintreeManager({
-      paymentClients: this.paymentConfig?.paymentClients ?? ({} as PaymentClientsInterface),
-      endpointManager: this.paymentConfig?.endpointManager as BraintreeEndpointManagerInterface,
+      paymentClients:
+        this.paymentConfig?.paymentClients ?? ({} as PaymentClientsInterface),
+      endpointManager: this.paymentConfig
+        ?.endpointManager as BraintreeEndpointManagerInterface,
       authorizationToken: this.paymentConfig?.braintreeAuthToken ?? '',
       venmoProfileId: this.paymentConfig?.venmoProfileId,
       googlePayMerchantId: this.paymentConfig?.googlePayMerchantId,
@@ -248,52 +285,40 @@ export class MGCBraintreeManager extends LitElement {
       origin: window.location.origin,
     });
 
-    this.braintreeManager.on('paymentProvidersHostedFieldsRetry', (retryNumber: number) => {
-      const event = new CustomEvent('paymentProvidersHostedFieldsRetry', {
-        detail: { retryNumber },
-      });
-      this.dispatchEvent(event);
-    });
+    this.braintreeManager.on(
+      'paymentProvidersHostedFieldsRetry',
+      (retryNumber: number) => {
+        const event = new CustomEvent('paymentProvidersHostedFieldsRetry', {
+          detail: { retryNumber },
+        });
+        this.dispatchEvent(event);
+      },
+    );
 
-    this.braintreeManager.on('paymentProvidersHostedFieldsFailed', (error: unknown) => {
-      const event = new CustomEvent('paymentProvidersHostedFieldsFailed', {
-        detail: { error },
-      });
-      this.dispatchEvent(event);
-    });
+    this.braintreeManager.on(
+      'paymentProvidersHostedFieldsFailed',
+      (error: unknown) => {
+        const event = new CustomEvent('paymentProvidersHostedFieldsFailed', {
+          detail: { error },
+        });
+        this.dispatchEvent(event);
+      },
+    );
+
+    this.dispatchEvent(new Event('BraintreeManagerSetupComplete'));
   }
 
   get contactForm(): HTMLFormElement | null {
     return this.querySelector('form[name="contact-form"]');
   }
 
-
-  /*
-    Check and collect data
-  */
-  paymentMethodChangeRequested() {
-    
-    // // 
-    // const { creditCardHandler } = this.braintreeManager?.paymentProviders ?? {};
-
-    // const contactFormIsValid = this.contactForm?.reportValidity();
-    // if (!contactFormIsValid) {
-    //   console.log('form is invalid');
-    //   return;
-    // }
-
-    // // if ()
-    // // const hostedFieldsResponse = await creditCardFlowHandler?.tokenizeFields();
-    // console.log("CC hostedFieldsResponse", hostedFieldsResponse);
-  }
-
   async setupPaymentHandlers() {
     // const creditCardFlowHandler = this.paymentConfig?.paymentFlowHandlers?.creditCardHandler;
-    const creditCardHandler = await this.braintreeManager?.paymentProviders.creditCardHandler.get();
+    const creditCardHandler =
+      await this.braintreeManager?.paymentProviders.creditCardHandler.get();
     creditCardHandler?.hideErrorMessage();
     // const valid = this.contactForm?.reportValidity();
     // const hostedFieldsResponse = await creditCardFlowHandler?.tokenizeFields();
     // console.log("CC hostedFieldsResponse", hostedFieldsResponse);
-    debugger;
   }
 }

@@ -1,4 +1,4 @@
-import type { PaymentMethodRequest } from "./payment-method-request";
+import type { PaymentMethodRequest } from './payment-method-request';
 
 export type BtData = {
   billingDayOfMonth: number;
@@ -44,11 +44,8 @@ export class MonthlyPlan {
 
   currency: string;
 
-  payment: BtData | null;
-
   constructor(plan: Plan) {
     this.plan = plan;
-    this.payment = plan.btdata;
     this.currency = plan.currency ?? 'USD'; // not in data
   }
 
@@ -67,6 +64,10 @@ export class MonthlyPlan {
 
   get amountFormatted(): string {
     return this.plan.amount.toFixed(2);
+  }
+
+  get payment(): BtData | null {
+    return this.plan.btdata;
   }
 
   setAmount(newAmount: number) {
@@ -96,7 +97,6 @@ export class MonthlyPlan {
           day: 'numeric',
         })
       : 'not found';
-
     return nextBillingDate;
   }
 
@@ -112,9 +112,6 @@ export class MonthlyPlan {
       month: 'short',
       day: 'numeric',
     });
-
-    console.log('lastBillingDate from model', lastBillingDate);
-
     return lastBillingDate ?? 'not found';
   }
 
@@ -137,36 +134,17 @@ export class MonthlyPlan {
   }
 
   setNewPaymentMethod(newPaymentMethodRequest: PaymentMethodRequest): void {
-    debugger;
     const currentPaymentMethod = this.payment;
+    const mergedBtData = {
+      ...this.plan.btdata,
+      ...newPaymentMethodRequest.paymentMethodInfo.details,
+      ...{
+        last4:
+          newPaymentMethodRequest.paymentMethodInfo.details.lastFour ??
+          'unknown',
+      },
+    };
     this.plan.old_btData = currentPaymentMethod;
-    this.payment = null;
-    this.plan.new_payment_method_details = newPaymentMethodRequest;
+    this.plan.btdata = mergedBtData;
   }
 }
-
-/*
-
-{
-  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtYWlsc3luYyIsImlhdCI6MTczODYxNTY3NS41ODA4MTcsIm5iZiI6MTczODYxNTYxNS41ODA4MTcsImV4cCI6MTczODYxNjI3NS41ODA4MTcsImtleSI6eyJwaWQiOiJkd2NrN20iLCJjaWQiOjgwMzUzOCwiYW1vdW50Ijo1LCJwYXltZW50TWV0aG9kVG9rZW4iOiJxMXllYndoaiIsImN1c3RvbWVySWQiOiI4NTQ2MTk4MzUifSwidXNlciI6IkBpc2EtYXQtdGhlLWFyY2hpdmUifQ.TYlkU1ZZLHmj2ahrkTV7JGLmpCPN4BcOeDFPiXVj0pM",
-  "amount": 5,
-  "currency": "USD",
-  "start_date": "2022-12-09 00:00:00",
-  "contribution_status_id": 5,
-  "is_test": true,
-  "btdata": {
-    "billingDayOfMonth": 9,
-    "nextBillingDate": {
-      "date": "2025-02-09 00:00:00.000000",
-      "timezone_type": 3,
-      "timezone": "UTC"
-    },
-    "status": "Active",
-    "paymentMethodType": "creditCard",
-    "last4": "1111",
-    "cardType": "Visa",
-    "expirationMonth": "12",
-    "expirationYear": "2023"
-  }
-}
-  */

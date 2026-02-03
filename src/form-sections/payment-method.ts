@@ -1,12 +1,5 @@
 /* eslint-disable arrow-body-style */
-import {
-  LitElement,
-  html,
-  PropertyValues,
-  nothing,
-  css,
-  TemplateResult,
-} from 'lit';
+import { LitElement, html, nothing, css, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import '@internetarchive/donation-form-section';
 import '@internetarchive/donation-form/dist/src/form-elements/contact-form/contact-form.js';
@@ -17,16 +10,16 @@ import '@internetarchive/donation-form/dist/src/form-elements/payment-selector.j
 
 import '../form-sections/parts/braintree-manager';
 
-import {
-  PaymentProvider,
-} from '@internetarchive/donation-form-data-models';
+import { PaymentProvider } from '@internetarchive/donation-form-data-models';
 
-import type { BraintreeManagerInterface, PaymentClientsInterface } from '@internetarchive/donation-form';
+import type {
+  BraintreeManagerInterface,
+  PaymentClientsInterface,
+} from '@internetarchive/donation-form';
 import type { ContactForm } from '@internetarchive/donation-form/dist/src/form-elements/contact-form/contact-form.js';
 import type { MonthlyPlan } from '../models/plan';
 import '../presentational/donation-section-info';
 import '../presentational/mgc-button';
-
 
 import type { MGCButton } from '../presentational/mgc-button';
 import '../presentational/mgc-update-status';
@@ -34,14 +27,14 @@ import type { MGCBraintreeManager } from '../form-sections/parts/braintree-manag
 import { PaymentMethodRequest } from '../models/payment-method-request';
 
 /**
- * <ia-mgc-edit-payment-method> 
+ * <ia-mgc-edit-payment-method>
  * - collecting the data to send to the service
  *   - contact form
  *   - braintree manager
- * 
+ *
  * - handles submission
  * - handles toggling the view between display and edit modes
- * 
+ *
  */
 @customElement('ia-mgc-edit-payment-method')
 export class MGCEditPaymentMethod extends LitElement {
@@ -69,13 +62,15 @@ export class MGCEditPaymentMethod extends LitElement {
 
   @property({ type: String }) patronEmail: string = '';
 
-  @property({ type: Boolean, reflect: true }) currentlyEditing?: boolean = false;
+  @property({ type: Boolean, reflect: true }) currentlyEditing?: boolean =
+    false;
 
   @property({ type: String, reflect: true }) newPaymentMethod: string = '';
 
   @property({ type: Object }) braintreeManager?: BraintreeManagerInterface;
 
-  @property({ type: String, reflect: true }) selectedPaymentProvider: string = '';
+  @property({ type: String, reflect: true }) selectedPaymentProvider: string =
+    '';
 
   @property({ type: Boolean }) paymentSelectorFirstUpdated: boolean = false;
 
@@ -107,9 +102,8 @@ export class MGCEditPaymentMethod extends LitElement {
     return this;
   }
 
-  submitPaymentMethodChange (e: Event) {
+  submitPaymentMethodChange(e: Event) {
     e.preventDefault();
-
   }
 
   clearStatusMessaging() {
@@ -118,26 +112,24 @@ export class MGCEditPaymentMethod extends LitElement {
   }
 
   async paymentMethodUpdated(status: 'success' | 'fail') {
-        // todo finish response view
-
-    // paymentMethodUpdated
-    // this.clearInputField();
-
     this.updateStatus = status;
     this.updateMessage =
-      status === 'success' ? 'Payment method updated' : 'Failed to update date, please try again';
+      status === 'success'
+        ? 'Payment method updated'
+        : 'Failed to update date, please try again';
 
     if (status === 'success') {
       this.currentlyEditing = false;
       this.selectedPaymentProvider = '';
       return;
     }
-debugger;
     this.updateRequestButton.isDisabled = false;
   }
 
   get updateRequestButton(): MGCButton {
-    return this.querySelector('ia-mgc-button#edit-plan-payment-method-submit') as MGCButton;
+    return this.querySelector(
+      'ia-mgc-button#edit-plan-payment-method-submit',
+    ) as MGCButton;
   }
 
   get contactFormElement(): ContactForm | null {
@@ -150,8 +142,9 @@ debugger;
         ? 'Help us stay in touch'
         : 'Enter payment information';
 
-    const displayContactForm = this.selectedPaymentProvider === PaymentProvider.CreditCard
-     || this.selectedPaymentProvider === PaymentProvider.Venmo;
+    const displayContactForm =
+      this.selectedPaymentProvider === PaymentProvider.CreditCard ||
+      this.selectedPaymentProvider === PaymentProvider.Venmo;
 
     console.log('contactFormSectioncontactFormSection', { displayContactForm });
     return html`
@@ -161,21 +154,21 @@ debugger;
         id="contactFormSection"
       >
         <div class="credit-card-fields">
-          <slot style="
+          <slot
+            style="
               display: block;
               width: 100%;
               border: 1px solid blue;
               height: inherit;
-          "></slot>
+          "
+          ></slot>
         </div>
       </donation-form-section>
     `;
   }
 
   get paymentFormSection(): TemplateResult | typeof nothing {
-    return html`
-    
-    `;
+    return html``;
   }
 
   get creditCardElement(): ContactForm | null {
@@ -187,14 +180,20 @@ debugger;
   }
 
   render() {
-    const displayContactForm = this.selectedPaymentProvider === PaymentProvider.CreditCard
-     || this.selectedPaymentProvider === PaymentProvider.Venmo;
+    const displayContactForm =
+      this.selectedPaymentProvider === PaymentProvider.CreditCard ||
+      this.selectedPaymentProvider === PaymentProvider.Venmo;
 
-    const displayCCFields = this.selectedPaymentProvider === PaymentProvider.CreditCard;
+    const displayCCFields =
+      this.selectedPaymentProvider === PaymentProvider.CreditCard;
 
-    console.log('selectedPaymentProvider', { selectedPaymentProvider: this.selectedPaymentProvider })
+    console.log('selectedPaymentProvider', {
+      selectedPaymentProvider: this.selectedPaymentProvider,
+    });
     return html`
-      <style>${this.styles}</style>
+      <style>
+        ${this.styles}
+      </style>
       <donation-form-section badgemode="hidebadge" headline="Payment method">
         ${!this.currentlyEditing
           ? html`<ia-mgc-form-section-info
@@ -203,28 +202,38 @@ debugger;
                 this.clearStatusMessaging();
               }}
               ><span>
-                ${this.plan?.payment?.paymentMethodType === 'creditCard' ? 'Credit Card' : this.plan?.payment?.paymentMethodType}:
+                ${this.plan?.payment?.paymentMethodType === 'creditCard'
+                  ? 'Credit Card'
+                  : this.plan?.payment?.paymentMethodType}:
                 ${this.plan?.payment?.cardType} - ${this.plan?.payment?.last4}
-              </span>
-              <ia-mgc-update-status .status=${this.updateStatus}
-                >${this.updateMessage}</ia-mgc-update-status
-              ></ia-mgc-form-section-info>`
-        : nothing}
-      ${this.currentlyEditing
-        ? html`
+              </span></ia-mgc-form-section-info
+            >`
+          : nothing}
+        ${this.currentlyEditing
+          ? html`
             <form id="edit-plan-payment-method" @submit=${this.submitPaymentMethodChange}>
               <payment-selector
                 .paymentProviders=${this.braintreeManager?.paymentProviders}
-                @firstUpdated=${() => { this.paymentSelectorFirstUpdated = true; }}
-                @creditCardSelected=${() => { this.selectedPaymentProvider = PaymentProvider.CreditCard; }}
-                @venmoSelected=${() => { this.selectedPaymentProvider = PaymentProvider.Venmo; }}
-                @applePaySelected=${() => { this.selectedPaymentProvider = PaymentProvider.ApplePay; }}
-                @googlePaySelected=${() => { this.selectedPaymentProvider = PaymentProvider.GooglePay; }}
-                @paypalBlockerSelected=${() => { this.selectedPaymentProvider = 'paypalBlocker'; }}
+                @firstUpdated=${() => {
+                  this.paymentSelectorFirstUpdated = true;
+                }}
+                @creditCardSelected=${() => {
+                  this.selectedPaymentProvider = PaymentProvider.CreditCard;
+                }}
+                @venmoSelected=${() => {
+                  this.selectedPaymentProvider = PaymentProvider.Venmo;
+                }}
+                @applePaySelected=${() => {
+                  this.selectedPaymentProvider = PaymentProvider.ApplePay;
+                }}
+                @googlePaySelected=${() => {
+                  this.selectedPaymentProvider = PaymentProvider.GooglePay;
+                }}
+                @paypalBlockerSelected=${() => {
+                  this.selectedPaymentProvider = 'paypalBlocker';
+                }}
                 @resetPaymentMethod=${async () => {
-                  debugger;
                   this.selectedPaymentProvider = '';
-                  // this.requestUpdate();
                 }}
                 tabindex="0"
               >
@@ -242,7 +251,7 @@ debugger;
                 .plan=${this.plan}
                 .paymentConfig=${this.paymentConfig}
                 @BraintreeManagerSetupComplete=${() => {
-                  debugger;
+                  console.log('BraintreeManagerSetupComplete');
                 }}
               ></ia-mgc-braintree-manager>
 
@@ -268,14 +277,16 @@ debugger;
                   button.isDisabled = true;
                   // validate credit card
                   // if not valid, show error and return
-                  const isContactFormValid = this.creditCardElement?.reportValidity();
+                  const isContactFormValid =
+                    this.creditCardElement?.reportValidity();
 
                   if (!isContactFormValid) {
                     button.isDisabled = false;
                     return;
                   }
 
-                  const paymentMethodInfo = await this.braintreeManagerElement?.validateCreditCardFields() as unknown as any;
+                  const paymentMethodInfo =
+                    (await this.braintreeManagerElement?.validateCreditCardFields()) as unknown as any;
 
                   if (!paymentMethodInfo) {
                     button.isDisabled = false;
@@ -283,14 +294,17 @@ debugger;
                   }
 
                   const newPaymentMethodRequest = new PaymentMethodRequest({
-                      paymentMethodInfo,
-                      donorContactInfo: this.contactFormElement?.donorContactInfo,
-                      paymentProvider: this.selectedPaymentProvider as PaymentProvider,
+                    paymentMethodInfo,
+                    donorContactInfo: this.contactFormElement?.donorContactInfo,
+                    paymentProvider: this
+                      .selectedPaymentProvider as PaymentProvider,
                   });
 
-                  this.dispatchEvent(new CustomEvent('UpdatePaymentMethod', {
-                    detail: { newPaymentMethodRequest },
-                  }));
+                  this.dispatchEvent(
+                    new CustomEvent('UpdatePaymentMethod', {
+                      detail: { newPaymentMethodRequest },
+                    }),
+                  );
                 }}
                 >Update payment method</ia-mgc-button
               >
@@ -302,9 +316,8 @@ debugger;
               </div>
             </form>
           `
-        : nothing}
-        </donation-form-section>
-
+          : nothing}
+      </donation-form-section>
     `;
   }
 
@@ -326,7 +339,7 @@ debugger;
         font-size: 0.75em;
       }
 
-      .secure-process-note svg{
+      .secure-process-note svg {
         width: 1.2rem;
         height: 1.5rem;
         vertical-align: bottom;
@@ -336,7 +349,7 @@ debugger;
         visibility: hidden;
         height: 1px;
         width: 1px;
-      }`;
+      }
+    `;
   }
-
 }

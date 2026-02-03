@@ -40,13 +40,12 @@
 <body>
   <header>
   </header>
-  <script src="https://js.braintreegateway.com/web/3.62.2/js/client.min.js"></script>
   <div class="dev-tools">
     <div id="options">
       <button id="toggle-receipts">Toggle receipts</button>
       <button id="clear-updates">Clear updates</button>
       <button id="toggle-plans">Toggle plans</button>
-      <button id="toggle-editable-perms">Toggle Editable Permissions</button>
+      <button id="toggle-prefilled-email">Toggle pre-filled email</button>
 
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
@@ -383,7 +382,8 @@
     });
 
     mgcComponent.addEventListener('UpdatePaymentMethod', (e) => {
-      const { plan, newPaymentMethodInfo } = e.detail;
+      const { plan, newPaymentMethodRequest } = e.detail;
+
 
       const heads = coinFlip() === 1;
       const successOrFail = heads ? 'success' : 'fail';
@@ -393,8 +393,8 @@
       const message = successOrFail === 'success' ? 'Payment method updated' : 'Payment method failed to update';
 
       if (heads && plan) {
-        console.log('demo - setting new payment method', newPaymentMethodInfo);
-        plan.setNewPaymentMethod(newPaymentMethodInfo);
+        console.log('demo - setting new payment method', newPaymentMethodRequest);
+        plan.setNewPaymentMethod(newPaymentMethodRequest);
       }
 
       const update = {
@@ -436,8 +436,8 @@
       await mgcComponent.updateComplete;
     });
     
-    document.getElementById('toggle-editable-perms').addEventListener('click', async () => {
-      mgcComponent.canEdit = !mgcComponent.canEdit;
+    document.getElementById('toggle-prefilled-email').addEventListener('click', async () => {
+      mgcComponent.patronEmail = mgcComponent.patronEmail ? '' : 'you@thisemail.com';
       await mgcComponent.updateComplete;
     });
   </script>
