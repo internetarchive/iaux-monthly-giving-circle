@@ -48,6 +48,10 @@
       <button id="toggle-prefilled-email">Toggle pre-filled email</button>
       <button id="toggle-edit-payment-method">Toggle edit payment method</button>
 
+      <br>
+      <input type="checkbox" id="force-successful-requests" name="force-successful-requests">
+      <label for="force-successful-requests">Force successful requests</label>
+
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
   </div>
@@ -266,6 +270,14 @@
     const uxMessageInfoArea = document.getElementById('interaction-status-area');
     const coinFlip = () => Math.floor(Math.random() + 0.5);
 
+    const flipCoin = () => {
+      const forceSuccess = document.getElementById('force-successful-requests').checked;
+      if (forceSuccess) {
+        return 1;
+      }
+      return coinFlip();
+    }
+
     const mgcComponent = document.querySelector('ia-monthly-giving-circle');
 
     // load start data
@@ -276,7 +288,7 @@
     mgcComponent.addEventListener('EmailReceiptRequest', (e) => {
 
       const { donation } = e.detail;
-      const heads = coinFlip() === 1;
+      const heads = flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 5000;
 
@@ -318,7 +330,7 @@
       const { plan, amountOptions } = e.detail;
 
       // either error or succeed
-      const heads = coinFlip() === 1;
+      const heads = flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 5000;
   
@@ -352,7 +364,7 @@
       const { newDate, plan } = e.detail;
 
 
-      const heads = coinFlip() === 1;
+      const heads = flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 5000;
 
@@ -386,7 +398,7 @@
       const { plan, newPaymentMethodRequest } = e.detail;
 
 
-      const heads = coinFlip() === 1;
+      const heads = flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 4000;
 
