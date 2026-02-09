@@ -29,6 +29,8 @@ export class IauxEditPlanForm extends LitElement {
 
   @property({ type: String }) patronEmail: string = '';
 
+  @property({ type: Boolean }) canEditPaymentMethod: boolean = false;
+
   @property({ type: Object }) updateAmountHandler?: (
     plan: MonthlyPlan,
     amountUpdates: {
@@ -121,23 +123,27 @@ export class IauxEditPlanForm extends LitElement {
             }
           }}
         ></ia-mgc-edit-plan-amount>
-        <hr />
-        <ia-mgc-edit-payment-method
-          .plan=${this.plan}
-          .patronEmail=${this.patronEmail}
-          .paymentConfig=${this.paymentConfig}
-          @UpdatePaymentMethod=${(e: CustomEvent) => {
-            const { newPaymentMethodRequest } = e.detail;
-            if (this.plan) {
-              this.dispatchEvent(
-                new CustomEvent('UpdatePaymentMethod', {
-                  detail: { plan: this.plan, newPaymentMethodRequest },
-                }),
-              );
-            }
-          }}
-        >
-        </ia-mgc-edit-payment-method>
+        ${this.canEditPaymentMethod
+          ? html`
+              <hr />
+              <ia-mgc-edit-payment-method
+                .plan=${this.plan}
+                .patronEmail=${this.patronEmail}
+                .paymentConfig=${this.paymentConfig}
+                @UpdatePaymentMethod=${(e: CustomEvent) => {
+                  const { newPaymentMethodRequest } = e.detail;
+                  if (this.plan) {
+                    this.dispatchEvent(
+                      new CustomEvent('UpdatePaymentMethod', {
+                        detail: { plan: this.plan, newPaymentMethodRequest },
+                      }),
+                    );
+                  }
+                }}
+              >
+              </ia-mgc-edit-payment-method>
+            `
+          : ''}
         <hr />
         <ia-mgc-edit-date
           @updateDate=${(e: CustomEvent) => {

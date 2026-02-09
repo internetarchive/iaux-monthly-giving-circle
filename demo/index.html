@@ -46,6 +46,7 @@
       <button id="clear-updates">Clear updates</button>
       <button id="toggle-plans">Toggle plans</button>
       <button id="toggle-prefilled-email">Toggle pre-filled email</button>
+      <button id="toggle-edit-payment-method">Toggle edit payment method</button>
 
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
@@ -432,12 +433,17 @@
       await mgcComponent.updateComplete;
     });
     document.getElementById('toggle-plans').addEventListener('click', async () => {
-      mgcComponent.plans = mgcComponent.plans.length ? [] : plansArray;
+      mgcComponent.plans = mgcComponent.plans .length ? [] : plansArray;
       await mgcComponent.updateComplete;
     });
     
     document.getElementById('toggle-prefilled-email').addEventListener('click', async () => {
       mgcComponent.patronEmail = mgcComponent.patronEmail ? '' : 'you@thisemail.com';
+      await mgcComponent.updateComplete;
+    });
+
+    document.getElementById('toggle-edit-payment-method').addEventListener('click', async () => {
+      mgcComponent.canEditPaymentMethod = !mgcComponent.canEditPaymentMethod;
       await mgcComponent.updateComplete;
     });
   </script>

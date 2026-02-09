@@ -37,6 +37,8 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: String }) patronEmail: string = '';
 
+  @property({ type: Boolean }) canEditPaymentMethod: boolean = false;
+
   @property({ type: Array }) receipts = [];
 
   @property({ type: Array }) updates: APlanUpdate[] = [];
@@ -121,6 +123,7 @@ export class MonthlyGivingCircle extends LitElement {
       ${this.sectionTitle}
       ${isEditingPlan
         ? html`<ia-mgc-edit-plan
+            .canEditPaymentMethod=${this.canEditPaymentMethod}
             .patronEmail=${this.patronEmail}
             .plan=${this.editingThisPlan}
             @cancelPlan=${() => {
