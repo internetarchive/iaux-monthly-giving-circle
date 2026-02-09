@@ -78,26 +78,6 @@ export class MGCEditPaymentMethod extends LitElement {
 
   @property({ type: String }) updateStatus: 'success' | 'fail' | '' = '';
 
-  // @property({ type: Boolean }) creditCardSelected: boolean = false;
-
-  // @property({ type: Boolean }) venmoSelected: boolean = false;
-
-  // @property({ type: Boolean }) applePaySelected: boolean = false;
-
-  // @property({ type: Boolean }) googlePaySelected: boolean = false;
-
-  // @property({ type: Boolean }) paypalBlockerSelected: boolean = false;
-
-  /*
-    .paymentProviders=${this.braintreeManager?.paymentProviders}
-    @firstUpdated=${this.paymentSelectorFirstUpdated}
-    @creditCardSelected=${this.creditCardSelected}
-    @venmoSelected=${this.venmoSelected}
-    @applePaySelected=${this.applePaySelected}
-    @googlePaySelected=${this.googlePaySelected}
-    @paypalBlockerSelected=${this.paypalBlockerSelected}
-  */
-
   createRenderRoot() {
     return this;
   }
