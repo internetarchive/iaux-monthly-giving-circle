@@ -11,7 +11,7 @@ import type { MGCButton } from './presentational/mgc-button';
 export class IauxMgcPlans extends LitElement {
   @property({ type: Array }) plans = [];
 
-  @property({ type: Boolean, reflect: true }) canEdit = false;
+  @property({ type: Boolean, reflect: true }) canEdit = true;
 
   protected render() {
     return html`

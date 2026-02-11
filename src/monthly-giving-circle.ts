@@ -57,7 +57,7 @@ export class MonthlyGivingCircle extends LitElement {
     | 'plans'
     | 'editPlan' = 'welcome';
 
-  @property({ type: Boolean, reflect: true }) canEdit = false;
+  @property({ type: Boolean, reflect: true }) canEdit = true;
 
   @property({ type: Object }) paymentConfig: {
     referrer: string;
