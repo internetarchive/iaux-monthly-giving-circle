@@ -26,6 +26,8 @@ export type PaymentConfig = {
   environment?: HostingEnvironment;
   venmoProfileId?: string;
   googlePayMerchantId?: string;
+  referrer: string;
+  origin: string;
 };
 
 @customElement('ia-mgc-braintree-manager')

@@ -3,9 +3,8 @@ import { customElement, property, query } from 'lit/decorators.js';
 
 import '@internetarchive/donation-form/dist/src/form-elements/badged-input';
 
-import { BraintreeEndpointManagerInterface, PaymentConfig } from '@internetarchive/donation-form/dist/src/braintree-manager/braintree-interfaces.js';
-import { PaymentClientsInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-clients.js';
-
+import { HostingEnvironment } from '@internetarchive/donation-form';
+import type { PaymentConfig } from './form-sections/parts/braintree-manager';
 import type { MonthlyPlan } from './models/plan';
 import './form-sections/amount';
 import './form-sections/date';
@@ -39,7 +38,7 @@ export class IauxEditPlanForm extends LitElement {
     braintreeAuthToken: '',
     venmoProfileId: '',
     googlePayMerchantId: '',
-    environment: 'dev',
+    environment: HostingEnvironment.Development,
     paymentClients: undefined,
     endpointManager: undefined,
   };
