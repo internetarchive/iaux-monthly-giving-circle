@@ -15,6 +15,8 @@ import { PaymentProvider } from '@internetarchive/donation-form-data-models';
 import type {
   BraintreeManagerInterface,
   PaymentClientsInterface,
+  BraintreeEndpointManagerInterface,
+  HostingEnvironment,
 } from '@internetarchive/donation-form';
 import type { ContactForm } from '@internetarchive/donation-form/dist/src/form-elements/contact-form/contact-form.js';
 import type { MonthlyPlan } from '../models/plan';
@@ -40,24 +42,24 @@ import { PaymentMethodRequest } from '../models/payment-method-request';
 export class MGCEditPaymentMethod extends LitElement {
   @property({ type: Object }) plan?: MonthlyPlan;
 
-  @property({ type: Object }) paymentConfig: {
-    referrer: string;
-    origin: string;
-    braintreeAuthToken: string;
-    venmoProfileId: string;
-    googlePayMerchantId: string;
-    environment: string;
-    paymentClients: PaymentClientsInterface | undefined;
-    endpointManager: object;
-  } = {
-    referrer: '',
-    origin: '',
-    braintreeAuthToken: 'sandbox_x634jsj7_7zybks4ybp63pbmd',
-    venmoProfileId: '1953896702662410263',
-    googlePayMerchantId: '',
-    environment: 'dev',
+  @property({ type: Object }) paymentConfig:
+    | {
+        braintreeAuthToken?: string;
+        endpointManager?: BraintreeEndpointManagerInterface;
+        paymentClients?: PaymentClientsInterface;
+        environment?:
+          | HostingEnvironment.Development
+          | HostingEnvironment.Production;
+        venmoProfileId?: string;
+        googlePayMerchantId?: string;
+      }
+    | undefined = {
+    braintreeAuthToken: '',
+    endpointManager: undefined,
     paymentClients: undefined,
-    endpointManager: {},
+    environment: 'Development' as HostingEnvironment.Development,
+    venmoProfileId: '',
+    googlePayMerchantId: '',
   };
 
   @property({ type: String }) patronEmail: string = '';

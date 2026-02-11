@@ -3,16 +3,8 @@ import { customElement, property, query } from 'lit/decorators.js';
 
 import '@internetarchive/donation-form/dist/src/form-elements/badged-input';
 
-import { LazyLoaderService } from '@internetarchive/lazy-loader-service';
-import {
-  BraintreeEndpointManagerInterface,
-  HostingEnvironment,
-} from '@internetarchive/donation-form/dist/src/braintree-manager/braintree-interfaces.js';
-import {
-  PaymentClients,
-  PaymentClientsInterface,
-} from '@internetarchive/donation-form/dist/src/braintree-manager/payment-clients.js';
-import type { DonationRequest } from '@internetarchive/donation-form-data-models';
+import { BraintreeEndpointManagerInterface, PaymentConfig } from '@internetarchive/donation-form/dist/src/braintree-manager/braintree-interfaces.js';
+import { PaymentClientsInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-clients.js';
 
 import type { MonthlyPlan } from './models/plan';
 import './form-sections/amount';
@@ -41,38 +33,15 @@ export class IauxEditPlanForm extends LitElement {
     },
   ) => void;
 
-  @property({ type: Object }) paymentConfig: {
-    referrer: string;
-    origin: string;
-    braintreeAuthToken: string;
-    venmoProfileId: string;
-    googlePayMerchantId: string;
-    environment: string;
-    paymentClients: PaymentClientsInterface | undefined;
-    endpointManager: object;
-  } = {
+  @property({ type: Object }) paymentConfig: PaymentConfig = {
     referrer: '',
     origin: '',
-    braintreeAuthToken: 'sandbox_x634jsj7_7zybks4ybp63pbmd',
-    venmoProfileId: '1953896702662410263',
+    braintreeAuthToken: '',
+    venmoProfileId: '',
     googlePayMerchantId: '',
     environment: 'dev',
-    paymentClients: new PaymentClients(
-      new LazyLoaderService(),
-      HostingEnvironment.Development,
-    ),
-    endpointManager: {
-      // eslint-disable-next-line arrow-body-style, @typescript-eslint/no-unused-vars
-      submitData: async (_request: DonationRequest) => {
-        // eslint-disable-next-line no-debugger
-        debugger;
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      donationSuccessful: (_response: any) => {
-        // eslint-disable-next-line no-debugger
-        debugger;
-      },
-    } as unknown as BraintreeEndpointManagerInterface,
+    paymentClients: undefined,
+    endpointManager: undefined,
   };
 
   @query('#braintree-creditcard') braintreeNumberInput!: HTMLDivElement;

@@ -5,6 +5,10 @@ import './welcome-message';
 import './plans';
 import './presentational/mgc-title';
 import './receipts';
+import {
+  HostingEnvironment,
+  PaymentClientsInterface,
+} from '@internetarchive/donation-form';
 import type { IauxMgcReceipts } from './receipts';
 import './presentational/mgc-button';
 import type { MonthlyPlan } from './models/plan';
@@ -55,11 +59,25 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: Boolean, reflect: true }) canEdit = false;
 
-  @property({ type: String, reflect: true }) braintreeAuthToken: string = '';
-
-  @property({ type: String }) venmoProfileId: string = '';
-
-  @property({ type: String }) googleMerchantId: string = '';
+  @property({ type: Object }) paymentConfig: {
+    referrer: string;
+    origin: string;
+    braintreeAuthToken: string;
+    venmoProfileId: string;
+    googlePayMerchantId: string;
+    paymentClients: PaymentClientsInterface | undefined;
+    environment: HostingEnvironment;
+    endpointManager: object;
+  } = {
+    referrer: '',
+    origin: '',
+    braintreeAuthToken: '',
+    venmoProfileId: '',
+    googlePayMerchantId: '',
+    environment: HostingEnvironment.Development,
+    paymentClients: undefined,
+    endpointManager: {},
+  };
 
   protected createRenderRoot() {
     return this;
@@ -126,6 +144,7 @@ export class MonthlyGivingCircle extends LitElement {
             .canEditPaymentMethod=${this.canEditPaymentMethod}
             .patronEmail=${this.patronEmail}
             .plan=${this.editingThisPlan}
+            .paymentConfig=${this.paymentConfig}
             @cancelPlan=${() => {
               this.dispatchEvent(
                 new CustomEvent('cancelPlan', {

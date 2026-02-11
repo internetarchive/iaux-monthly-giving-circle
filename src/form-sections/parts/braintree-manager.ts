@@ -19,7 +19,7 @@ import lockImg from '@internetarchive/icon-lock/index.js';
 
 import type { MonthlyPlan } from '../../models/plan';
 
-type PaymentConfig = {
+export type PaymentConfig = {
   braintreeAuthToken?: string;
   endpointManager?: BraintreeEndpointManagerInterface;
   paymentClients?: PaymentClientsInterface;

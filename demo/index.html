@@ -72,6 +72,8 @@
 
   <script type="module" src="../dist/src/monthly-giving-circle.js"></script>
   <script type="module">
+    import { PaymentClients, HostingEnvironment } from '@internetarchive/donation-form';
+    import { LazyLoaderService } from 'https://esm.archive.org/@internetarchive/lazy-loader-service';
     import { MonthlyPlan, Receipt } from '../dist/index.js';
 
     let updateNotices = [];
@@ -264,6 +266,31 @@
         }),
       ];
 
+    const paymentConfig = {
+    referrer: '',
+    origin: '',
+    braintreeAuthToken: 'sandbox_x634jsj7_7zybks4ybp63pbmd',
+    venmoProfileId: '1953896702662410263',
+    googlePayMerchantId: '',
+    environment: 'dev',
+    paymentClients: new PaymentClients(
+      new LazyLoaderService(),
+      HostingEnvironment.Development,
+    ),
+    endpointManager: {
+      // eslint-disable-next-line arrow-body-style, @typescript-eslint/no-unused-vars
+      submitData: async (_request) => {
+        // eslint-disable-next-line no-debugger
+        debugger;
+      },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      donationSuccessful: (_response) => {
+        // eslint-disable-next-line no-debugger
+        debugger;
+      },
+    },
+  };
+
 
     let showReceipts = true;
 
@@ -281,6 +308,7 @@
     const mgcComponent = document.querySelector('ia-monthly-giving-circle');
 
     // load start data
+    mgcComponent.paymentConfig = paymentConfig;
     mgcComponent.receipts = receiptsData;
     mgcComponent.plans = plansArray;
 
