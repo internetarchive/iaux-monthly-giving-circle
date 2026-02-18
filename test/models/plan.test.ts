@@ -268,5 +268,155 @@ describe('MonthlyPlan', () => {
       mp.setNewPaymentMethod(request);
       expect(mp.plan.btdata.last4).to.equal('unknown');
     });
+
+    it('preserves nextBillingDate and lastBillingDate through the merge', () => {
+      const mp = new MonthlyPlan(makePlan());
+
+      const request = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'New card',
+          nonce: 'nonce_789',
+          type: 'CreditCard',
+          details: {
+            cardType: 'Amex',
+            lastFour: '9999',
+          },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.CreditCard,
+      });
+
+      mp.setNewPaymentMethod(request);
+
+      expect(mp.plan.btdata.nextBillingDate.date).to.equal(
+        '2024-08-15 00:00:00',
+      );
+      expect(mp.plan.btdata.lastBillingDate.date).to.equal(
+        '2024-07-15 00:00:00',
+      );
+    });
+
+    it('preserves status field through the merge', () => {
+      const mp = new MonthlyPlan(makePlan());
+
+      const request = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'New card',
+          nonce: 'nonce_abc',
+          type: 'CreditCard',
+          details: {
+            cardType: 'Visa',
+            lastFour: '1111',
+          },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.CreditCard,
+      });
+
+      mp.setNewPaymentMethod(request);
+      expect(mp.plan.btdata.status).to.equal('Active');
+      expect(mp.plan.btdata.paymentMethodType).to.equal('CreditCard');
+    });
+
+    it('stores old_btData as a snapshot when called twice', () => {
+      const mp = new MonthlyPlan(makePlan());
+
+      const firstRequest = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'First update',
+          nonce: 'nonce_1',
+          type: 'CreditCard',
+          details: {
+            cardType: 'Mastercard',
+            lastFour: '2222',
+            expirationMonth: '03',
+            expirationYear: '2027',
+          },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.CreditCard,
+      });
+
+      mp.setNewPaymentMethod(firstRequest);
+      const afterFirstUpdate = mp.plan.btdata;
+
+      const secondRequest = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'Second update',
+          nonce: 'nonce_2',
+          type: 'CreditCard',
+          details: {
+            cardType: 'Amex',
+            lastFour: '3333',
+            expirationMonth: '11',
+            expirationYear: '2029',
+          },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.CreditCard,
+      });
+
+      mp.setNewPaymentMethod(secondRequest);
+
+      // old_btData should be the intermediate state, not the original
+      expect(mp.plan.old_btData).to.equal(afterFirstUpdate);
+      expect(mp.plan.btdata.cardType).to.equal('Amex');
+      expect(mp.plan.btdata.last4).to.equal('3333');
+    });
+
+    it('handles PayPal details with paypalEmail on original btdata', () => {
+      const btdata = makeBtData({
+        paymentMethodType: 'PayPal',
+        paypalEmail: 'donor@example.com',
+        last4: null,
+        cardType: null,
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+
+      const request = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'New PayPal',
+          nonce: 'nonce_pp',
+          type: 'PayPal',
+          details: {
+            description: 'new-donor@example.com',
+          },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.CreditCard,
+      });
+
+      mp.setNewPaymentMethod(request);
+
+      // paypalEmail from original btdata is preserved via spread
+      expect(mp.plan.btdata.paypalEmail).to.equal('donor@example.com');
+      expect(mp.plan.btdata.last4).to.equal('unknown');
+    });
+
+    it('handles Venmo details with venmoUsername on original btdata', () => {
+      const btdata = makeBtData({
+        paymentMethodType: 'Venmo',
+        venmoUsername: '@donor',
+        last4: null,
+        cardType: null,
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+
+      const request = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'New Venmo',
+          nonce: 'nonce_venmo',
+          type: 'Venmo',
+          details: {},
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.CreditCard,
+      });
+
+      mp.setNewPaymentMethod(request);
+
+      expect(mp.plan.btdata.venmoUsername).to.equal('@donor');
+      expect(mp.plan.btdata.last4).to.equal('unknown');
+    });
   });
 });
