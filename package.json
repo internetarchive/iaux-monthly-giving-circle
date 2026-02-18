@@ -97,5 +97,12 @@
   "prettier": {
     "singleQuote": true,
     "arrowParens": "avoid"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ]
   }
 }
