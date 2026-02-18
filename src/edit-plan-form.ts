@@ -1,16 +1,26 @@
 import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 
+import '@internetarchive/donation-form/dist/src/form-elements/badged-input';
+
+import { HostingEnvironment } from '@internetarchive/donation-form';
+import type { PaymentConfig } from './form-sections/parts/braintree-manager';
 import type { MonthlyPlan } from './models/plan';
 import './form-sections/amount';
 import './form-sections/date';
 import './form-sections/cancel';
+import './form-sections/payment-method';
 import type { MGCEditPlanAmount } from './form-sections/amount';
 import type { MGCEditPlanDate } from './form-sections/date';
+import type { MGCEditPaymentMethod } from './form-sections/payment-method';
 
 @customElement('ia-mgc-edit-plan')
 export class IauxEditPlanForm extends LitElement {
   @property({ type: Object }) plan?: MonthlyPlan;
+
+  @property({ type: String }) patronEmail: string = '';
+
+  @property({ type: Boolean }) canEditPaymentMethod: boolean = false;
 
   @property({ type: Object }) updateAmountHandler?: (
     plan: MonthlyPlan,
@@ -22,8 +32,34 @@ export class IauxEditPlanForm extends LitElement {
     },
   ) => void;
 
+  @property({ type: Object }) paymentConfig: PaymentConfig = {
+    referrer: '',
+    origin: '',
+    braintreeAuthToken: '',
+    venmoProfileId: '',
+    googlePayMerchantId: '',
+    environment: HostingEnvironment.Development,
+    paymentClients: undefined,
+    endpointManager: undefined,
+  };
+
+  @query('#braintree-creditcard') braintreeNumberInput!: HTMLDivElement;
+
+  @query('#braintree-expiration') braintreeExpirationDateInput!: HTMLDivElement;
+
+  @query('#braintree-cvv') braintreeCVVInput!: HTMLDivElement;
+
+  @query('#braintree-error-message') braintreeErrorMessage!: HTMLDivElement;
+
   createRenderRoot() {
     return this;
+  }
+
+  paymentMethodUpdates(status: 'success' | 'fail') {
+    const paymentMethodForm = this.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+    paymentMethodForm!.paymentMethodUpdated(status);
   }
 
   amountUpdates(status: 'success' | 'fail') {
@@ -55,6 +91,27 @@ export class IauxEditPlanForm extends LitElement {
             }
           }}
         ></ia-mgc-edit-plan-amount>
+        ${this.canEditPaymentMethod
+          ? html`
+              <hr />
+              <ia-mgc-edit-payment-method
+                .plan=${this.plan}
+                .patronEmail=${this.patronEmail}
+                .paymentConfig=${this.paymentConfig}
+                @UpdatePaymentMethod=${(e: CustomEvent) => {
+                  const { newPaymentMethodRequest } = e.detail;
+                  if (this.plan) {
+                    this.dispatchEvent(
+                      new CustomEvent('UpdatePaymentMethod', {
+                        detail: { plan: this.plan, newPaymentMethodRequest },
+                      }),
+                    );
+                  }
+                }}
+              >
+              </ia-mgc-edit-payment-method>
+            `
+          : ''}
         <hr />
         <ia-mgc-edit-date
           @updateDate=${(e: CustomEvent) => {

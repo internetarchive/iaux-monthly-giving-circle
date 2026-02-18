@@ -45,7 +45,12 @@
       <button id="toggle-receipts">Toggle receipts</button>
       <button id="clear-updates">Clear updates</button>
       <button id="toggle-plans">Toggle plans</button>
-      <button id="toggle-editable-perms">Toggle Editable Permissions</button>
+      <button id="toggle-prefilled-email">Toggle pre-filled email</button>
+      <button id="toggle-edit-payment-method">Toggle edit payment method</button>
+
+      <br>
+      <input type="checkbox" id="force-successful-requests" name="force-successful-requests">
+      <label for="force-successful-requests">Force successful requests</label>
 
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
@@ -59,11 +64,16 @@
         max-width: 800px;
       }
     </style>
-    <ia-monthly-giving-circle canEdit></ia-monthly-giving-circle>
+    <ia-monthly-giving-circle
+      canEditPaymentMethod
+      braintreeAuthToken="sandbox_x634jsj7_7zybks4ybp63pbmd"
+      ></ia-monthly-giving-circle>
   </div>
 
   <script type="module" src="../dist/src/monthly-giving-circle.js"></script>
   <script type="module">
+    import { PaymentClients, HostingEnvironment } from '@internetarchive/donation-form';
+    import { LazyLoaderService } from 'https://esm.archive.org/@internetarchive/lazy-loader-service';
     import { MonthlyPlan, Receipt } from '../dist/index.js';
 
     let updateNotices = [];
@@ -256,15 +266,49 @@
         }),
       ];
 
+    const paymentConfig = {
+    referrer: '',
+    origin: '',
+    braintreeAuthToken: 'sandbox_x634jsj7_7zybks4ybp63pbmd',
+    venmoProfileId: '1953896702662410263',
+    googlePayMerchantId: '',
+    environment: 'dev',
+    paymentClients: new PaymentClients(
+      new LazyLoaderService(),
+      HostingEnvironment.Development,
+    ),
+    endpointManager: {
+      // eslint-disable-next-line arrow-body-style, @typescript-eslint/no-unused-vars
+      submitData: async (_request) => {
+        // eslint-disable-next-line no-debugger
+        debugger;
+      },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      donationSuccessful: (_response) => {
+        // eslint-disable-next-line no-debugger
+        debugger;
+      },
+    },
+  };
+
 
     let showReceipts = true;
 
     const uxMessageInfoArea = document.getElementById('interaction-status-area');
     const coinFlip = () => Math.floor(Math.random() + 0.5);
 
+    const flipCoin = () => {
+      const forceSuccess = document.getElementById('force-successful-requests').checked;
+      if (forceSuccess) {
+        return 1;
+      }
+      return coinFlip();
+    }
+
     const mgcComponent = document.querySelector('ia-monthly-giving-circle');
 
     // load start data
+    mgcComponent.paymentConfig = paymentConfig;
     mgcComponent.receipts = receiptsData;
     mgcComponent.plans = plansArray;
 
@@ -272,7 +316,7 @@
     mgcComponent.addEventListener('EmailReceiptRequest', (e) => {
 
       const { donation } = e.detail;
-      const heads = coinFlip() === 1;
+      const heads = flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 5000;
 
@@ -314,7 +358,7 @@
       const { plan, amountOptions } = e.detail;
 
       // either error or succeed
-      const heads = coinFlip() === 1;
+      const heads = flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 5000;
   
@@ -348,7 +392,7 @@
       const { newDate, plan } = e.detail;
 
 
-      const heads = coinFlip() === 1;
+      const heads = flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 5000;
 
@@ -378,6 +422,39 @@
       }, returnTiming);
     });
 
+    mgcComponent.addEventListener('UpdatePaymentMethod', (e) => {
+      const { plan, newPaymentMethodRequest } = e.detail;
+
+
+      const heads = flipCoin() === 1;
+      const successOrFail = heads ? 'success' : 'fail';
+      const returnTiming = heads ? 1500 : 4000;
+
+      uxMessageInfoArea.innerText = `Updating payment method for plan: ${plan ? plan.id : 'no plan'} -- Update will return ${successOrFail} in ${returnTiming} ms`; 
+      const message = successOrFail === 'success' ? 'Payment method updated' : 'Payment method failed to update';
+
+      if (heads && plan) {
+        console.log('demo - setting new payment method', newPaymentMethodRequest);
+        plan.setNewPaymentMethod(newPaymentMethodRequest);
+      }
+
+      const update = {
+        message,
+        status: successOrFail,
+        plan,
+        donationId: plan ? plan.id : null,
+        action: 'paymentMethodUpdate'
+      };
+
+      updateNotices = [update, ...updateNotices];
+
+      setTimeout(() => {
+        mgcComponent.updateReceived(update);
+        console.log('Amount Update Request --- index.html ----', update);
+        uxMessageInfoArea.innerText = '';
+      }, returnTiming);
+    });
+
     // options hooks
     document.getElementById('toggle-receipts').addEventListener('click', async () => {
       if (showReceipts) {
@@ -396,12 +473,17 @@
       await mgcComponent.updateComplete;
     });
     document.getElementById('toggle-plans').addEventListener('click', async () => {
-      mgcComponent.plans = mgcComponent.plans.length ? [] : plansArray;
+      mgcComponent.plans = mgcComponent.plans .length ? [] : plansArray;
       await mgcComponent.updateComplete;
     });
     
-    document.getElementById('toggle-editable-perms').addEventListener('click', async () => {
-      mgcComponent.canEdit = !mgcComponent.canEdit;
+    document.getElementById('toggle-prefilled-email').addEventListener('click', async () => {
+      mgcComponent.patronEmail = mgcComponent.patronEmail ? '' : 'you@thisemail.com';
+      await mgcComponent.updateComplete;
+    });
+
+    document.getElementById('toggle-edit-payment-method').addEventListener('click', async () => {
+      mgcComponent.canEditPaymentMethod = !mgcComponent.canEditPaymentMethod;
       await mgcComponent.updateComplete;
     });
   </script>

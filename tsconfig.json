@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "skipLibCheck": true,
     "target": "es2018",
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -19,7 +20,9 @@
       {
         "name": "ts-lit-plugin"
       }
-    ]
+    ],
   },
   "include": ["**/*.ts", "**/*.test.ts"],
+  "exclude": ["node_modules", "dist"],
+
 }

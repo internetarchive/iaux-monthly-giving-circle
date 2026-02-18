@@ -1,3 +1,5 @@
+import type { PaymentMethodRequest } from './payment-method-request';
+
 export type BtData = {
   billingDayOfMonth: number;
   nextBillingDate: {
@@ -30,10 +32,11 @@ export type Plan = {
   btdata: BtData;
   oldAmount?: number;
   oldDate?: string;
-  oldPaymentMethod?: string;
   isCancelled?: boolean;
   processor_id?: string; // used when editing date
   oldProcessorId?: string;
+  old_btData?: any;
+  new_payment_method_details?: PaymentMethodRequest; // used when updating payment method
 };
 
 export class MonthlyPlan {
@@ -41,11 +44,8 @@ export class MonthlyPlan {
 
   currency: string;
 
-  payment: BtData;
-
   constructor(plan: Plan) {
     this.plan = plan;
-    this.payment = plan.btdata;
     this.currency = plan.currency ?? 'USD'; // not in data
   }
 
@@ -66,6 +66,10 @@ export class MonthlyPlan {
     return this.plan.amount.toFixed(2);
   }
 
+  get payment(): BtData | null {
+    return this.plan.btdata;
+  }
+
   setAmount(newAmount: number) {
     this.plan.oldAmount = this.plan.amount;
     this.plan.amount = newAmount;
@@ -73,29 +77,31 @@ export class MonthlyPlan {
 
   get nextBillingDate(): string {
     // iso08601 date string
-    return this.payment.nextBillingDate.date;
+    return this.payment?.nextBillingDate?.date ?? '';
   }
 
   setNextBillingDate(newDate: string) {
     // iso08601 date string
-    this.payment.nextBillingDate.oldDate = this.payment.nextBillingDate.date;
-    this.payment.nextBillingDate.date = newDate;
+    if (this.payment) {
+      this.payment.nextBillingDate.oldDate = this.payment.nextBillingDate.date;
+      this.payment.nextBillingDate.date = newDate;
+    }
   }
 
   get nextBillingDateLocale(): string {
-    const nextBillingDate = new Date(
-      this.payment.nextBillingDate.date,
-    ).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-
-    return nextBillingDate ?? 'not found';
+    const dateStr = this.payment?.nextBillingDate.date ?? '';
+    const nextBillingDate = dateStr
+      ? new Date(dateStr).toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+      : 'not found';
+    return nextBillingDate;
   }
 
   get lastBillingDateLocale(): string {
-    if (!this.payment.lastBillingDate.date) {
+    if (!this.payment?.lastBillingDate.date) {
       return '';
     }
 
@@ -106,9 +112,6 @@ export class MonthlyPlan {
       month: 'short',
       day: 'numeric',
     });
-
-    console.log('lastBillingDate from model', lastBillingDate);
-
     return lastBillingDate ?? 'not found';
   }
 
@@ -129,30 +132,19 @@ export class MonthlyPlan {
     this.plan.processor_id = newProcessorId;
     this.plan.oldProcessorId = currentProcessorId;
   }
-}
 
-/*
-
-{
-  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtYWlsc3luYyIsImlhdCI6MTczODYxNTY3NS41ODA4MTcsIm5iZiI6MTczODYxNTYxNS41ODA4MTcsImV4cCI6MTczODYxNjI3NS41ODA4MTcsImtleSI6eyJwaWQiOiJkd2NrN20iLCJjaWQiOjgwMzUzOCwiYW1vdW50Ijo1LCJwYXltZW50TWV0aG9kVG9rZW4iOiJxMXllYndoaiIsImN1c3RvbWVySWQiOiI4NTQ2MTk4MzUifSwidXNlciI6IkBpc2EtYXQtdGhlLWFyY2hpdmUifQ.TYlkU1ZZLHmj2ahrkTV7JGLmpCPN4BcOeDFPiXVj0pM",
-  "amount": 5,
-  "currency": "USD",
-  "start_date": "2022-12-09 00:00:00",
-  "contribution_status_id": 5,
-  "is_test": true,
-  "btdata": {
-    "billingDayOfMonth": 9,
-    "nextBillingDate": {
-      "date": "2025-02-09 00:00:00.000000",
-      "timezone_type": 3,
-      "timezone": "UTC"
-    },
-    "status": "Active",
-    "paymentMethodType": "creditCard",
-    "last4": "1111",
-    "cardType": "Visa",
-    "expirationMonth": "12",
-    "expirationYear": "2023"
+  setNewPaymentMethod(newPaymentMethodRequest: PaymentMethodRequest): void {
+    const currentPaymentMethod = this.payment;
+    const mergedBtData = {
+      ...this.plan.btdata,
+      ...newPaymentMethodRequest.paymentMethodInfo.details,
+      ...{
+        last4:
+          newPaymentMethodRequest.paymentMethodInfo.details.lastFour ??
+          'unknown',
+      },
+    };
+    this.plan.old_btData = currentPaymentMethod;
+    this.plan.btdata = mergedBtData;
   }
 }
-  */

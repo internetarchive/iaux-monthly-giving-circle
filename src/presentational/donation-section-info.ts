@@ -25,8 +25,9 @@ export class MGCFormSectionInfo extends LitElement {
 
   static styles = css`
     span {
-      width: 95px;
-      margin-right: 20px;
+      max-width: 300px;
+      margin-right: 10px;
+      display: inline-grid;
     }
   `;
 }
