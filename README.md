@@ -1,5 +1,5 @@
 @@ -1,144 +1,17 @@
-![Build Status](https://github.com/internetarchive/iaux-monthly-giving-circle/actions/workflows/ci.yml/badge.svg) [![codecov](https://codecov.io/gh/internetarchive/iaux-monthly-giving-circle/branch/main/graph/badge.svg?token=ZOYRJ2BV9W)](https://codecov.io/gh/internetarchive/iaux-monthly-giving-circle)
+![Build Status](https://github.com/internetarchive/iaux-monthly-giving-circle/actions/workflows/ci.yml/badge.svg) [![codecov](https://codecov.io/github/internetarchive/iaux-monthly-giving-circle/branch/main/graph/badge.svg?token=3CT3C9SL73)](https://codecov.io/github/internetarchive/iaux-monthly-giving-circle)
 
 # \<iaux-monthly-giving-circle>
 
