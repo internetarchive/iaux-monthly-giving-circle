@@ -14,6 +14,7 @@ import './presentational/mgc-button';
 import type { MonthlyPlan } from './models/plan';
 import './edit-plan-form';
 import type { IauxEditPlanForm } from './edit-plan-form';
+import { Receipt } from './models/receipt';
 
 export type APlanUpdate = {
   plan?: MonthlyPlan;
@@ -43,7 +44,7 @@ export class MonthlyGivingCircle extends LitElement {
 
   @property({ type: Boolean }) canEditPaymentMethod: boolean = false;
 
-  @property({ type: Array }) receipts = [];
+  @property({ type: Array }) receipts: Receipt[] = [];
 
   @property({ type: Array }) updates: APlanUpdate[] = [];
 
