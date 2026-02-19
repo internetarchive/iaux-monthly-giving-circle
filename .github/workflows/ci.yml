@@ -25,6 +25,9 @@ jobs:
     - name: Run unit tests
       run: npx wtr --coverage --verbose
 
+    - name: Look into coverage report
+      run: ls -la coverage && cat coverage/lcov.info
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
