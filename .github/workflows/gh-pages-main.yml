@@ -19,6 +19,12 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "Github Actions"
+          git config --global user.email "actions@github.com"
+
       - uses: actions/setup-node@v6
 
       - name: Install dependencies
@@ -36,4 +42,3 @@ jobs:
           clean-exclude: pr/
           force: false
           target-folder: main
-          token: ${{ secrets.GH_TOKEN }}
