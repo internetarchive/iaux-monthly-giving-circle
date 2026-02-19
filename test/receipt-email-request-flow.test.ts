@@ -37,6 +37,8 @@ describe('Receipts: When requesting an email', () => {
         ></ia-monthly-giving-circle>`,
       );
 
+      expect(el.receipts.length).to.equal(1);
+
       // open receipt view
       const titleEl = el.querySelector('ia-mgc-title');
       const receiptsDisplayButton = titleEl!.querySelector(
