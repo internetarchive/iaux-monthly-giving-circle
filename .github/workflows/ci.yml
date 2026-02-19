@@ -19,8 +19,11 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Run tests
-      run: npm run test
+    - name: Run lint & circular dependency tests
+      run: npm run lint && npm run circular
+
+    - name: Run unit tests
+      run: npx wtr --coverage --verbose
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
