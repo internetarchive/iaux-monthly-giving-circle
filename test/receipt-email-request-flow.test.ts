@@ -38,6 +38,7 @@ describe('Receipts: When requesting an email', () => {
       );
 
       expect(el.receipts.length).to.equal(1);
+      expect(el.receipts[0] instanceof Receipt).to.equal(true);
 
       // open receipt view
       const titleEl = el.querySelector('ia-mgc-title');
