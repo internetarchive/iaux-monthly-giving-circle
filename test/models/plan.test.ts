@@ -126,6 +126,48 @@ describe('MonthlyPlan', () => {
       const mp = new MonthlyPlan(makePlan({ btdata }));
       expect(mp.nextBillingDateLocale).to.equal('not found');
     });
+
+    it('formats dates in UTC to avoid timezone shift', () => {
+      const btdata = makeBtData({
+        nextBillingDate: {
+          date: '2024-09-01 00:00:00.000000',
+          timezone_type: 3,
+          timezone: 'UTC',
+        },
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+      const expected = new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date('2024-09-01 00:00:00.000000'));
+      expect(mp.nextBillingDateLocale).to.equal(expected);
+    });
+
+    it('returns "Invalid date" for an invalid date string', () => {
+      const btdata = makeBtData({
+        nextBillingDate: {
+          date: 'not-a-date',
+          timezone_type: 3,
+          timezone: 'UTC',
+        },
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+      expect(mp.nextBillingDateLocale).to.equal('Invalid date');
+    });
+
+    it('returns "Invalid date" for an out-of-range date string', () => {
+      const btdata = makeBtData({
+        nextBillingDate: {
+          date: '2024-13-01',
+          timezone_type: 3,
+          timezone: 'UTC',
+        },
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+      expect(mp.nextBillingDateLocale).to.equal('Invalid date');
+    });
   });
 
   describe('lastBillingDateLocale', () => {
@@ -140,6 +182,48 @@ describe('MonthlyPlan', () => {
       btdata.lastBillingDate.date = null;
       const mp = new MonthlyPlan(makePlan({ btdata }));
       expect(mp.lastBillingDateLocale).to.equal('');
+    });
+
+    it('formats dates in UTC to avoid timezone shift', () => {
+      const btdata = makeBtData({
+        lastBillingDate: {
+          date: '2024-07-01 00:00:00.000000',
+          timezone_type: 3,
+          timezone: 'UTC',
+        },
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+      const expected = new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date('2024-07-01 00:00:00.000000'));
+      expect(mp.lastBillingDateLocale).to.equal(expected);
+    });
+
+    it('returns "Invalid date" for an invalid date string', () => {
+      const btdata = makeBtData({
+        lastBillingDate: {
+          date: 'garbage',
+          timezone_type: 3,
+          timezone: 'UTC',
+        },
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+      expect(mp.lastBillingDateLocale).to.equal('Invalid date');
+    });
+
+    it('returns "Invalid date" for an out-of-range date string', () => {
+      const btdata = makeBtData({
+        lastBillingDate: {
+          date: '2024-13-01',
+          timezone_type: 3,
+          timezone: 'UTC',
+        },
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+      expect(mp.lastBillingDateLocale).to.equal('Invalid date');
     });
   });
 

@@ -87,29 +87,32 @@ export class MonthlyPlan {
 
   get nextBillingDateLocale(): string {
     const dateStr = this.payment?.nextBillingDate.date ?? '';
-    const nextBillingDate = dateStr
-      ? new Date(dateStr).toLocaleDateString(undefined, {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        })
-      : 'not found';
-    return nextBillingDate;
+    if (!dateStr) return 'not found';
+    try {
+      return new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(dateStr));
+    } catch {
+      return 'Invalid date';
+    }
   }
 
   get lastBillingDateLocale(): string {
-    if (!this.payment?.lastBillingDate.date) {
-      return '';
+    const dateStr = this.payment?.lastBillingDate.date ?? '';
+    if (!dateStr) return '';
+    try {
+      return new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(dateStr));
+    } catch {
+      return 'Invalid date';
     }
-
-    const lastBillingDate = new Date(
-      this.payment.lastBillingDate.date,
-    ).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-    return lastBillingDate ?? 'not found';
   }
 
   get hasBeenCancelled(): boolean {
