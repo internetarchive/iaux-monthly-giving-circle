@@ -37,32 +37,26 @@ describe('Receipt', () => {
   });
 
   describe('amount', () => {
-    it('returns total_amount fixed to 2 decimals', () => {
+    it('returns currency-formatted amount for USD', () => {
       const r = makeReceipt({ total_amount: 10 });
-      expect(r.amount).to.equal('10.00');
+      expect(r.amount).to.equal('$10.00');
     });
 
     it('handles fractional amounts', () => {
       const r = makeReceipt({ total_amount: 7.5 });
-      expect(r.amount).to.equal('7.50');
+      expect(r.amount).to.equal('$7.50');
     });
   });
 
   describe('amountFormatted', () => {
-    it('returns formatted string with currency and symbol for USD', () => {
+    it('returns currency-formatted string for USD', () => {
       const r = makeReceipt({ currency: 'USD', total_amount: 10 });
-      expect(r.amountFormatted).to.equal('USD $10.00');
+      expect(r.amountFormatted).to.equal('$10.00');
     });
 
-    it('returns formatted string without symbol for non-USD', () => {
+    it('returns currency-formatted string for non-USD', () => {
       const r = makeReceipt({ currency: 'EUR', total_amount: 25 });
-      expect(r.amountFormatted).to.equal('EUR 25.00');
-    });
-
-    it('falls back to "CURR not found" when currency is undefined', () => {
-      const r = makeReceipt();
-      (r.receipt as any).currency = undefined;
-      expect(r.amountFormatted).to.include('CURR not found');
+      expect(r.amountFormatted).to.equal('€25.00');
     });
   });
 

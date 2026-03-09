@@ -87,14 +87,19 @@ describe('MonthlyPlan', () => {
   });
 
   describe('amountFormatted', () => {
-    it('returns amount fixed to 2 decimal places', () => {
+    it('returns currency-formatted amount for USD', () => {
       const mp = new MonthlyPlan(makePlan({ amount: 10 }));
-      expect(mp.amountFormatted).to.equal('10.00');
+      expect(mp.amountFormatted).to.equal('$10.00');
     });
 
     it('handles fractional amounts', () => {
       const mp = new MonthlyPlan(makePlan({ amount: 7.5 }));
-      expect(mp.amountFormatted).to.equal('7.50');
+      expect(mp.amountFormatted).to.equal('$7.50');
+    });
+
+    it('formats non-USD currency', () => {
+      const mp = new MonthlyPlan(makePlan({ amount: 25, currency: 'EUR' }));
+      expect(mp.amountFormatted).to.equal('€25.00');
     });
   });
 
