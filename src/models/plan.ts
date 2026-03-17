@@ -85,34 +85,27 @@ export class MonthlyPlan {
     }
   }
 
+  private formatDateUTC(dateStr: string): string {
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return 'Invalid date';
+    return new Intl.DateTimeFormat(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC',
+    }).format(date);
+  }
+
   get nextBillingDateLocale(): string {
     const dateStr = this.payment?.nextBillingDate.date ?? '';
     if (!dateStr) return 'not found';
-    try {
-      return new Intl.DateTimeFormat(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'UTC',
-      }).format(new Date(dateStr));
-    } catch {
-      return 'Invalid date';
-    }
+    return this.formatDateUTC(dateStr);
   }
 
   get lastBillingDateLocale(): string {
     const dateStr = this.payment?.lastBillingDate.date ?? '';
     if (!dateStr) return '';
-    try {
-      return new Intl.DateTimeFormat(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'UTC',
-      }).format(new Date(dateStr));
-    } catch {
-      return 'Invalid date';
-    }
+    return this.formatDateUTC(dateStr);
   }
 
   get hasBeenCancelled(): boolean {
