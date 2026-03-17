@@ -13,7 +13,7 @@ import {
   navigateToEditView,
   navigateBackToPlans,
 } from './helpers/edit-plan-helpers';
-import { MonthlyPlan } from '../src/models/plan';
+import type { MonthlyPlan } from '../src/models/plan';
 
 describe('State persistence across views:', () => {
   let el: MonthlyGivingCircle;

@@ -18,18 +18,24 @@ import {
   navigateToEditView,
   navigateBackToPlans,
 } from './helpers/edit-plan-helpers';
+import type { MonthlyPlan } from '../src/models/plan';
 
 describe('Edit Plan Flow:', () => {
-  it('updateAmount event fires from the edit view with the correct plan', async () => {
-    const plan = makePlan();
-    const el = await fixture<MonthlyGivingCircle>(
+  let el: MonthlyGivingCircle;
+  let plan: MonthlyPlan;
+
+  beforeEach(async () => {
+    plan = makePlan();
+    el = await fixture<MonthlyGivingCircle>(
       html`<ia-monthly-giving-circle
         .canEdit=${true}
         .plans=${[plan]}
       ></ia-monthly-giving-circle>`,
     );
-
     await navigateToEditView(el);
+  });
+
+  it('updateAmount event fires from the edit view with the correct plan', async () => {
     expect(el.viewToDisplay).to.equal('editPlan');
 
     const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
@@ -56,16 +62,6 @@ describe('Edit Plan Flow:', () => {
   });
 
   it('updateReceived with amountUpdate success closes amount sub-form', async () => {
-    const plan = makePlan();
-    const el = await fixture<MonthlyGivingCircle>(
-      html`<ia-monthly-giving-circle
-        .canEdit=${true}
-        .plans=${[plan]}
-      ></ia-monthly-giving-circle>`,
-    );
-
-    await navigateToEditView(el);
-
     const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
     const amountEl = editPlan.querySelector(
       'ia-mgc-edit-plan-amount',
@@ -92,16 +88,6 @@ describe('Edit Plan Flow:', () => {
   });
 
   it('sub-forms can be toggled independently while in edit view', async () => {
-    const plan = makePlan();
-    const el = await fixture<MonthlyGivingCircle>(
-      html`<ia-monthly-giving-circle
-        .canEdit=${true}
-        .plans=${[plan]}
-      ></ia-monthly-giving-circle>`,
-    );
-
-    await navigateToEditView(el);
-
     const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
 
     // --- Open Amount sub-form ---
@@ -190,16 +176,6 @@ describe('Edit Plan Flow:', () => {
   });
 
   it('sub-forms can be closed independently', async () => {
-    const plan = makePlan();
-    const el = await fixture<MonthlyGivingCircle>(
-      html`<ia-monthly-giving-circle
-        .canEdit=${true}
-        .plans=${[plan]}
-      ></ia-monthly-giving-circle>`,
-    );
-
-    await navigateToEditView(el);
-
     const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
 
     const amountEl = editPlan.querySelector(
@@ -252,15 +228,6 @@ describe('Edit Plan Flow:', () => {
   });
 
   it('"Back to account settings" returns to plans view from edit view', async () => {
-    const plan = makePlan();
-    const el = await fixture<MonthlyGivingCircle>(
-      html`<ia-monthly-giving-circle
-        .canEdit=${true}
-        .plans=${[plan]}
-      ></ia-monthly-giving-circle>`,
-    );
-
-    await navigateToEditView(el);
     expect(el.viewToDisplay).to.equal('editPlan');
     expect(el.querySelector('ia-mgc-edit-plan')).to.exist;
 
