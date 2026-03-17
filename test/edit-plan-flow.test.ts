@@ -11,6 +11,7 @@ import type { MGCEditPlanDate } from '../src/form-sections/date';
 import type { IauxMgcCancelPlan } from '../src/form-sections/cancel';
 import type { MGCButton } from '../src/presentational/mgc-button';
 import type { MGCFormSectionInfo } from '../src/presentational/donation-section-info';
+import type { IauxMgcPlans } from '../src/plans';
 
 import '../src/monthly-giving-circle';
 import {
@@ -85,6 +86,32 @@ describe('Edit Plan Flow:', () => {
 
     expect(amountEl.currentlyEditing).to.be.false;
     expect(amountEl.updateStatus).to.equal('success');
+  });
+
+  it('updateReceived with dateUpdate success closes date sub-form', async () => {
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const dateEl = editPlan.querySelector(
+      'ia-mgc-edit-date',
+    ) as MGCEditPlanDate;
+    expect(dateEl).to.exist;
+
+    // Open the date sub-form (required — clearInputField accesses the date input)
+    dateEl.currentlyEditing = true;
+    await dateEl.updateComplete;
+    expect(dateEl.currentlyEditing).to.be.true;
+
+    // Simulate a success update
+    const update: APlanUpdate = {
+      action: 'dateUpdate',
+      plan,
+      status: 'success',
+      message: '',
+    };
+    el.updateReceived(update);
+    await dateEl.updateComplete;
+
+    // dateUpdated calls closeForm on success, which resets updateStatus to ''
+    expect(dateEl.currentlyEditing).to.be.false;
   });
 
   it('sub-forms can be toggled independently while in edit view', async () => {
@@ -225,6 +252,55 @@ describe('Edit Plan Flow:', () => {
 
     expect(dateEl.currentlyEditing).to.be.false;
     expect(amountEl.currentlyEditing).to.be.false;
+  });
+
+  it('updateReceived with cancel action clears editingThisPlan and returns to plans', async () => {
+    expect(el.viewToDisplay).to.equal('editPlan');
+    expect(el.editingThisPlan).to.exist;
+
+    const update: APlanUpdate = {
+      action: 'cancel',
+      plan,
+      status: 'success',
+      message: '',
+    };
+    el.updateReceived(update);
+    await el.updateComplete;
+
+    expect(el.editingThisPlan).to.be.undefined;
+    expect(el.viewToDisplay).to.equal('plans');
+    expect(el.querySelector('ia-mgc-edit-plan')).to.not.exist;
+    expect(el.querySelector('ia-mgc-plans')).to.exist;
+  });
+
+  it('updateReceived with hasBeenCancelled plan clears editingThisPlan and returns to plans with cancelled styling', async () => {
+    expect(el.viewToDisplay).to.equal('editPlan');
+
+    // Mark the plan as cancelled via the model method
+    plan.cancelPlan();
+    expect(plan.hasBeenCancelled).to.be.true;
+
+    // Use a non-cancel action to exercise the hasBeenCancelled branch
+    const update: APlanUpdate = {
+      action: 'receiptSent',
+      plan,
+      status: 'success',
+      message: '',
+    };
+    el.updateReceived(update);
+    await el.updateComplete;
+
+    expect(el.editingThisPlan).to.be.undefined;
+    expect(el.viewToDisplay).to.equal('plans');
+    expect(el.querySelector('ia-mgc-edit-plan')).to.not.exist;
+
+    const plansEl = el.querySelector('ia-mgc-plans') as IauxMgcPlans;
+    expect(plansEl).to.exist;
+    await plansEl.updateComplete;
+
+    const planItem = plansEl!.shadowRoot?.querySelector('li');
+    expect(planItem).to.exist;
+    expect(planItem!.classList.contains('cancelled')).to.be.true;
   });
 
   it('"Back to account settings" returns to plans view from edit view', async () => {
