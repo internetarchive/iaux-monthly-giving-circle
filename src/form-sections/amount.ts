@@ -67,7 +67,9 @@ export class MGCEditPlanAmount extends LitElement {
                   this.currentlyEditing = true;
                   this.clearStatusMessaging();
                 }}
-                ><span>${this.plan?.amountFormatted}</span>
+                ><span
+                  >${this.plan?.currency} ${this.plan?.amountFormatted}</span
+                >
               </ia-mgc-form-section-info>`
             : nothing}
           ${this.currentlyEditing ? this.editAmountForm : nothing}
@@ -265,7 +267,10 @@ export class MGCEditPlanAmount extends LitElement {
           id="edit-plan-amount"
           @submit=${(e: Event) => this.handleSubmit(e)}
         >
-          <p>Current donation amount: ${this.plan?.amountFormatted}</p>
+          <p>
+            Current donation amount: ${this.plan?.currency}
+            ${this.plan?.amountFormatted}
+          </p>
           <div>
             ${currencyToSymbol[this.plan?.currency ?? 'USD']}
             <input

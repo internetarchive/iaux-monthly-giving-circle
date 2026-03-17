@@ -42,6 +42,7 @@ describe('<ia-mgc-edit-plan-amount>', () => {
 
     const holder = el.shadowRoot?.querySelector('ia-mgc-form-section-info');
     expect(holder).to.exist;
+    expect(holder?.textContent).to.contain('USD');
     expect(holder?.textContent).to.contain('$5');
 
     const cta = holder?.shadowRoot?.querySelector('ia-mgc-button');
@@ -57,6 +58,21 @@ describe('<ia-mgc-edit-plan-amount>', () => {
 
     // form now displays
     expect(el.form.getAttribute('id')).to.equal('edit-plan-amount');
+  });
+
+  it('shows currency code in current donation amount when editing', async () => {
+    const el = await fixture<MGCEditPlanAmount>(
+      html`<ia-mgc-edit-plan-amount
+        .plan=${plan}
+        .currentlyEditing=${true}
+      ></ia-mgc-edit-plan-amount>`,
+    );
+    await el.updateComplete;
+
+    const form = el.shadowRoot?.querySelector('form');
+    const currentAmountText = form?.querySelector('p')?.textContent;
+    expect(currentAmountText).to.contain('USD');
+    expect(currentAmountText).to.contain('$5');
   });
 
   describe('coveredFeesText', () => {
