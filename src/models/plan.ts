@@ -85,31 +85,27 @@ export class MonthlyPlan {
     }
   }
 
-  get nextBillingDateLocale(): string {
-    const dateStr = this.payment?.nextBillingDate.date ?? '';
-    const nextBillingDate = dateStr
-      ? new Date(dateStr).toLocaleDateString(undefined, {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        })
-      : 'not found';
-    return nextBillingDate;
-  }
-
-  get lastBillingDateLocale(): string {
-    if (!this.payment?.lastBillingDate.date) {
-      return '';
-    }
-
-    const lastBillingDate = new Date(
-      this.payment.lastBillingDate.date,
-    ).toLocaleDateString(undefined, {
+  private formatDateUTC(dateStr: string): string {
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return 'Invalid date';
+    return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-    });
-    return lastBillingDate ?? 'not found';
+      timeZone: 'UTC',
+    }).format(date);
+  }
+
+  get nextBillingDateLocale(): string {
+    const dateStr = this.payment?.nextBillingDate.date ?? '';
+    if (!dateStr) return 'not found';
+    return this.formatDateUTC(dateStr);
+  }
+
+  get lastBillingDateLocale(): string {
+    const dateStr = this.payment?.lastBillingDate.date ?? '';
+    if (!dateStr) return '';
+    return this.formatDateUTC(dateStr);
   }
 
   get hasBeenCancelled(): boolean {
