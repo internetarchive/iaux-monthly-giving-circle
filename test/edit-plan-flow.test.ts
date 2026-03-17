@@ -13,7 +13,11 @@ import type { MGCButton } from '../src/presentational/mgc-button';
 import type { MGCFormSectionInfo } from '../src/presentational/donation-section-info';
 
 import '../src/monthly-giving-circle';
-import { makePlan, navigateToEditView } from './helpers/edit-plan-helpers';
+import {
+  makePlan,
+  navigateToEditView,
+  navigateBackToPlans,
+} from './helpers/edit-plan-helpers';
 
 describe('Edit Plan Flow:', () => {
   it('updateAmount event fires from the edit view with the correct plan', async () => {
@@ -260,15 +264,7 @@ describe('Edit Plan Flow:', () => {
     expect(el.viewToDisplay).to.equal('editPlan');
     expect(el.querySelector('ia-mgc-edit-plan')).to.exist;
 
-    // Find "Back to account settings" button
-    const backButton = el.querySelector(
-      'ia-mgc-button#close-edit-plan',
-    ) as MGCButton;
-    expect(backButton).to.exist;
-
-    const innerButton = backButton.shadowRoot?.querySelector('button');
-    innerButton!.click();
-    await el.updateComplete;
+    await navigateBackToPlans(el);
 
     expect(el.viewToDisplay).to.equal('plans');
     expect(el.querySelector('ia-mgc-edit-plan')).to.not.exist;

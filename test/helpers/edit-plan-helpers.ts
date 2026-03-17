@@ -42,3 +42,14 @@ export async function navigateToEditView(
   innerButton!.click();
   await el.updateComplete;
 }
+
+export async function navigateBackToPlans(
+  el: MonthlyGivingCircle,
+): Promise<void> {
+  const backButton = el.querySelector(
+    'ia-mgc-button#close-edit-plan',
+  ) as MGCButton;
+  const innerButton = backButton.shadowRoot?.querySelector('button');
+  innerButton!.click();
+  await el.updateComplete;
+}
