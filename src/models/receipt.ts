@@ -19,13 +19,6 @@ export class Receipt {
     this.receipt = receipt;
   }
 
-  get amountFormatted(): string {
-    return formatCurrency(
-      this.receipt.total_amount,
-      this.receipt.currency ?? 'USD',
-    );
-  }
-
   get amount(): string {
     return formatCurrency(
       this.receipt.total_amount,

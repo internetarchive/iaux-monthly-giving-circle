@@ -141,9 +141,7 @@ export class IauxMgcReceipts extends LitElement {
                       <div class="donation-date">${donation.date}</div>
                     </td>
                     <td>
-                      <div class="donation-amount">
-                        ${donation.amountFormatted}
-                      </div>
+                      <div class="donation-amount">${donation.amount}</div>
                     </td>
                     <td>
                       <div class="request-receipt">

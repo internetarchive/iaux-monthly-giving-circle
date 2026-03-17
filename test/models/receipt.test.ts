@@ -48,18 +48,6 @@ describe('Receipt', () => {
     });
   });
 
-  describe('amountFormatted', () => {
-    it('returns currency-formatted string for USD', () => {
-      const r = makeReceipt({ currency: 'USD', total_amount: 10 });
-      expect(r.amountFormatted).to.equal('$10.00');
-    });
-
-    it('returns currency-formatted string for non-USD', () => {
-      const r = makeReceipt({ currency: 'EUR', total_amount: 25 });
-      expect(r.amountFormatted).to.equal('€25.00');
-    });
-  });
-
   describe('isTest', () => {
     it('returns the isTest value from the receipt', () => {
       const r = makeReceipt({ isTest: true });
