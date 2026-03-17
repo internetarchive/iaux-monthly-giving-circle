@@ -1,8 +1,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { html, fixture, expect } from '@open-wc/testing';
 
+import { DonationPaymentInfo } from '@internetarchive/donation-form-data-models';
 import '../../src/form-sections/amount';
 import type { MGCEditPlanAmount } from '../../src/form-sections/amount';
+import { formatCurrency } from '../../src/utils/currency-format';
 import { MonthlyPlan } from '../../src/models/plan';
 
 const plan = new MonthlyPlan({
@@ -40,6 +42,7 @@ describe('<ia-mgc-edit-plan-amount>', () => {
 
     const holder = el.shadowRoot?.querySelector('ia-mgc-form-section-info');
     expect(holder).to.exist;
+    expect(holder?.textContent).to.contain('USD');
     expect(holder?.textContent).to.contain('$5');
 
     const cta = holder?.shadowRoot?.querySelector('ia-mgc-button');
@@ -55,5 +58,61 @@ describe('<ia-mgc-edit-plan-amount>', () => {
 
     // form now displays
     expect(el.form.getAttribute('id')).to.equal('edit-plan-amount');
+  });
+
+  it('shows currency code in current donation amount when editing', async () => {
+    const el = await fixture<MGCEditPlanAmount>(
+      html`<ia-mgc-edit-plan-amount
+        .plan=${plan}
+        .currentlyEditing=${true}
+      ></ia-mgc-edit-plan-amount>`,
+    );
+    await el.updateComplete;
+
+    const form = el.shadowRoot?.querySelector('form');
+    const currentAmountText = form?.querySelector('p')?.textContent;
+    expect(currentAmountText).to.contain('USD');
+    expect(currentAmountText).to.contain('$5');
+  });
+
+  it('shows currency code before total amount when editing', async () => {
+    const el = await fixture<MGCEditPlanAmount>(
+      html`<ia-mgc-edit-plan-amount
+        .plan=${plan}
+        .currentlyEditing=${true}
+      ></ia-mgc-edit-plan-amount>`,
+    );
+    await el.updateComplete;
+
+    const form = el.shadowRoot?.querySelector('form');
+    const paragraphs = form?.querySelectorAll('p');
+    const totalText = Array.from(paragraphs ?? []).find(p =>
+      p.textContent?.includes('Total:'),
+    );
+    expect(totalText).to.exist;
+    expect(totalText?.textContent).to.contain('USD');
+  });
+
+  describe('coveredFeesText', () => {
+    it('returns generic text when newAmount is 0', async () => {
+      const el = await fixture<MGCEditPlanAmount>(
+        html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`,
+      );
+      el.newAmount = 0;
+      expect(el.coveredFeesText).to.equal("I'll generously cover the fees.");
+    });
+
+    it('returns text with calculated fee when newAmount has a value', async () => {
+      const el = await fixture<MGCEditPlanAmount>(
+        html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`,
+      );
+      el.newAmount = 10;
+      const expectedFee = formatCurrency(
+        DonationPaymentInfo.calculateFeeAmount(10),
+      );
+      expect(el.coveredFeesText).to.equal(
+        `I'll generously add ${expectedFee} to cover fees.`,
+      );
+    });
   });
 });

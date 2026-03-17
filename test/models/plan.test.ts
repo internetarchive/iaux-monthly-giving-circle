@@ -67,18 +67,6 @@ describe('MonthlyPlan', () => {
     });
   });
 
-  describe('currencySymbol', () => {
-    it('returns "$" for USD', () => {
-      const mp = new MonthlyPlan(makePlan({ currency: 'USD' }));
-      expect(mp.currencySymbol).to.equal('$');
-    });
-
-    it('returns empty string for non-USD', () => {
-      const mp = new MonthlyPlan(makePlan({ currency: 'EUR' }));
-      expect(mp.currencySymbol).to.equal('');
-    });
-  });
-
   describe('amount', () => {
     it('returns the plan amount as a number', () => {
       const mp = new MonthlyPlan(makePlan({ amount: 25 }));
@@ -87,14 +75,19 @@ describe('MonthlyPlan', () => {
   });
 
   describe('amountFormatted', () => {
-    it('returns amount fixed to 2 decimal places', () => {
+    it('returns currency-formatted amount for USD', () => {
       const mp = new MonthlyPlan(makePlan({ amount: 10 }));
-      expect(mp.amountFormatted).to.equal('10.00');
+      expect(mp.amountFormatted).to.equal('$10.00');
     });
 
     it('handles fractional amounts', () => {
       const mp = new MonthlyPlan(makePlan({ amount: 7.5 }));
-      expect(mp.amountFormatted).to.equal('7.50');
+      expect(mp.amountFormatted).to.equal('$7.50');
+    });
+
+    it('formats non-USD currency', () => {
+      const mp = new MonthlyPlan(makePlan({ amount: 25, currency: 'EUR' }));
+      expect(mp.amountFormatted).to.equal('€25.00');
     });
   });
 

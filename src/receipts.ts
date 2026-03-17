@@ -119,8 +119,8 @@ export class IauxMgcReceipts extends LitElement {
             <th class="action">Action</th>
           </tr>
           ${this.receipts.length
-            ? this.receipts.map((donation: Receipt) => {
-                const emailStatus = this.receiptDispatcher?.[donation.id];
+            ? this.receipts.map((receipt: Receipt) => {
+                const emailStatus = this.receiptDispatcher?.[receipt.id];
 
                 const emailUnavailable = emailStatus?.emailStatus === 'pending';
                 const emailStatusToDisplay =
@@ -134,16 +134,14 @@ export class IauxMgcReceipts extends LitElement {
                       >`;
                 return html`
                   <tr
-                    id=${`donation-${donation.id}`}
-                    class=${`${donation.isTest ? 'test' : ''}`}
+                    id=${`donation-${receipt.id}`}
+                    class=${`${receipt.isTest ? 'test' : ''}`}
                   >
                     <td>
-                      <div class="donation-date">${donation.date}</div>
+                      <div class="donation-date">${receipt.date}</div>
                     </td>
                     <td>
-                      <div class="donation-amount">
-                        ${donation.amountFormatted}
-                      </div>
+                      <div class="donation-amount">${receipt.amount}</div>
                     </td>
                     <td>
                       <div class="request-receipt">
@@ -162,17 +160,17 @@ export class IauxMgcReceipts extends LitElement {
                             }
 
                             if (emailUnavailable) return;
-                            this.emailReceipt(donation);
+                            this.emailReceipt(receipt);
                             if (this.receiptDispatcher) {
                               const statusMap = {
                                 ...this.receiptDispatcher,
                               } as receiptDispatcherMap;
-                              statusMap[donation.id].emailStatus = 'pending';
+                              statusMap[receipt.id].emailStatus = 'pending';
                               this.receiptDispatcher = statusMap;
                             }
                           }}
                         >
-                          ${this.ctaButtonText(donation, emailStatus)}
+                          ${this.ctaButtonText(receipt, emailStatus)}
                         </ia-mgc-button>
                         ${emailStatusToDisplay}
                       </div>

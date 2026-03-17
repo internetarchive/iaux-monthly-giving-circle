@@ -1,3 +1,5 @@
+import { formatCurrency } from '../utils/currency-format';
+
 export type AReceipt = {
   currency: string;
   net_amount: number;
@@ -17,17 +19,11 @@ export class Receipt {
     this.receipt = receipt;
   }
 
-  get amountFormatted(): string {
-    const value = this.receipt.total_amount.toFixed(2);
-    const currencyType = this.receipt.currency ?? 'CURR not found';
-    if (value) {
-      return `${currencyType} ${this.currencySymbol}${value}`;
-    }
-    return "no amount found, can't find total_amount or net_amount";
-  }
-
   get amount(): string {
-    return this.receipt.total_amount.toFixed(2);
+    return formatCurrency(
+      this.receipt.total_amount,
+      this.receipt.currency ?? 'USD',
+    );
   }
 
   get isTest(): boolean {
@@ -40,13 +36,5 @@ export class Receipt {
 
   get date(): string {
     return this.receipt.date ?? 'no date found';
-  }
-
-  get currencySymbol(): string {
-    if (this.receipt.currency === 'USD') {
-      return '$';
-    }
-
-    return '';
   }
 }

@@ -14,6 +14,7 @@ import {
 } from '@internetarchive/donation-form-data-models';
 
 import type { MonthlyPlan } from '../models/plan';
+import { formatCurrency, currencyToSymbol } from '../utils/currency-format';
 import '../presentational/donation-section-info';
 import '../presentational/mgc-button';
 import type { MGCButton } from '../presentational/mgc-button';
@@ -66,7 +67,9 @@ export class MGCEditPlanAmount extends LitElement {
                   this.currentlyEditing = true;
                   this.clearStatusMessaging();
                 }}
-                ><span>USD $${this.plan?.amountFormatted}</span>
+                ><span
+                  >${this.plan?.currency} ${this.plan?.amountFormatted}</span
+                >
               </ia-mgc-form-section-info>`
             : nothing}
           ${this.currentlyEditing ? this.editAmountForm : nothing}
@@ -250,7 +253,11 @@ export class MGCEditPlanAmount extends LitElement {
   }
 
   get coveredFeesText() {
-    return `I'll generously add $${this.donationPaymentInfo?.feeAmountCovered} to cover fees.`;
+    if (!this.newAmount) {
+      return "I'll generously cover the fees.";
+    }
+    const fee = DonationPaymentInfo.calculateFeeAmount(this.newAmount);
+    return `I'll generously add ${formatCurrency(fee)} to cover fees.`;
   }
 
   get editAmountForm(): TemplateResult {
@@ -260,9 +267,12 @@ export class MGCEditPlanAmount extends LitElement {
           id="edit-plan-amount"
           @submit=${(e: Event) => this.handleSubmit(e)}
         >
-          <p>Current donation amount: $${this.plan?.amountFormatted}</p>
+          <p>
+            Current donation amount: ${this.plan?.currency}
+            ${this.plan?.amountFormatted}
+          </p>
           <div>
-            $
+            ${currencyToSymbol[this.plan?.currency ?? 'USD']}
             <input
               min="1"
               max="9999"
@@ -294,7 +304,10 @@ export class MGCEditPlanAmount extends LitElement {
               />
               <label for="cover-fees">${this.coveredFeesText}</label>
             </div>
-            <p>Total: USD $${this.totalAmountWithFees()}</p>
+            <p>
+              Total: ${this.plan?.currency}
+              ${formatCurrency(this.totalAmountWithFees())}
+            </p>
             <div class="cta-container">
               <ia-mgc-button
                 class="ia-button secondary"

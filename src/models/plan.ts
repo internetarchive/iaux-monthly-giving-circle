@@ -1,4 +1,5 @@
 import type { PaymentMethodRequest } from './payment-method-request';
+import { formatCurrency } from '../utils/currency-format';
 
 export type BtData = {
   billingDayOfMonth: number;
@@ -54,16 +55,12 @@ export class MonthlyPlan {
     return this.plan.token;
   }
 
-  get currencySymbol(): string {
-    return this.currency === 'USD' ? '$' : '';
-  }
-
   get amount(): number {
     return this.plan.amount;
   }
 
   get amountFormatted(): string {
-    return this.plan.amount.toFixed(2);
+    return formatCurrency(this.plan.amount, this.currency);
   }
 
   get payment(): BtData | null {
