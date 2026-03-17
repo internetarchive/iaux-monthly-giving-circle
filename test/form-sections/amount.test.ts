@@ -1,10 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { html, fixture, expect } from '@open-wc/testing';
 
-import {
-  DonationPaymentInfo,
-  DonationType,
-} from '@internetarchive/donation-form-data-models';
+import { DonationPaymentInfo } from '@internetarchive/donation-form-data-models';
 import '../../src/form-sections/amount';
 import type { MGCEditPlanAmount } from '../../src/form-sections/amount';
 import { formatCurrency } from '../../src/utils/currency-format';
@@ -63,40 +60,25 @@ describe('<ia-mgc-edit-plan-amount>', () => {
   });
 
   describe('coveredFeesText', () => {
-    it('returns fallback text when donationPaymentInfo is undefined', async () => {
+    it('returns generic text when newAmount is 0', async () => {
       const el = await fixture<MGCEditPlanAmount>(
         html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`,
       );
-      el.donationPaymentInfo = undefined;
+      el.newAmount = 0;
       expect(el.coveredFeesText).to.equal("I'll generously cover the fees.");
     });
 
-    it('returns text with formatted fee amount when fees are covered', async () => {
+    it('returns text with calculated fee when newAmount has a value', async () => {
       const el = await fixture<MGCEditPlanAmount>(
         html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`,
       );
-      const paymentInfo = new DonationPaymentInfo({
-        donationType: DonationType.Monthly,
-        amount: 10,
-        coverFees: true,
-      });
-      el.donationPaymentInfo = paymentInfo;
-      const expectedFee = formatCurrency(paymentInfo.feeAmountCovered);
+      el.newAmount = 10;
+      const expectedFee = formatCurrency(
+        DonationPaymentInfo.calculateFeeAmount(10),
+      );
       expect(el.coveredFeesText).to.equal(
         `I'll generously add ${expectedFee} to cover fees.`,
       );
-    });
-
-    it('returns fallback text when fees are not covered', async () => {
-      const el = await fixture<MGCEditPlanAmount>(
-        html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`,
-      );
-      el.donationPaymentInfo = new DonationPaymentInfo({
-        donationType: DonationType.Monthly,
-        amount: 10,
-        coverFees: false,
-      });
-      expect(el.coveredFeesText).to.equal("I'll generously cover the fees.");
     });
   });
 });

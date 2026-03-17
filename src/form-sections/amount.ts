@@ -251,11 +251,11 @@ export class MGCEditPlanAmount extends LitElement {
   }
 
   get coveredFeesText() {
-    const feeCovered = this.donationPaymentInfo?.feeAmountCovered;
-    if (!feeCovered) {
+    if (!this.newAmount) {
       return "I'll generously cover the fees.";
     }
-    return `I'll generously add ${formatCurrency(feeCovered)} to cover fees.`;
+    const fee = DonationPaymentInfo.calculateFeeAmount(this.newAmount);
+    return `I'll generously add ${formatCurrency(fee)} to cover fees.`;
   }
 
   get editAmountForm(): TemplateResult {
