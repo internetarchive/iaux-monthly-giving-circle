@@ -75,6 +75,24 @@ describe('<ia-mgc-edit-plan-amount>', () => {
     expect(currentAmountText).to.contain('$5');
   });
 
+  it('shows currency code before total amount when editing', async () => {
+    const el = await fixture<MGCEditPlanAmount>(
+      html`<ia-mgc-edit-plan-amount
+        .plan=${plan}
+        .currentlyEditing=${true}
+      ></ia-mgc-edit-plan-amount>`,
+    );
+    await el.updateComplete;
+
+    const form = el.shadowRoot?.querySelector('form');
+    const paragraphs = form?.querySelectorAll('p');
+    const totalText = Array.from(paragraphs ?? []).find(p =>
+      p.textContent?.includes('Total:'),
+    );
+    expect(totalText).to.exist;
+    expect(totalText?.textContent).to.contain('USD');
+  });
+
   describe('coveredFeesText', () => {
     it('returns generic text when newAmount is 0', async () => {
       const el = await fixture<MGCEditPlanAmount>(

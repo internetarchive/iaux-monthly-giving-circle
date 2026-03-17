@@ -304,7 +304,10 @@ export class MGCEditPlanAmount extends LitElement {
               />
               <label for="cover-fees">${this.coveredFeesText}</label>
             </div>
-            <p>Total: ${formatCurrency(this.totalAmountWithFees())}</p>
+            <p>
+              Total: ${this.plan?.currency}
+              ${formatCurrency(this.totalAmountWithFees())}
+            </p>
             <div class="cta-container">
               <ia-mgc-button
                 class="ia-button secondary"
