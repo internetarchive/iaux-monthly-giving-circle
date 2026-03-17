@@ -2,6 +2,10 @@ const currencyToLocale: Record<string, string> = {
   USD: 'en-US',
 };
 
+export const currencyToSymbol: Record<string, string> = {
+  USD: '$',
+};
+
 export function formatCurrency(
   amount: number,
   currency: string = 'USD',

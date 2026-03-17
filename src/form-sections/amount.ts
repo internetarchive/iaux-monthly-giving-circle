@@ -14,7 +14,7 @@ import {
 } from '@internetarchive/donation-form-data-models';
 
 import type { MonthlyPlan } from '../models/plan';
-import { formatCurrency } from '../utils/currency-format';
+import { formatCurrency, currencyToSymbol } from '../utils/currency-format';
 import '../presentational/donation-section-info';
 import '../presentational/mgc-button';
 import type { MGCButton } from '../presentational/mgc-button';
@@ -267,7 +267,7 @@ export class MGCEditPlanAmount extends LitElement {
         >
           <p>Current donation amount: ${this.plan?.amountFormatted}</p>
           <div>
-            $
+            ${currencyToSymbol[this.plan?.currency ?? 'USD']}
             <input
               min="1"
               max="9999"

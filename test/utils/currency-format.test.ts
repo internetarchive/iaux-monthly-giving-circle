@@ -1,5 +1,8 @@
 import { expect } from '@open-wc/testing';
-import { formatCurrency } from '../../src/utils/currency-format';
+import {
+  formatCurrency,
+  currencyToSymbol,
+} from '../../src/utils/currency-format';
 
 describe('formatCurrency', () => {
   it('formats USD by default', () => {
@@ -41,5 +44,11 @@ describe('formatCurrency', () => {
   it('rounds to 2 decimal places', () => {
     expect(formatCurrency(10.999)).to.equal('$11.00');
     expect(formatCurrency(10.001)).to.equal('$10.00');
+  });
+});
+
+describe('currencyToSymbol', () => {
+  it('maps USD to $', () => {
+    expect(currencyToSymbol.USD).to.equal('$');
   });
 });
