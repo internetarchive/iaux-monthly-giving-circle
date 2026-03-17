@@ -2371,11 +2371,11 @@ import{LazyLoaderService as ro}from"https://esm.archive.org/@internetarchive/laz
           ${this.currentlyEditing?this.editAmountForm:C}
         </donation-form-section>
       </section>
-    `}async amountUpdated(e){if(this.clearInputField(),this.updateStatus=e,this.updateMessage=e==="success"?"Amount updated":"Failed to update date, please try again",e==="success"){this.closeForm(),await this.updateComplete,this.updateStatus=e,this.updateMessage="Amount updated";return}this.form.querySelector("ia-mgc-button#update-amount").isDisabled=!1,this.captureAmountChanges(),await this.updateComplete}requestAmountUpdate(e){var t,n,o,a,r;e.preventDefault();const d=this.form.querySelector('input[name="amount"]');this.newAmount=Number(d.value),this.captureAmountChanges(this.newAmount),console.log("<plan-amount> - update amount",{newValue:this.newAmount,oldValue:(t=this.plan)===null||t===void 0?void 0:t.plan.amount,display:(n=this.donationPaymentInfo)===null||n===void 0?void 0:n.amount});const l=Number(T.calculateTotal(Number((o=this.donationPaymentInfo)===null||o===void 0?void 0:o.amount),this.coverFees));this.dispatchEvent(new CustomEvent("updateAmount",{detail:{plan:this.plan,amount:l,baseAmount:(a=this.donationPaymentInfo)===null||a===void 0?void 0:a.amount,coverFees:this.coverFees,feeCovered:(r=this.donationPaymentInfo)===null||r===void 0?void 0:r.feeAmountCovered}}))}captureAmountChanges(e){if(!this.donationPaymentInfo&&this.plan){this.donationPaymentInfo=new T({donationType:$.Monthly,amount:0,coverFees:!0});return}let t;if(e)t=new T({donationType:$.Monthly,amount:e,coverFees:!0});else{const n=this.donationPaymentInfo?this.donationPaymentInfo.amount:this.plan.amount;t=new T({donationType:$.Monthly,amount:n,coverFees:!0})}this.donationPaymentInfo=t}closeForm(){this.clearInputField(),this.clearStatusMessaging(),this.currentlyEditing=!1,this.coverFees=!1,this.errorMessage=""}clearInputField(){const e=this.form.querySelector('input[name="amount"]');e.value="",this.newAmount=0,this.donationPaymentInfo=void 0}handleSubmit(e,t){var n;e.preventDefault(),this.clearStatusMessaging();const o=t??this.form.querySelector("#update-amount");if(o&&this.updateButtonState(o),!this.newAmount){this.errorMessage="Please enter a new amount",o&&(o.isDisabled=!1);return}const a=this.form.querySelector('input[name="amount"]'),r=(n=Number(a.value))!==null&&n!==void 0?n:0,d=r<1,l=r>=9999;if(d&&(this.errorMessage="Please enter a valid amount"),l&&(this.errorMessage="Amount must be less than $9,999. Would you like to donate more? Please contact us at donations@archive.org"),l||d){o&&this.updateButtonState(o);return}this.requestAmountUpdate(e)}async updateButtonState(e){e.isDisabled=!0,await e?.updateComplete}async clearStatusMessaging(){this.errorMessage="",this.updateMessage="",this.updateStatus="",await this.updateComplete}totalAmountWithFees(){return this.newAmount===0?0:T.calculateTotal(this.newAmount,this.coverFees)}get coveredFeesText(){if(!this.newAmount)return"I'll generously cover the fees.";const e=T.calculateFeeAmount(this.newAmount);return`I'll generously add ${mt(e)} to cover fees.`}get editAmountForm(){var e,t,n,o;return p`
+    `}async amountUpdated(e){if(this.clearInputField(),this.updateStatus=e,this.updateMessage=e==="success"?"Amount updated":"Failed to update date, please try again",e==="success"){this.closeForm(),await this.updateComplete,this.updateStatus=e,this.updateMessage="Amount updated";return}this.form.querySelector("ia-mgc-button#update-amount").isDisabled=!1,this.captureAmountChanges(),await this.updateComplete}requestAmountUpdate(e){var t,n,o,a,r;e.preventDefault();const d=this.form.querySelector('input[name="amount"]');this.newAmount=Number(d.value),this.captureAmountChanges(this.newAmount),console.log("<plan-amount> - update amount",{newValue:this.newAmount,oldValue:(t=this.plan)===null||t===void 0?void 0:t.plan.amount,display:(n=this.donationPaymentInfo)===null||n===void 0?void 0:n.amount});const l=Number(T.calculateTotal(Number((o=this.donationPaymentInfo)===null||o===void 0?void 0:o.amount),this.coverFees));this.dispatchEvent(new CustomEvent("updateAmount",{detail:{plan:this.plan,amount:l,baseAmount:(a=this.donationPaymentInfo)===null||a===void 0?void 0:a.amount,coverFees:this.coverFees,feeCovered:(r=this.donationPaymentInfo)===null||r===void 0?void 0:r.feeAmountCovered}}))}captureAmountChanges(e){if(!this.donationPaymentInfo&&this.plan){this.donationPaymentInfo=new T({donationType:$.Monthly,amount:0,coverFees:!0});return}let t;if(e)t=new T({donationType:$.Monthly,amount:e,coverFees:!0});else{const n=this.donationPaymentInfo?this.donationPaymentInfo.amount:this.plan.amount;t=new T({donationType:$.Monthly,amount:n,coverFees:!0})}this.donationPaymentInfo=t}closeForm(){this.clearInputField(),this.clearStatusMessaging(),this.currentlyEditing=!1,this.coverFees=!1,this.errorMessage=""}clearInputField(){const e=this.form.querySelector('input[name="amount"]');e.value="",this.newAmount=0,this.donationPaymentInfo=void 0}handleSubmit(e,t){var n;e.preventDefault(),this.clearStatusMessaging();const o=t??this.form.querySelector("#update-amount");if(o&&this.updateButtonState(o),!this.newAmount){this.errorMessage="Please enter a new amount",o&&(o.isDisabled=!1);return}const a=this.form.querySelector('input[name="amount"]'),r=(n=Number(a.value))!==null&&n!==void 0?n:0,d=r<1,l=r>=9999;if(d&&(this.errorMessage="Please enter a valid amount"),l&&(this.errorMessage="Amount must be less than $9,999. Would you like to donate more? Please contact us at donations@archive.org"),l||d){o&&this.updateButtonState(o);return}this.requestAmountUpdate(e)}async updateButtonState(e){e.isDisabled=!0,await e?.updateComplete}async clearStatusMessaging(){this.errorMessage="",this.updateMessage="",this.updateStatus="",await this.updateComplete}totalAmountWithFees(){return this.newAmount===0?0:T.calculateTotal(this.newAmount,this.coverFees)}get coveredFeesText(){if(!this.newAmount)return"I'll generously cover the fees.";const e=T.calculateFeeAmount(this.newAmount);return`I'll generously add ${mt(e)} to cover fees.`}get editAmountForm(){var e,t,n,o,a;return p`
       <section>
         <form
           id="edit-plan-amount"
-          @submit=${a=>this.handleSubmit(a)}
+          @submit=${r=>this.handleSubmit(r)}
         >
           <p>
             Current donation amount: ${(e=this.plan)===null||e===void 0?void 0:e.currency}
@@ -2391,7 +2391,7 @@ import{LazyLoaderService as ro}from"https://esm.archive.org/@internetarchive/laz
               name="amount"
               ?required=${!0}
               @focus=${()=>this.clearStatusMessaging()}
-              @input=${a=>{const r=Number(a.target.value);this.captureAmountChanges(r),this.newAmount=r}}
+              @input=${r=>{const d=Number(r.target.value);this.captureAmountChanges(d),this.newAmount=d}}
             />
             / month
           </div>
@@ -2401,15 +2401,18 @@ import{LazyLoaderService as ro}from"https://esm.archive.org/@internetarchive/laz
                 type="checkbox"
                 id="cover-fees"
                 tabindex="0"
-                @change=${a=>{const d=a.target.checked;this.coverFees=d,this.captureAmountChanges()}}
+                @change=${r=>{const l=r.target.checked;this.coverFees=l,this.captureAmountChanges()}}
               />
               <label for="cover-fees">${this.coveredFeesText}</label>
             </div>
-            <p>Total: ${mt(this.totalAmountWithFees())}</p>
+            <p>
+              Total: ${(a=this.plan)===null||a===void 0?void 0:a.currency}
+              ${mt(this.totalAmountWithFees())}
+            </p>
             <div class="cta-container">
               <ia-mgc-button
                 class="ia-button secondary"
-                .clickHandler=${a=>{a.preventDefault(),this.closeForm()}}
+                .clickHandler=${r=>{r.preventDefault(),this.closeForm()}}
               >
                 Cancel
               </ia-mgc-button>
@@ -2418,7 +2421,7 @@ import{LazyLoaderService as ro}from"https://esm.archive.org/@internetarchive/laz
                 class="ia-button primary"
                 type="submit"
                 ?isDisabled=${!this.newAmount}
-                .clickHandler=${(a,r)=>this.handleSubmit(a,r)}
+                .clickHandler=${(r,d)=>this.handleSubmit(r,d)}
               >
                 Update
               </ia-mgc-button>
