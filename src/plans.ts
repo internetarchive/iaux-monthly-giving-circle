@@ -33,7 +33,7 @@ export class IauxMgcPlans extends LitElement {
                 <div class="info">
                   <div class="amount">
                     <h3>Amount</h3>
-                    <p>${plan.amountFormatted}/month</p>
+                    <p>${plan.currency} ${plan.amountFormatted}/month</p>
                     ${plan.isTest
                       ? html`<p class="is-test">(Test payment)</p>`
                       : nothing}
