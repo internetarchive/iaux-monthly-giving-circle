@@ -88,7 +88,7 @@ export class MonthlyPlan {
   private formatDateUTC(dateStr: string): string {
     const date = new Date(dateStr);
     if (Number.isNaN(date.getTime())) return 'Invalid date';
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

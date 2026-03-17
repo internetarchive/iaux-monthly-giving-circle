@@ -136,13 +136,7 @@ describe('MonthlyPlan', () => {
         },
       });
       const mp = new MonthlyPlan(makePlan({ btdata }));
-      const expected = new Intl.DateTimeFormat(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'UTC',
-      }).format(new Date('2024-09-01 00:00:00.000000'));
-      expect(mp.nextBillingDateLocale).to.equal(expected);
+      expect(mp.nextBillingDateLocale).to.equal('Sep 1, 2024');
     });
 
     it('returns "Invalid date" for an invalid date string', () => {
@@ -193,13 +187,7 @@ describe('MonthlyPlan', () => {
         },
       });
       const mp = new MonthlyPlan(makePlan({ btdata }));
-      const expected = new Intl.DateTimeFormat(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'UTC',
-      }).format(new Date('2024-07-01 00:00:00.000000'));
-      expect(mp.lastBillingDateLocale).to.equal(expected);
+      expect(mp.lastBillingDateLocale).to.equal('Jul 1, 2024');
     });
 
     it('returns "Invalid date" for an invalid date string', () => {
