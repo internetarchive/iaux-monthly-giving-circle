@@ -1,8 +1,13 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { html, fixture, expect } from '@open-wc/testing';
 
+import {
+  DonationPaymentInfo,
+  DonationType,
+} from '@internetarchive/donation-form-data-models';
 import '../../src/form-sections/amount';
 import type { MGCEditPlanAmount } from '../../src/form-sections/amount';
+import { formatCurrency } from '../../src/utils/currency-format';
 import { MonthlyPlan } from '../../src/models/plan';
 
 const plan = new MonthlyPlan({
@@ -55,5 +60,43 @@ describe('<ia-mgc-edit-plan-amount>', () => {
 
     // form now displays
     expect(el.form.getAttribute('id')).to.equal('edit-plan-amount');
+  });
+
+  describe('coveredFeesText', () => {
+    it('returns fallback text when donationPaymentInfo is undefined', async () => {
+      const el = await fixture<MGCEditPlanAmount>(
+        html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`,
+      );
+      el.donationPaymentInfo = undefined;
+      expect(el.coveredFeesText).to.equal("I'll generously cover the fees.");
+    });
+
+    it('returns text with formatted fee amount when fees are covered', async () => {
+      const el = await fixture<MGCEditPlanAmount>(
+        html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`,
+      );
+      const paymentInfo = new DonationPaymentInfo({
+        donationType: DonationType.Monthly,
+        amount: 10,
+        coverFees: true,
+      });
+      el.donationPaymentInfo = paymentInfo;
+      const expectedFee = formatCurrency(paymentInfo.feeAmountCovered);
+      expect(el.coveredFeesText).to.equal(
+        `I'll generously add ${expectedFee} to cover fees.`,
+      );
+    });
+
+    it('returns fallback text when fees are not covered', async () => {
+      const el = await fixture<MGCEditPlanAmount>(
+        html`<ia-mgc-edit-plan-amount .plan=${plan}></ia-mgc-edit-plan-amount>`,
+      );
+      el.donationPaymentInfo = new DonationPaymentInfo({
+        donationType: DonationType.Monthly,
+        amount: 10,
+        coverFees: false,
+      });
+      expect(el.coveredFeesText).to.equal("I'll generously cover the fees.");
+    });
   });
 });
