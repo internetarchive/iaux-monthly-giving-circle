@@ -55,10 +55,6 @@ export class MonthlyPlan {
     return this.plan.token;
   }
 
-  get currencySymbol(): string {
-    return this.currency === 'USD' ? '$' : '';
-  }
-
   get amount(): number {
     return this.plan.amount;
   }

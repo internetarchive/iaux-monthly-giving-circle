@@ -44,12 +44,4 @@ export class Receipt {
   get date(): string {
     return this.receipt.date ?? 'no date found';
   }
-
-  get currencySymbol(): string {
-    if (this.receipt.currency === 'USD') {
-      return '$';
-    }
-
-    return '';
-  }
 }

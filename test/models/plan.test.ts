@@ -67,18 +67,6 @@ describe('MonthlyPlan', () => {
     });
   });
 
-  describe('currencySymbol', () => {
-    it('returns "$" for USD', () => {
-      const mp = new MonthlyPlan(makePlan({ currency: 'USD' }));
-      expect(mp.currencySymbol).to.equal('$');
-    });
-
-    it('returns empty string for non-USD', () => {
-      const mp = new MonthlyPlan(makePlan({ currency: 'EUR' }));
-      expect(mp.currencySymbol).to.equal('');
-    });
-  });
-
   describe('amount', () => {
     it('returns the plan amount as a number', () => {
       const mp = new MonthlyPlan(makePlan({ amount: 25 }));

@@ -98,16 +98,4 @@ describe('Receipt', () => {
       expect(r.date).to.equal('no date found');
     });
   });
-
-  describe('currencySymbol', () => {
-    it('returns "$" for USD', () => {
-      const r = makeReceipt({ currency: 'USD' });
-      expect(r.currencySymbol).to.equal('$');
-    });
-
-    it('returns empty string for non-USD currencies', () => {
-      const r = makeReceipt({ currency: 'EUR' });
-      expect(r.currencySymbol).to.equal('');
-    });
-  });
 });
