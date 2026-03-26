@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
   LitElement,
   html,
@@ -307,14 +308,18 @@ export class MGCBraintreeManager extends LitElement {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     dataSource.delegate = {
-      async payPalPaymentStarted() {},
+      async payPalPaymentStarted() {
+        console.log('PayPal payment started');
+      },
       async payPalPaymentAuthorized(_ds: any, payload: any) {
         self.handlePayPalAuthorized(payload);
       },
       async payPalPaymentConfirmed(_ds: any, payload: any) {
         self.handlePayPalAuthorized(payload);
       },
-      async payPalPaymentCancelled() {},
+      async payPalPaymentCancelled() {
+        console.log('PayPal payment cancelled');
+      },
       async payPalPaymentError(_ds: any, error: unknown) {
         console.error('PayPal vault error:', error);
         self.dispatchEvent(

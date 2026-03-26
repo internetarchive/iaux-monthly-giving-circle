@@ -1,6 +1,7 @@
+import { PaymentProvider } from '@internetarchive/donation-form-data-models';
+
 import type { PaymentMethodRequest } from './payment-method-request';
 import { formatCurrency } from '../utils/currency-format';
-import { PaymentProvider } from '@internetarchive/donation-form-data-models';
 
 export type BtData = {
   billingDayOfMonth: number;
