@@ -462,6 +462,37 @@ describe('MonthlyPlan', () => {
       expect(mp.plan.btdata.expirationYear).to.be.null;
     });
 
+    it('handles Google Pay details: sets googlePayEmail, clears card fields, updates paymentMethodType', () => {
+      const btdata = makeBtData({
+        paymentMethodType: 'creditCard',
+        last4: '1234',
+        cardType: 'Visa',
+        expirationMonth: '12',
+        expirationYear: '2025',
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+
+      const request = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'Google Pay - gpay@example.com',
+          nonce: 'nonce_gp',
+          type: 'GooglePayCard',
+          details: { email: 'gpay@example.com' },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.GooglePay,
+      });
+
+      mp.setNewPaymentMethod(request);
+
+      expect(mp.plan.btdata.googlePayEmail).to.equal('gpay@example.com');
+      expect(mp.plan.btdata.paymentMethodType).to.equal('GooglePay');
+      expect(mp.plan.btdata.last4).to.be.null;
+      expect(mp.plan.btdata.cardType).to.be.null;
+      expect(mp.plan.btdata.expirationMonth).to.be.null;
+      expect(mp.plan.btdata.expirationYear).to.be.null;
+    });
+
     it('handles Venmo details with venmoUsername on original btdata', () => {
       const btdata = makeBtData({
         paymentMethodType: 'Venmo',
