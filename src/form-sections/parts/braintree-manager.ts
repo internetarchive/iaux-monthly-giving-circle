@@ -65,6 +65,8 @@ export class MGCBraintreeManager extends LitElement {
 
   @property({ type: Boolean }) displayGooglePay: boolean = false;
 
+  @property({ type: Boolean }) displayApplePay: boolean = false;
+
   get braintreeInputs(): {
     errorMessage: HTMLDivElement | null;
     number: HTMLDivElement | null;
@@ -252,6 +254,14 @@ export class MGCBraintreeManager extends LitElement {
             @click=${this.startGooglePayPayment}
           >
             Pay with Google Pay
+          </button>`
+        : nothing}
+      ${this.displayApplePay
+        ? html`<button
+            id="ia-mgc-apple-pay-button"
+            @click=${this.startApplePayPayment}
+          >
+            Pay with Apple Pay
           </button>`
         : nothing}
     `;
@@ -444,6 +454,82 @@ export class MGCBraintreeManager extends LitElement {
         );
       }
     }
+  }
+
+  private async startApplePayPayment(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.applePayHandler.get();
+    if (!handler) return;
+
+    const applePayInstance = await handler.instance.get();
+    if (!applePayInstance) return;
+
+    const paymentRequest = applePayInstance.createPaymentRequest({
+      total: {
+        label: 'Internet Archive',
+        amount: `${this.plan?.amount ?? 0}`,
+      },
+      requiredShippingContactFields: ['name', 'email'],
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const session = new (window as any).ApplePaySession(3, paymentRequest);
+
+    session.onvalidatemerchant = async (event: any) => {
+      try {
+        const validationData = await applePayInstance.performValidation({
+          validationURL: event.validationURL,
+          displayName: 'Internet Archive',
+        });
+        session.completeMerchantValidation(validationData);
+      } catch (err) {
+        console.error('Apple Pay merchant validation failed:', err);
+        session.abort();
+        this.dispatchEvent(
+          new CustomEvent('ApplePayError', { detail: { error: err } }),
+        );
+      }
+    };
+
+    session.onpaymentauthorized = async (event: any) => {
+      try {
+        const payload = await applePayInstance.tokenize({
+          token: event.payment.token,
+        });
+        const email = event.payment.shippingContact?.emailAddress ?? '';
+        session.completePayment(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window as any).ApplePaySession.STATUS_SUCCESS,
+        );
+        this.dispatchEvent(
+          new CustomEvent('ApplePayAuthorized', {
+            detail: {
+              paymentMethodInfo: {
+                description: `Apple Pay - ${email}`,
+                nonce: payload.nonce,
+                type: 'ApplePayCard',
+                details: { email },
+              },
+            },
+          }),
+        );
+      } catch (err) {
+        console.error('Apple Pay tokenization failed:', err);
+        session.completePayment(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window as any).ApplePaySession.STATUS_FAILURE,
+        );
+        this.dispatchEvent(
+          new CustomEvent('ApplePayError', { detail: { error: err } }),
+        );
+      }
+    };
+
+    session.oncancel = () => {
+      console.log('Apple Pay payment cancelled');
+    };
+
+    session.begin();
   }
 
   private async setupBraintreeManager(): Promise<void> {

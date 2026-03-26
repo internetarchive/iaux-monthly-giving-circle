@@ -284,6 +284,89 @@ describe('Payment method coordination:', () => {
     );
   });
 
+  it('selecting ApplePay sets selectedPaymentProvider to PaymentProvider.ApplePay', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    await paymentMethodEl.updateComplete;
+
+    paymentMethodEl
+      .querySelector('payment-selector')!
+      .dispatchEvent(new Event('applePaySelected', { bubbles: true }));
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.selectedPaymentProvider).to.equal(
+      PaymentProvider.ApplePay,
+    );
+  });
+
+  it('ApplePayAuthorized on braintree manager dispatches UpdatePaymentMethod with ApplePay provider', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    paymentMethodEl.selectedPaymentProvider = PaymentProvider.ApplePay;
+    await paymentMethodEl.updateComplete;
+
+    let receivedEvent: CustomEvent | null = null;
+    el.addEventListener('UpdatePaymentMethod', (e: Event) => {
+      receivedEvent = e as CustomEvent;
+    });
+
+    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
+      new CustomEvent('ApplePayAuthorized', {
+        bubbles: true,
+        detail: {
+          paymentMethodInfo: {
+            description: 'Apple Pay - applepay@example.com',
+            nonce: 'nonce-ap-test',
+            type: 'ApplePayCard',
+            details: { email: 'applepay@example.com' },
+          },
+        },
+      }),
+    );
+    await el.updateComplete;
+
+    expect(receivedEvent).to.not.be.null;
+    const { newPaymentMethodRequest } = (
+      receivedEvent as unknown as CustomEvent
+    ).detail;
+    expect(newPaymentMethodRequest.paymentProvider).to.equal(
+      PaymentProvider.ApplePay,
+    );
+    expect(newPaymentMethodRequest.paymentMethodInfo.details.email).to.equal(
+      'applepay@example.com',
+    );
+  });
+
   it('updateReceived with paymentMethodUpdate success closes payment method form', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(

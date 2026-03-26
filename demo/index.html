@@ -429,7 +429,8 @@
       const isPayPal = newPaymentMethodRequest?.paymentProvider === 'PayPal';
       const isVenmo = newPaymentMethodRequest?.paymentProvider === 'Venmo';
       const isGooglePay = newPaymentMethodRequest?.paymentProvider === 'GooglePay';
-      const heads = (isPayPal || isVenmo || isGooglePay) ? true : flipCoin() === 1;
+      const isApplePay = newPaymentMethodRequest?.paymentProvider === 'ApplePay';
+      const heads = (isPayPal || isVenmo || isGooglePay || isApplePay) ? true : flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 4000;
 
@@ -441,6 +442,7 @@
       if (isPayPal) methodLabel = `PayPal (${paypalEmail}, nonce: ${nonce})`;
       if (isVenmo) methodLabel = `Venmo (${venmoUsername}, nonce: ${nonce})`;
       if (isGooglePay) methodLabel = `Google Pay (${googlePayEmail}, nonce: ${nonce})`;
+      if (isApplePay) methodLabel = `Apple Pay (${newPaymentMethodRequest?.paymentMethodInfo?.details?.email}, nonce: ${nonce})`;
       uxMessageInfoArea.innerText = `Updating ${methodLabel} for plan: ${plan ? plan.id : 'no plan'} -- Update will return ${successOrFail} in ${returnTiming} ms`;
       const message = successOrFail === 'success' ? 'Payment method updated' : 'Payment method failed to update';
 
