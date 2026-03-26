@@ -63,6 +63,8 @@ export class MGCBraintreeManager extends LitElement {
 
   @property({ type: Boolean }) displayVenmo: boolean = false;
 
+  @property({ type: Boolean }) displayGooglePay: boolean = false;
+
   get braintreeInputs(): {
     errorMessage: HTMLDivElement | null;
     number: HTMLDivElement | null;
@@ -244,6 +246,14 @@ export class MGCBraintreeManager extends LitElement {
             Pay with Venmo
           </button>`
         : nothing}
+      ${this.displayGooglePay
+        ? html`<button
+            id="ia-mgc-google-pay-button"
+            @click=${this.startGooglePayPayment}
+          >
+            Pay with Google Pay
+          </button>`
+        : nothing}
     `;
   }
 
@@ -387,6 +397,50 @@ export class MGCBraintreeManager extends LitElement {
         console.error('Venmo payment error:', e);
         this.dispatchEvent(
           new CustomEvent('VenmoError', { detail: { error: e } }),
+        );
+      }
+    }
+  }
+
+  private async startGooglePayPayment(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.googlePayHandler.get();
+    if (!handler) return;
+
+    try {
+      const instance = await handler.instance.get();
+      const paymentDataRequest = await instance.createPaymentDataRequest({
+        emailRequired: true,
+        transactionInfo: {
+          currencyCode: this.plan?.currency ?? 'USD',
+          totalPriceStatus: 'FINAL',
+          totalPrice: `${this.plan?.amount ?? 0}`,
+        },
+      });
+
+      const paymentData =
+        await handler.paymentsClient.loadPaymentData(paymentDataRequest);
+      const result = await instance.parseResponse(paymentData);
+
+      this.dispatchEvent(
+        new CustomEvent('GooglePayAuthorized', {
+          detail: {
+            paymentMethodInfo: {
+              description: `Google Pay - ${paymentData.email}`,
+              nonce: result.nonce,
+              type: 'GooglePayCard',
+              details: { email: paymentData.email },
+            },
+          },
+        }),
+      );
+    } catch (e: any) {
+      if (e?.statusCode === 'CANCELED') {
+        console.log('Google Pay payment cancelled');
+      } else {
+        console.error('Google Pay payment error:', e);
+        this.dispatchEvent(
+          new CustomEvent('GooglePayError', { detail: { error: e } }),
         );
       }
     }
