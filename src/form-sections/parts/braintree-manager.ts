@@ -140,7 +140,9 @@ export class MGCBraintreeManager extends LitElement {
       this.displayPayPal &&
       !this.paypalButtonRendered
     ) {
-      this.renderPayPalVaultButton();
+      this.renderPayPalVaultButton().catch(e =>
+        console.error('PayPal button setup failed:', e),
+      );
     }
   }
 
