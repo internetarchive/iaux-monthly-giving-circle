@@ -429,33 +429,37 @@ describe('MonthlyPlan', () => {
       expect(mp.plan.btdata.last4).to.equal('3333');
     });
 
-    it('handles PayPal details with paypalEmail on original btdata', () => {
+    it('handles PayPal details: sets paypalEmail, clears card fields, updates paymentMethodType', () => {
       const btdata = makeBtData({
-        paymentMethodType: 'PayPal',
-        paypalEmail: 'donor@example.com',
-        last4: null,
-        cardType: null,
+        paymentMethodType: 'creditCard',
+        last4: '1234',
+        cardType: 'Visa',
+        expirationMonth: '12',
+        expirationYear: '2025',
       });
       const mp = new MonthlyPlan(makePlan({ btdata }));
 
       const request = new PaymentMethodRequest({
         paymentMethodInfo: {
-          description: 'New PayPal',
+          description: 'PayPal - new-donor@example.com',
           nonce: 'nonce_pp',
-          type: 'PayPal',
+          type: 'PayPalAccount',
           details: {
-            description: 'new-donor@example.com',
+            email: 'new-donor@example.com',
           },
         },
         donorContactInfo: {},
-        paymentProvider: PaymentProvider.CreditCard,
+        paymentProvider: PaymentProvider.PayPal,
       });
 
       mp.setNewPaymentMethod(request);
 
-      // paypalEmail from original btdata is preserved via spread
-      expect(mp.plan.btdata.paypalEmail).to.equal('donor@example.com');
-      expect(mp.plan.btdata.last4).to.equal('unknown');
+      expect(mp.plan.btdata.paypalEmail).to.equal('new-donor@example.com');
+      expect(mp.plan.btdata.paymentMethodType).to.equal('PayPal');
+      expect(mp.plan.btdata.last4).to.be.null;
+      expect(mp.plan.btdata.cardType).to.be.null;
+      expect(mp.plan.btdata.expirationMonth).to.be.null;
+      expect(mp.plan.btdata.expirationYear).to.be.null;
     });
 
     it('handles Venmo details with venmoUsername on original btdata', () => {

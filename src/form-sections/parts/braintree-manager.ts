@@ -1,4 +1,11 @@
-import { LitElement, html, css, CSSResult, PropertyValueMap } from 'lit';
+import {
+  LitElement,
+  html,
+  css,
+  nothing,
+  CSSResult,
+  PropertyValueMap,
+} from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import {
@@ -10,6 +17,10 @@ import {
   BraintreeManagerInterface,
   HostingEnvironment,
 } from '@internetarchive/donation-form';
+import {
+  DonationPaymentInfo,
+  DonationType,
+} from '@internetarchive/donation-form-data-models';
 import type { BraintreeEndpointManagerInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/braintree-interfaces.js';
 import type { PaymentClientsInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-clients.js';
 
@@ -44,6 +55,10 @@ export class MGCBraintreeManager extends LitElement {
   @property({ type: Object }) braintreeManager?: BraintreeManagerInterface;
 
   @state() private elementConnected: boolean = false;
+
+  @property({ type: Boolean }) displayPayPal: boolean = false;
+
+  @state() private paypalButtonRendered: boolean = false;
 
   get braintreeInputs(): {
     errorMessage: HTMLDivElement | null;
@@ -114,6 +129,18 @@ export class MGCBraintreeManager extends LitElement {
       this.displayCreditCard
     ) {
       this.setupCreditCardHandler();
+    }
+
+    if (changed.has('displayPayPal') && !this.displayPayPal) {
+      this.paypalButtonRendered = false;
+    }
+    if (
+      this.braintreeManager &&
+      changed.has('displayPayPal') &&
+      this.displayPayPal &&
+      !this.paypalButtonRendered
+    ) {
+      this.renderPayPalVaultButton();
     }
   }
 
@@ -199,7 +226,12 @@ export class MGCBraintreeManager extends LitElement {
   }
 
   render() {
-    return html` <div>${this.creditCardTemplate}</div> `;
+    return html`
+      <div>${this.creditCardTemplate}</div>
+      ${this.displayPayPal
+        ? html`<div id="ia-mgc-paypal-button-container"></div>`
+        : nothing}
+    `;
   }
 
   lightDomCSS(): CSSResult {
@@ -247,6 +279,66 @@ export class MGCBraintreeManager extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  async renderPayPalVaultButton(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.paypalHandler.get();
+    if (!handler) return;
+
+    const donationInfo = new DonationPaymentInfo({
+      donationType: DonationType.Monthly,
+      amount: this.plan?.amount ?? 0,
+      coverFees: false,
+    });
+
+    const dataSource = await handler.renderPayPalButton({
+      selector: '#ia-mgc-paypal-button-container',
+      style: { color: 'blue', shape: 'rect', size: 'medium' },
+      donationInfo,
+    });
+
+    if (!dataSource) return;
+
+    this.paypalButtonRendered = true;
+
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    dataSource.delegate = {
+      async payPalPaymentStarted() {},
+      async payPalPaymentAuthorized(_ds: any, payload: any) {
+        self.handlePayPalAuthorized(payload);
+      },
+      async payPalPaymentConfirmed(_ds: any, payload: any) {
+        self.handlePayPalAuthorized(payload);
+      },
+      async payPalPaymentCancelled() {},
+      async payPalPaymentError(_ds: any, error: unknown) {
+        console.error('PayPal vault error:', error);
+        self.dispatchEvent(
+          new CustomEvent('PayPalVaultError', { detail: { error } }),
+        );
+      },
+    };
+  }
+
+  private handlePayPalAuthorized(payload: {
+    nonce: string;
+    type: string;
+    details: { email: string };
+  }): void {
+    this.dispatchEvent(
+      new CustomEvent('PayPalVaultAuthorized', {
+        detail: {
+          paymentMethodInfo: {
+            description: `PayPal - ${payload.details.email}`,
+            nonce: payload.nonce,
+            type: payload.type,
+            details: { email: payload.details.email },
+          },
+        },
+      }),
+    );
   }
 
   private async setupBraintreeManager(): Promise<void> {

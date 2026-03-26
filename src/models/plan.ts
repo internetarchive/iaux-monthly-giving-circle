@@ -1,5 +1,6 @@
 import type { PaymentMethodRequest } from './payment-method-request';
 import { formatCurrency } from '../utils/currency-format';
+import { PaymentProvider } from '@internetarchive/donation-form-data-models';
 
 export type BtData = {
   billingDayOfMonth: number;
@@ -128,15 +129,27 @@ export class MonthlyPlan {
 
   setNewPaymentMethod(newPaymentMethodRequest: PaymentMethodRequest): void {
     const currentPaymentMethod = this.payment;
-    const mergedBtData = {
-      ...this.plan.btdata,
-      ...newPaymentMethodRequest.paymentMethodInfo.details,
-      ...{
-        last4:
-          newPaymentMethodRequest.paymentMethodInfo.details.lastFour ??
-          'unknown',
-      },
-    };
+    const { details, type } = newPaymentMethodRequest.paymentMethodInfo;
+    const isPayPal =
+      newPaymentMethodRequest.paymentProvider === PaymentProvider.PayPal;
+
+    const mergedBtData: BtData = isPayPal
+      ? {
+          ...this.plan.btdata,
+          paymentMethodType: 'PayPal',
+          paypalEmail: details.email ?? details.description ?? '',
+          cardType: null,
+          last4: null,
+          expirationMonth: null,
+          expirationYear: null,
+        }
+      : {
+          ...this.plan.btdata,
+          ...details,
+          paymentMethodType: type,
+          last4: details.lastFour ?? 'unknown',
+        };
+
     this.plan.old_btData = currentPaymentMethod;
     this.plan.btdata = mergedBtData;
   }

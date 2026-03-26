@@ -161,9 +161,10 @@ export class MGCEditPaymentMethod extends LitElement {
     const displayCCFields =
       this.selectedPaymentProvider === PaymentProvider.CreditCard;
 
-    console.log('selectedPaymentProvider', {
-      selectedPaymentProvider: this.selectedPaymentProvider,
-    });
+    const displayBraintreeManager =
+      this.selectedPaymentProvider === PaymentProvider.CreditCard ||
+      this.selectedPaymentProvider === PaymentProvider.PayPal;
+
     return html`
       <style>
         ${this.styles}
@@ -179,7 +180,10 @@ export class MGCEditPaymentMethod extends LitElement {
                 ${this.plan?.payment?.paymentMethodType === 'creditCard'
                   ? 'Credit Card'
                   : this.plan?.payment?.paymentMethodType}:
-                ${this.plan?.payment?.cardType} - ${this.plan?.payment?.last4}
+                ${this.plan?.payment?.paymentMethodType ===
+                PaymentProvider.PayPal
+                  ? this.plan?.payment?.paypalEmail
+                  : `${this.plan?.payment?.cardType} - ${this.plan?.payment?.last4}`}
               </span></ia-mgc-form-section-info
             >`
           : nothing}
@@ -188,8 +192,9 @@ export class MGCEditPaymentMethod extends LitElement {
             <form id="edit-plan-payment-method" @submit=${this.submitPaymentMethodChange}>
               <payment-selector
                 .paymentProviders=${this.braintreeManager?.paymentProviders}
-                @firstUpdated=${() => {
+                @firstUpdated=${(e: Event) => {
                   this.paymentSelectorFirstUpdated = true;
+                  (e.target as any)?.showPaypalButton();
                 }}
                 @creditCardSelected=${() => {
                   this.selectedPaymentProvider = PaymentProvider.CreditCard;
@@ -204,28 +209,32 @@ export class MGCEditPaymentMethod extends LitElement {
                   this.selectedPaymentProvider = PaymentProvider.GooglePay;
                 }}
                 @paypalBlockerSelected=${() => {
-                  this.selectedPaymentProvider = 'paypalBlocker';
+                  this.selectedPaymentProvider = PaymentProvider.PayPal;
                 }}
                 @resetPaymentMethod=${async () => {
                   this.selectedPaymentProvider = '';
                 }}
                 tabindex="0"
               >
-                <slot name="paypal-button" slot="paypal-button"></slot>
               </payment-selector>
 
               <div class="${displayContactForm ? '' : 'hidden'}">
                 <contact-form .donorEmail=${this.patronEmail}></contact-form>
               </div>
-              
 
               <ia-mgc-braintree-manager
-                class="${displayCCFields ? '' : 'hidden'}"
-                .displayCreditCard=${this.selectedPaymentProvider === PaymentProvider.CreditCard}
+                class="${displayBraintreeManager ? '' : 'hidden'}"
+                .displayCreditCard=${displayCCFields}
+                .displayPayPal=${this.selectedPaymentProvider === PaymentProvider.PayPal}
                 .plan=${this.plan}
                 .paymentConfig=${this.paymentConfig}
-                @BraintreeManagerSetupComplete=${() => {
-                  console.log('BraintreeManagerSetupComplete');
+                @BraintreeManagerSetupComplete=${() => {}}
+                @PayPalVaultAuthorized=${(e: CustomEvent) => {
+                  this.handlePayPalVaultAuthorized(e);
+                }}
+                @PayPalVaultError=${() => {
+                  this.updateStatus = 'fail';
+                  this.updateMessage = 'PayPal error, please try again';
                 }}
               ></ia-mgc-braintree-manager>
 
@@ -239,49 +248,54 @@ export class MGCEditPaymentMethod extends LitElement {
                 }}
                 >Cancel</ia-mgc-button
               >
-              <ia-mgc-button
-                id="edit-plan-payment-method-submit"
-                class="primary"
-                type="submit"
-                .isDisabled=${!this.selectedPaymentProvider}
-                .clickHandler=${async (event: Event, iaButton: MGCButton) => {
-                  console.log({ iaButton, event });
+              ${
+                this.selectedPaymentProvider !== PaymentProvider.PayPal
+                  ? html`<ia-mgc-button
+                      id="edit-plan-payment-method-submit"
+                      class="primary"
+                      type="submit"
+                      .isDisabled=${!this.selectedPaymentProvider}
+                      .clickHandler=${async (
+                        event: Event,
+                        iaButton: MGCButton,
+                      ) => {
+                        const button = iaButton;
+                        button.isDisabled = true;
+                        const isContactFormValid =
+                          this.creditCardElement?.reportValidity();
 
-                  const button = iaButton;
-                  button.isDisabled = true;
-                  // validate credit card
-                  // if not valid, show error and return
-                  const isContactFormValid =
-                    this.creditCardElement?.reportValidity();
+                        if (!isContactFormValid) {
+                          button.isDisabled = false;
+                          return;
+                        }
 
-                  if (!isContactFormValid) {
-                    button.isDisabled = false;
-                    return;
-                  }
+                        const paymentMethodInfo =
+                          (await this.braintreeManagerElement?.validateCreditCardFields()) as unknown as any;
 
-                  const paymentMethodInfo =
-                    (await this.braintreeManagerElement?.validateCreditCardFields()) as unknown as any;
+                        if (!paymentMethodInfo) {
+                          button.isDisabled = false;
+                          return;
+                        }
 
-                  if (!paymentMethodInfo) {
-                    button.isDisabled = false;
-                    return;
-                  }
+                        const newPaymentMethodRequest =
+                          new PaymentMethodRequest({
+                            paymentMethodInfo,
+                            donorContactInfo:
+                              this.contactFormElement?.donorContactInfo,
+                            paymentProvider: this
+                              .selectedPaymentProvider as PaymentProvider,
+                          });
 
-                  const newPaymentMethodRequest = new PaymentMethodRequest({
-                    paymentMethodInfo,
-                    donorContactInfo: this.contactFormElement?.donorContactInfo,
-                    paymentProvider: this
-                      .selectedPaymentProvider as PaymentProvider,
-                  });
-
-                  this.dispatchEvent(
-                    new CustomEvent('UpdatePaymentMethod', {
-                      detail: { newPaymentMethodRequest },
-                    }),
-                  );
-                }}
-                >Update payment method</ia-mgc-button
-              >
+                        this.dispatchEvent(
+                          new CustomEvent('UpdatePaymentMethod', {
+                            detail: { newPaymentMethodRequest },
+                          }),
+                        );
+                      }}
+                      >Update payment method</ia-mgc-button
+                    >`
+                  : nothing
+              }
               <ia-mgc-update-status .status=${this.updateStatus}
                 >${this.updateMessage}</ia-mgc-update-status
               ></ia-mgc-form-section-info>
@@ -295,6 +309,20 @@ export class MGCEditPaymentMethod extends LitElement {
     `;
   }
 
+  private handlePayPalVaultAuthorized(e: CustomEvent): void {
+    const { paymentMethodInfo } = e.detail;
+    const newPaymentMethodRequest = new PaymentMethodRequest({
+      paymentMethodInfo,
+      donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
+      paymentProvider: PaymentProvider.PayPal,
+    });
+    this.dispatchEvent(
+      new CustomEvent('UpdatePaymentMethod', {
+        detail: { newPaymentMethodRequest },
+      }),
+    );
+  }
+
   get styles() {
     return css`
       payment-selector {
@@ -306,6 +334,10 @@ export class MGCEditPaymentMethod extends LitElement {
       ia-mgc-braintree-manager {
         display: block;
         margin: 10px 0;
+      }
+
+      ia-mgc-braintree-manager:not([displaycreditcard]) #ia-mgc-cc-area {
+        display: none;
       }
 
       .secure-process-note {
