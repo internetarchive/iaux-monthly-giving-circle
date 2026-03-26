@@ -133,7 +133,7 @@
             "timezone": "UTC"
           },
           "status": "Active",
-          "paymentMethodType": "Paypal",
+          "paymentMethodType": "PayPal",
           "last4": null,
           "cardType": null,
           "expirationMonth": null,
@@ -423,14 +423,27 @@
     });
 
     mgcComponent.addEventListener('UpdatePaymentMethod', (e) => {
+      console.log('UpdatePaymentMethod received:', e.detail);
       const { plan, newPaymentMethodRequest } = e.detail;
 
-
-      const heads = flipCoin() === 1;
+      const isPayPal = newPaymentMethodRequest?.paymentProvider === 'PayPal';
+      const isVenmo = newPaymentMethodRequest?.paymentProvider === 'Venmo';
+      const isGooglePay = newPaymentMethodRequest?.paymentProvider === 'GooglePay';
+      const isApplePay = newPaymentMethodRequest?.paymentProvider === 'ApplePay';
+      const heads = (isPayPal || isVenmo || isGooglePay || isApplePay) ? true : flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 4000;
 
-      uxMessageInfoArea.innerText = `Updating payment method for plan: ${plan ? plan.id : 'no plan'} -- Update will return ${successOrFail} in ${returnTiming} ms`; 
+      const paypalEmail = newPaymentMethodRequest?.paymentMethodInfo?.details?.email;
+      const venmoUsername = newPaymentMethodRequest?.paymentMethodInfo?.details?.username;
+      const nonce = newPaymentMethodRequest?.paymentMethodInfo?.nonce;
+      const googlePayEmail = newPaymentMethodRequest?.paymentMethodInfo?.details?.email;
+      let methodLabel = 'payment method';
+      if (isPayPal) methodLabel = `PayPal (${paypalEmail}, nonce: ${nonce})`;
+      if (isVenmo) methodLabel = `Venmo (${venmoUsername}, nonce: ${nonce})`;
+      if (isGooglePay) methodLabel = `Google Pay (${googlePayEmail}, nonce: ${nonce})`;
+      if (isApplePay) methodLabel = `Apple Pay (${newPaymentMethodRequest?.paymentMethodInfo?.details?.email}, nonce: ${nonce})`;
+      uxMessageInfoArea.innerText = `Updating ${methodLabel} for plan: ${plan ? plan.id : 'no plan'} -- Update will return ${successOrFail} in ${returnTiming} ms`;
       const message = successOrFail === 'success' ? 'Payment method updated' : 'Payment method failed to update';
 
       if (heads && plan) {
@@ -450,7 +463,7 @@
 
       setTimeout(() => {
         mgcComponent.updateReceived(update);
-        console.log('Amount Update Request --- index.html ----', update);
+        console.log('UpdatePaymentMethod --- index.html ----', update);
         uxMessageInfoArea.innerText = '';
       }, returnTiming);
     });

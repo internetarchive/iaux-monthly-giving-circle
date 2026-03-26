@@ -1,3 +1,5 @@
+import { PaymentProvider } from '@internetarchive/donation-form-data-models';
+
 import type { PaymentMethodRequest } from './payment-method-request';
 import { formatCurrency } from '../utils/currency-format';
 
@@ -22,6 +24,8 @@ export type BtData = {
   expirationYear: string | null;
   paypalEmail?: string;
   venmoUsername?: string;
+  googlePayEmail?: string;
+  applePayEmail?: string;
 };
 
 export type Plan = {
@@ -128,15 +132,66 @@ export class MonthlyPlan {
 
   setNewPaymentMethod(newPaymentMethodRequest: PaymentMethodRequest): void {
     const currentPaymentMethod = this.payment;
-    const mergedBtData = {
-      ...this.plan.btdata,
-      ...newPaymentMethodRequest.paymentMethodInfo.details,
-      ...{
-        last4:
-          newPaymentMethodRequest.paymentMethodInfo.details.lastFour ??
-          'unknown',
-      },
-    };
+    const { details, type } = newPaymentMethodRequest.paymentMethodInfo;
+    const isPayPal =
+      newPaymentMethodRequest.paymentProvider === PaymentProvider.PayPal;
+    const isVenmo =
+      newPaymentMethodRequest.paymentProvider === PaymentProvider.Venmo;
+    const isGooglePay =
+      newPaymentMethodRequest.paymentProvider === PaymentProvider.GooglePay;
+    const isApplePay =
+      newPaymentMethodRequest.paymentProvider === PaymentProvider.ApplePay;
+
+    let mergedBtData: BtData;
+    if (isPayPal) {
+      mergedBtData = {
+        ...this.plan.btdata,
+        paymentMethodType: 'PayPal',
+        paypalEmail: details.email ?? details.description ?? '',
+        cardType: null,
+        last4: null,
+        expirationMonth: null,
+        expirationYear: null,
+      };
+    } else if (isVenmo) {
+      mergedBtData = {
+        ...this.plan.btdata,
+        paymentMethodType: 'Venmo',
+        venmoUsername: details.username ?? '',
+        cardType: null,
+        last4: null,
+        expirationMonth: null,
+        expirationYear: null,
+      };
+    } else if (isGooglePay) {
+      mergedBtData = {
+        ...this.plan.btdata,
+        paymentMethodType: 'GooglePay',
+        googlePayEmail: details.email ?? '',
+        cardType: null,
+        last4: null,
+        expirationMonth: null,
+        expirationYear: null,
+      };
+    } else if (isApplePay) {
+      mergedBtData = {
+        ...this.plan.btdata,
+        paymentMethodType: 'ApplePay',
+        applePayEmail: details.email ?? '',
+        cardType: null,
+        last4: null,
+        expirationMonth: null,
+        expirationYear: null,
+      };
+    } else {
+      mergedBtData = {
+        ...this.plan.btdata,
+        ...details,
+        paymentMethodType: type,
+        last4: details.lastFour ?? 'unknown',
+      };
+    }
+
     this.plan.old_btData = currentPaymentMethod;
     this.plan.btdata = mergedBtData;
   }

@@ -2,6 +2,8 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
+import { PaymentProvider } from '@internetarchive/donation-form-data-models';
+
 import type { MonthlyPlan } from './models/plan';
 
 import './presentational/mgc-button';
@@ -45,7 +47,7 @@ export class IauxMgcPlans extends LitElement {
                       ? html`<p>${cardType}</p>
                           <p>${last4}</p>`
                       : nothing}
-                    ${plan.payment?.paymentMethodType === 'Paypal'
+                    ${plan.payment?.paymentMethodType === PaymentProvider.PayPal
                       ? html`<p>
                           Paypal email:
                           <a href=${`mailto:${plan.payment?.paypalEmail}`}

@@ -1,4 +1,12 @@
-import { LitElement, html, css, CSSResult, PropertyValueMap } from 'lit';
+/* eslint-disable no-console */
+import {
+  LitElement,
+  html,
+  css,
+  nothing,
+  CSSResult,
+  PropertyValueMap,
+} from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import {
@@ -10,6 +18,10 @@ import {
   BraintreeManagerInterface,
   HostingEnvironment,
 } from '@internetarchive/donation-form';
+import {
+  DonationPaymentInfo,
+  DonationType,
+} from '@internetarchive/donation-form-data-models';
 import type { BraintreeEndpointManagerInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/braintree-interfaces.js';
 import type { PaymentClientsInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-clients.js';
 
@@ -44,6 +56,16 @@ export class MGCBraintreeManager extends LitElement {
   @property({ type: Object }) braintreeManager?: BraintreeManagerInterface;
 
   @state() private elementConnected: boolean = false;
+
+  @property({ type: Boolean }) displayPayPal: boolean = false;
+
+  @state() private paypalButtonRendered: boolean = false;
+
+  @property({ type: Boolean }) displayVenmo: boolean = false;
+
+  @property({ type: Boolean }) displayGooglePay: boolean = false;
+
+  @property({ type: Boolean }) displayApplePay: boolean = false;
 
   get braintreeInputs(): {
     errorMessage: HTMLDivElement | null;
@@ -114,6 +136,20 @@ export class MGCBraintreeManager extends LitElement {
       this.displayCreditCard
     ) {
       this.setupCreditCardHandler();
+    }
+
+    if (changed.has('displayPayPal') && !this.displayPayPal) {
+      this.paypalButtonRendered = false;
+    }
+    if (
+      this.braintreeManager &&
+      changed.has('displayPayPal') &&
+      this.displayPayPal &&
+      !this.paypalButtonRendered
+    ) {
+      this.renderPayPalVaultButton().catch(e =>
+        console.error('PayPal button setup failed:', e),
+      );
     }
   }
 
@@ -199,7 +235,36 @@ export class MGCBraintreeManager extends LitElement {
   }
 
   render() {
-    return html` <div>${this.creditCardTemplate}</div> `;
+    return html`
+      <div>${this.creditCardTemplate}</div>
+      ${this.displayPayPal
+        ? html`<div id="ia-mgc-paypal-button-container"></div>`
+        : nothing}
+      ${this.displayVenmo
+        ? html`<button
+            id="ia-mgc-venmo-button"
+            @click=${this.startVenmoPayment}
+          >
+            Pay with Venmo
+          </button>`
+        : nothing}
+      ${this.displayGooglePay
+        ? html`<button
+            id="ia-mgc-google-pay-button"
+            @click=${this.startGooglePayPayment}
+          >
+            Pay with Google Pay
+          </button>`
+        : nothing}
+      ${this.displayApplePay
+        ? html`<button
+            id="ia-mgc-apple-pay-button"
+            @click=${this.startApplePayPayment}
+          >
+            Pay with Apple Pay
+          </button>`
+        : nothing}
+    `;
   }
 
   lightDomCSS(): CSSResult {
@@ -247,6 +312,224 @@ export class MGCBraintreeManager extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  async renderPayPalVaultButton(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.paypalHandler.get();
+    if (!handler) return;
+
+    const donationInfo = new DonationPaymentInfo({
+      donationType: DonationType.Monthly,
+      amount: this.plan?.amount ?? 0,
+      coverFees: false,
+    });
+
+    const dataSource = await handler.renderPayPalButton({
+      selector: '#ia-mgc-paypal-button-container',
+      style: { color: 'blue', shape: 'rect', size: 'medium' },
+      donationInfo,
+    });
+
+    if (!dataSource) return;
+
+    this.paypalButtonRendered = true;
+
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    dataSource.delegate = {
+      async payPalPaymentStarted() {
+        console.log('PayPal payment started');
+      },
+      async payPalPaymentAuthorized(_ds: any, payload: any) {
+        self.handlePayPalAuthorized(payload);
+      },
+      async payPalPaymentConfirmed(_ds: any, payload: any) {
+        self.handlePayPalAuthorized(payload);
+      },
+      async payPalPaymentCancelled() {
+        console.log('PayPal payment cancelled');
+      },
+      async payPalPaymentError(_ds: any, error: unknown) {
+        console.error('PayPal vault error:', error);
+        self.dispatchEvent(
+          new CustomEvent('PayPalVaultError', { detail: { error } }),
+        );
+      },
+    };
+  }
+
+  private handlePayPalAuthorized(payload: {
+    nonce: string;
+    type: string;
+    details: { email: string };
+  }): void {
+    this.dispatchEvent(
+      new CustomEvent('PayPalVaultAuthorized', {
+        detail: {
+          paymentMethodInfo: {
+            description: `PayPal - ${payload.details.email}`,
+            nonce: payload.nonce,
+            type: payload.type,
+            details: { email: payload.details.email },
+          },
+        },
+      }),
+    );
+  }
+
+  private async startVenmoPayment(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.venmoHandler.get();
+    if (!handler) return;
+
+    try {
+      const payload = await handler.startPayment();
+      this.dispatchEvent(
+        new CustomEvent('VenmoAuthorized', {
+          detail: {
+            paymentMethodInfo: {
+              description: `Venmo - ${payload.details.username}`,
+              nonce: payload.nonce,
+              type: payload.type,
+              details: { username: payload.details.username },
+            },
+          },
+        }),
+      );
+    } catch (e: any) {
+      if (
+        e?.code === 'VENMO_APP_CANCELED' ||
+        e?.code === 'VENMO_CANCELED'
+      ) {
+        console.log('Venmo payment cancelled');
+      } else {
+        console.error('Venmo payment error:', e);
+        this.dispatchEvent(
+          new CustomEvent('VenmoError', { detail: { error: e } }),
+        );
+      }
+    }
+  }
+
+  private async startGooglePayPayment(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.googlePayHandler.get();
+    if (!handler) return;
+
+    try {
+      const instance = await handler.instance.get();
+      const paymentDataRequest = await instance.createPaymentDataRequest({
+        emailRequired: true,
+        transactionInfo: {
+          currencyCode: this.plan?.currency ?? 'USD',
+          totalPriceStatus: 'FINAL',
+          totalPrice: `${this.plan?.amount ?? 0}`,
+        },
+      });
+
+      const paymentData =
+        await handler.paymentsClient.loadPaymentData(paymentDataRequest);
+      const result = await instance.parseResponse(paymentData);
+
+      this.dispatchEvent(
+        new CustomEvent('GooglePayAuthorized', {
+          detail: {
+            paymentMethodInfo: {
+              description: `Google Pay - ${paymentData.email}`,
+              nonce: result.nonce,
+              type: 'GooglePayCard',
+              details: { email: paymentData.email },
+            },
+          },
+        }),
+      );
+    } catch (e: any) {
+      if (e?.statusCode === 'CANCELED') {
+        console.log('Google Pay payment cancelled');
+      } else {
+        console.error('Google Pay payment error:', e);
+        this.dispatchEvent(
+          new CustomEvent('GooglePayError', { detail: { error: e } }),
+        );
+      }
+    }
+  }
+
+  private async startApplePayPayment(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.applePayHandler.get();
+    if (!handler) return;
+
+    const applePayInstance = await handler.instance.get();
+    if (!applePayInstance) return;
+
+    const paymentRequest = applePayInstance.createPaymentRequest({
+      total: {
+        label: 'Internet Archive',
+        amount: `${this.plan?.amount ?? 0}`,
+      },
+      requiredShippingContactFields: ['name', 'email'],
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const session = new (window as any).ApplePaySession(3, paymentRequest);
+
+    session.onvalidatemerchant = async (event: any) => {
+      try {
+        const validationData = await applePayInstance.performValidation({
+          validationURL: event.validationURL,
+          displayName: 'Internet Archive',
+        });
+        session.completeMerchantValidation(validationData);
+      } catch (err) {
+        console.error('Apple Pay merchant validation failed:', err);
+        session.abort();
+        this.dispatchEvent(
+          new CustomEvent('ApplePayError', { detail: { error: err } }),
+        );
+      }
+    };
+
+    session.onpaymentauthorized = async (event: any) => {
+      try {
+        const payload = await applePayInstance.tokenize({
+          token: event.payment.token,
+        });
+        const email = event.payment.shippingContact?.emailAddress ?? '';
+        session.completePayment(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window as any).ApplePaySession.STATUS_SUCCESS,
+        );
+        this.dispatchEvent(
+          new CustomEvent('ApplePayAuthorized', {
+            detail: {
+              paymentMethodInfo: {
+                description: `Apple Pay - ${email}`,
+                nonce: payload.nonce,
+                type: 'ApplePayCard',
+                details: { email },
+              },
+            },
+          }),
+        );
+      } catch (err) {
+        console.error('Apple Pay tokenization failed:', err);
+        session.completePayment(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window as any).ApplePaySession.STATUS_FAILURE,
+        );
+        this.dispatchEvent(
+          new CustomEvent('ApplePayError', { detail: { error: err } }),
+        );
+      }
+    };
+
+    session.oncancel = () => {
+      console.log('Apple Pay payment cancelled');
+    };
+
+    session.begin();
   }
 
   private async setupBraintreeManager(): Promise<void> {
