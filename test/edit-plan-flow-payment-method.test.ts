@@ -201,6 +201,89 @@ describe('Payment method coordination:', () => {
     );
   });
 
+  it('selecting GooglePay sets selectedPaymentProvider to PaymentProvider.GooglePay', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    await paymentMethodEl.updateComplete;
+
+    paymentMethodEl
+      .querySelector('payment-selector')!
+      .dispatchEvent(new Event('googlePaySelected', { bubbles: true }));
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.selectedPaymentProvider).to.equal(
+      PaymentProvider.GooglePay,
+    );
+  });
+
+  it('GooglePayAuthorized on braintree manager dispatches UpdatePaymentMethod with GooglePay provider', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    paymentMethodEl.selectedPaymentProvider = PaymentProvider.GooglePay;
+    await paymentMethodEl.updateComplete;
+
+    let receivedEvent: CustomEvent | null = null;
+    el.addEventListener('UpdatePaymentMethod', (e: Event) => {
+      receivedEvent = e as CustomEvent;
+    });
+
+    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
+      new CustomEvent('GooglePayAuthorized', {
+        bubbles: true,
+        detail: {
+          paymentMethodInfo: {
+            description: 'Google Pay - gpay@example.com',
+            nonce: 'nonce-gp-test',
+            type: 'GooglePayCard',
+            details: { email: 'gpay@example.com' },
+          },
+        },
+      }),
+    );
+    await el.updateComplete;
+
+    expect(receivedEvent).to.not.be.null;
+    const { newPaymentMethodRequest } = (
+      receivedEvent as unknown as CustomEvent
+    ).detail;
+    expect(newPaymentMethodRequest.paymentProvider).to.equal(
+      PaymentProvider.GooglePay,
+    );
+    expect(newPaymentMethodRequest.paymentMethodInfo.details.email).to.equal(
+      'gpay@example.com',
+    );
+  });
+
   it('updateReceived with paymentMethodUpdate success closes payment method form', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(

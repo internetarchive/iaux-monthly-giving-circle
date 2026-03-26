@@ -155,10 +155,17 @@ export class MGCEditPaymentMethod extends LitElement {
   }
 
   get paymentMethodDetail(): string {
-    const { paymentMethodType, paypalEmail, venmoUsername, cardType, last4 } =
-      this.plan?.payment ?? {};
+    const {
+      paymentMethodType,
+      paypalEmail,
+      venmoUsername,
+      googlePayEmail,
+      cardType,
+      last4,
+    } = this.plan?.payment ?? {};
     if (paymentMethodType === 'PayPal') return paypalEmail ?? '';
     if (paymentMethodType === 'Venmo') return venmoUsername ?? '';
+    if (paymentMethodType === 'GooglePay') return googlePayEmail ?? '';
     return `${cardType} - ${last4}`;
   }
 
@@ -173,7 +180,8 @@ export class MGCEditPaymentMethod extends LitElement {
     const displayBraintreeManager =
       this.selectedPaymentProvider === PaymentProvider.CreditCard ||
       this.selectedPaymentProvider === PaymentProvider.PayPal ||
-      this.selectedPaymentProvider === PaymentProvider.Venmo;
+      this.selectedPaymentProvider === PaymentProvider.Venmo ||
+      this.selectedPaymentProvider === PaymentProvider.GooglePay;
 
     return html`
       <style>
@@ -234,6 +242,7 @@ export class MGCEditPaymentMethod extends LitElement {
                 .displayCreditCard=${displayCCFields}
                 .displayPayPal=${this.selectedPaymentProvider === PaymentProvider.PayPal}
                 .displayVenmo=${this.selectedPaymentProvider === PaymentProvider.Venmo}
+                .displayGooglePay=${this.selectedPaymentProvider === PaymentProvider.GooglePay}
                 .plan=${this.plan}
                 .paymentConfig=${this.paymentConfig}
                 @BraintreeManagerSetupComplete=${() => {}}
@@ -251,6 +260,13 @@ export class MGCEditPaymentMethod extends LitElement {
                   this.updateStatus = 'fail';
                   this.updateMessage = 'Venmo error, please try again';
                 }}
+                @GooglePayAuthorized=${(e: CustomEvent) => {
+                  this.handleGooglePayAuthorized(e);
+                }}
+                @GooglePayError=${() => {
+                  this.updateStatus = 'fail';
+                  this.updateMessage = 'Google Pay error, please try again';
+                }}
               ></ia-mgc-braintree-manager>
 
               <ia-mgc-button
@@ -265,7 +281,8 @@ export class MGCEditPaymentMethod extends LitElement {
               >
               ${
                 this.selectedPaymentProvider !== PaymentProvider.PayPal &&
-                this.selectedPaymentProvider !== PaymentProvider.Venmo
+                this.selectedPaymentProvider !== PaymentProvider.Venmo &&
+                this.selectedPaymentProvider !== PaymentProvider.GooglePay
                   ? html`<ia-mgc-button
                       id="edit-plan-payment-method-submit"
                       class="primary"
@@ -345,6 +362,20 @@ export class MGCEditPaymentMethod extends LitElement {
       paymentMethodInfo,
       donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
       paymentProvider: PaymentProvider.Venmo,
+    });
+    this.dispatchEvent(
+      new CustomEvent('UpdatePaymentMethod', {
+        detail: { newPaymentMethodRequest },
+      }),
+    );
+  }
+
+  private handleGooglePayAuthorized(e: CustomEvent): void {
+    const { paymentMethodInfo } = e.detail;
+    const newPaymentMethodRequest = new PaymentMethodRequest({
+      paymentMethodInfo,
+      donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
+      paymentProvider: PaymentProvider.GooglePay,
     });
     this.dispatchEvent(
       new CustomEvent('UpdatePaymentMethod', {

@@ -24,6 +24,7 @@ export type BtData = {
   expirationYear: string | null;
   paypalEmail?: string;
   venmoUsername?: string;
+  googlePayEmail?: string;
 };
 
 export type Plan = {
@@ -135,6 +136,8 @@ export class MonthlyPlan {
       newPaymentMethodRequest.paymentProvider === PaymentProvider.PayPal;
     const isVenmo =
       newPaymentMethodRequest.paymentProvider === PaymentProvider.Venmo;
+    const isGooglePay =
+      newPaymentMethodRequest.paymentProvider === PaymentProvider.GooglePay;
 
     let mergedBtData: BtData;
     if (isPayPal) {
@@ -152,6 +155,16 @@ export class MonthlyPlan {
         ...this.plan.btdata,
         paymentMethodType: 'Venmo',
         venmoUsername: details.username ?? '',
+        cardType: null,
+        last4: null,
+        expirationMonth: null,
+        expirationYear: null,
+      };
+    } else if (isGooglePay) {
+      mergedBtData = {
+        ...this.plan.btdata,
+        paymentMethodType: 'GooglePay',
+        googlePayEmail: details.email ?? '',
         cardType: null,
         last4: null,
         expirationMonth: null,
