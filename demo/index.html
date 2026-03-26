@@ -427,15 +427,17 @@
       const { plan, newPaymentMethodRequest } = e.detail;
 
       const isPayPal = newPaymentMethodRequest?.paymentProvider === 'PayPal';
-      const heads = isPayPal ? true : flipCoin() === 1;
+      const isVenmo = newPaymentMethodRequest?.paymentProvider === 'Venmo';
+      const heads = (isPayPal || isVenmo) ? true : flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 4000;
 
       const paypalEmail = newPaymentMethodRequest?.paymentMethodInfo?.details?.email;
-      const paypalNonce = newPaymentMethodRequest?.paymentMethodInfo?.nonce;
-      const methodLabel = isPayPal
-        ? `PayPal (${paypalEmail}, nonce: ${paypalNonce})`
-        : 'payment method';
+      const venmoUsername = newPaymentMethodRequest?.paymentMethodInfo?.details?.username;
+      const nonce = newPaymentMethodRequest?.paymentMethodInfo?.nonce;
+      let methodLabel = 'payment method';
+      if (isPayPal) methodLabel = `PayPal (${paypalEmail}, nonce: ${nonce})`;
+      if (isVenmo) methodLabel = `Venmo (${venmoUsername}, nonce: ${nonce})`;
       uxMessageInfoArea.innerText = `Updating ${methodLabel} for plan: ${plan ? plan.id : 'no plan'} -- Update will return ${successOrFail} in ${returnTiming} ms`;
       const message = successOrFail === 'success' ? 'Payment method updated' : 'Payment method failed to update';
 

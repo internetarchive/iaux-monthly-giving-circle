@@ -61,6 +61,8 @@ export class MGCBraintreeManager extends LitElement {
 
   @state() private paypalButtonRendered: boolean = false;
 
+  @property({ type: Boolean }) displayVenmo: boolean = false;
+
   get braintreeInputs(): {
     errorMessage: HTMLDivElement | null;
     number: HTMLDivElement | null;
@@ -234,6 +236,14 @@ export class MGCBraintreeManager extends LitElement {
       ${this.displayPayPal
         ? html`<div id="ia-mgc-paypal-button-container"></div>`
         : nothing}
+      ${this.displayVenmo
+        ? html`<button
+            id="ia-mgc-venmo-button"
+            @click=${this.startVenmoPayment}
+          >
+            Pay with Venmo
+          </button>`
+        : nothing}
     `;
   }
 
@@ -346,6 +356,40 @@ export class MGCBraintreeManager extends LitElement {
         },
       }),
     );
+  }
+
+  private async startVenmoPayment(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.venmoHandler.get();
+    if (!handler) return;
+
+    try {
+      const payload = await handler.startPayment();
+      this.dispatchEvent(
+        new CustomEvent('VenmoAuthorized', {
+          detail: {
+            paymentMethodInfo: {
+              description: `Venmo - ${payload.details.username}`,
+              nonce: payload.nonce,
+              type: payload.type,
+              details: { username: payload.details.username },
+            },
+          },
+        }),
+      );
+    } catch (e: any) {
+      if (
+        e?.code === 'VENMO_APP_CANCELED' ||
+        e?.code === 'VENMO_CANCELED'
+      ) {
+        console.log('Venmo payment cancelled');
+      } else {
+        console.error('Venmo payment error:', e);
+        this.dispatchEvent(
+          new CustomEvent('VenmoError', { detail: { error: e } }),
+        );
+      }
+    }
   }
 
   private async setupBraintreeManager(): Promise<void> {
