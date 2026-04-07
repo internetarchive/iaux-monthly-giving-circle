@@ -134,11 +134,12 @@ export class MonthlyPlan {
     const isPayPal =
       newPaymentMethodRequest.paymentProvider === PaymentProvider.PayPal;
 
+    const paypalEmail = details.email ?? details.description ?? 'not_found';
     const mergedBtData: BtData = isPayPal
       ? {
           ...this.plan.btdata,
           paymentMethodType: 'PayPal',
-          paypalEmail: details.email ?? details.description ?? '',
+          paypalEmail,
           cardType: null,
           last4: null,
           expirationMonth: null,

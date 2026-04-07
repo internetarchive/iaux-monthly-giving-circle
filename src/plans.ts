@@ -59,7 +59,7 @@ export class IauxMgcPlans extends LitElement {
                       ? html`<p>
                           Venmo username:
                           <a href=${`mailto:${plan.payment?.venmoUsername}`}
-                            >${plan.payment?.paypalEmail}</a
+                            >${plan.payment?.venmoUsername}</a
                           >
                         </p>`
                       : nothing}

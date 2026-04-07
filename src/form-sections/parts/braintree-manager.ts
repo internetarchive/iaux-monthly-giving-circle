@@ -141,9 +141,11 @@ export class MGCBraintreeManager extends LitElement {
       this.displayPayPal &&
       !this.paypalButtonRendered
     ) {
-      this.renderPayPalVaultButton().catch(e =>
-        console.error('PayPal button setup failed:', e),
-      );
+      this.paypalButtonRendered = true;
+      this.renderPayPalVaultButton().catch(e => {
+        console.error('PayPal button setup failed:', e);
+        this.paypalButtonRendered = false;
+      });
     }
   }
 
@@ -302,8 +304,6 @@ export class MGCBraintreeManager extends LitElement {
     });
 
     if (!dataSource) return;
-
-    this.paypalButtonRendered = true;
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;

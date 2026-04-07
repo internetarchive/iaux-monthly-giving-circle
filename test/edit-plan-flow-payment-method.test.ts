@@ -201,6 +201,65 @@ describe('Payment method coordination:', () => {
     );
   });
 
+  it('PayPalVaultError on braintree manager sets updateStatus to fail', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    paymentMethodEl.selectedPaymentProvider = PaymentProvider.PayPal;
+    await paymentMethodEl.updateComplete;
+
+    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
+      new CustomEvent('PayPalVaultError', {
+        bubbles: true,
+        detail: { error: 'timeout' },
+      }),
+    );
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.updateStatus).to.equal('fail');
+  });
+
+  it('submit button is hidden when PayPal is the selected provider', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    paymentMethodEl.selectedPaymentProvider = PaymentProvider.PayPal;
+    await paymentMethodEl.updateComplete;
+
+    const submitBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-submit',
+    );
+    expect(submitBtn).to.not.exist;
+  });
+
   it('updateReceived with paymentMethodUpdate success closes payment method form', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(
