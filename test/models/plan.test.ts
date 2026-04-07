@@ -462,27 +462,7 @@ describe('MonthlyPlan', () => {
       expect(mp.plan.btdata.expirationYear).to.be.null;
     });
 
-    it('falls back to description when PayPal details.email is missing', () => {
-      const mp = new MonthlyPlan(makePlan({ btdata: makeBtData({}) }));
-
-      const request = new PaymentMethodRequest({
-        paymentMethodInfo: {
-          description: 'PayPal - fallback@example.com',
-          nonce: 'nonce_pp',
-          type: 'PayPalAccount',
-          details: {},
-        },
-        donorContactInfo: {},
-        paymentProvider: PaymentProvider.PayPal,
-      });
-
-      mp.setNewPaymentMethod(request);
-
-      expect(mp.plan.btdata.paypalEmail).to.equal('PayPal - fallback@example.com');
-      expect(mp.plan.btdata.paymentMethodType).to.equal('PayPal');
-    });
-
-    it("sets paypalEmail to 'not_found' when both email and description are absent", () => {
+    it("sets paypalEmail to 'not_found' when details.email is missing", () => {
       const mp = new MonthlyPlan(makePlan({ btdata: makeBtData({}) }));
 
       const request = new PaymentMethodRequest({
@@ -498,6 +478,7 @@ describe('MonthlyPlan', () => {
       mp.setNewPaymentMethod(request);
 
       expect(mp.plan.btdata.paypalEmail).to.equal('not_found');
+      expect(mp.plan.btdata.paymentMethodType).to.equal('PayPal');
     });
 
     it('saves old btData snapshot when switching to PayPal', () => {
