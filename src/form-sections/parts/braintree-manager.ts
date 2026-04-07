@@ -305,24 +305,22 @@ export class MGCBraintreeManager extends LitElement {
 
     if (!dataSource) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
     dataSource.delegate = {
-      async payPalPaymentStarted() {
+      payPalPaymentStarted: async () => {
         console.log('PayPal payment started');
       },
-      async payPalPaymentAuthorized(_ds: any, payload: any) {
-        self.handlePayPalAuthorized(payload);
+      payPalPaymentAuthorized: async (_ds: any, payload: any) => {
+        this.handlePayPalAuthorized(payload);
       },
-      async payPalPaymentConfirmed(_ds: any, payload: any) {
-        self.handlePayPalAuthorized(payload);
+      payPalPaymentConfirmed: async (_ds: any, payload: any) => {
+        this.handlePayPalAuthorized(payload);
       },
-      async payPalPaymentCancelled() {
+      payPalPaymentCancelled: async () => {
         console.log('PayPal payment cancelled');
       },
-      async payPalPaymentError(_ds: any, error: unknown) {
+      payPalPaymentError: async (_ds: any, error: unknown) => {
         console.error('PayPal vault error:', error);
-        self.dispatchEvent(
+        this.dispatchEvent(
           new CustomEvent('PayPalVaultError', { detail: { error } }),
         );
       },
@@ -413,13 +411,4 @@ export class MGCBraintreeManager extends LitElement {
     return this.querySelector('form[name="contact-form"]');
   }
 
-  async setupPaymentHandlers() {
-    // const creditCardFlowHandler = this.paymentConfig?.paymentFlowHandlers?.creditCardHandler;
-    const creditCardHandler =
-      await this.braintreeManager?.paymentProviders.creditCardHandler.get();
-    creditCardHandler?.hideErrorMessage();
-    // const valid = this.contactForm?.reportValidity();
-    // const hostedFieldsResponse = await creditCardFlowHandler?.tokenizeFields();
-    // console.log("CC hostedFieldsResponse", hostedFieldsResponse);
-  }
 }

@@ -43,7 +43,7 @@ export class IauxMgcPlans extends LitElement {
                   <div class="payment-details">
                     <h3>Method</h3>
                     <p>${methodType}</p>
-                    ${plan.payment?.paymentMethodType === 'creditCard'
+                    ${plan.payment?.paymentMethodType === PaymentProvider.CreditCard
                       ? html`<p>${cardType}</p>
                           <p>${last4}</p>`
                       : nothing}
@@ -55,7 +55,7 @@ export class IauxMgcPlans extends LitElement {
                           >
                         </p>`
                       : nothing}
-                    ${plan.payment?.paymentMethodType === 'Venmo'
+                    ${plan.payment?.paymentMethodType === PaymentProvider.Venmo
                       ? html`<p>
                           Venmo username:
                           <a href=${`mailto:${plan.payment?.venmoUsername}`}
@@ -63,7 +63,7 @@ export class IauxMgcPlans extends LitElement {
                           >
                         </p>`
                       : nothing}
-                    ${plan.payment?.paymentMethodType !== 'creditCard'
+                    ${plan.payment?.paymentMethodType !== PaymentProvider.CreditCard
                       ? html`<p>
                           Expires:
                           ${plan.payment?.expirationMonth ??

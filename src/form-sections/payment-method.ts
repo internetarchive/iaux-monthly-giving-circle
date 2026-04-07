@@ -120,8 +120,6 @@ export class MGCEditPaymentMethod extends LitElement {
       this.selectedPaymentProvider === PaymentProvider.CreditCard ||
       this.selectedPaymentProvider === PaymentProvider.Venmo;
 
-    // eslint-disable-next-line no-console
-    console.log('contactFormSectioncontactFormSection', { displayContactForm });
     return html`
       <donation-form-section
         badgemode="hidebadge"
