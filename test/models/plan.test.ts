@@ -558,5 +558,32 @@ describe('MonthlyPlan', () => {
       expect(mp.plan.btdata.last4).to.be.null;
       expect(mp.plan.btdata.cardType).to.be.null;
     });
+
+    it('Venmo branch clears expirationMonth and expirationYear', () => {
+      const btdata = makeBtData({
+        paymentMethodType: 'creditCard',
+        last4: '1234',
+        cardType: 'Visa',
+        expirationMonth: '12',
+        expirationYear: '2025',
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+
+      const request = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'Venmo - @newuser',
+          nonce: 'nonce_venmo',
+          type: 'Venmo',
+          details: { username: '@newuser' },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.Venmo,
+      });
+
+      mp.setNewPaymentMethod(request);
+
+      expect(mp.plan.btdata.expirationMonth).to.be.null;
+      expect(mp.plan.btdata.expirationYear).to.be.null;
+    });
   });
 });

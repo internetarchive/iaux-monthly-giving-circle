@@ -149,6 +149,88 @@ describe('Payment method coordination:', () => {
     );
   });
 
+  it('PayPal slot is rendered in the DOM when currentlyEditing is true', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    await paymentMethodEl.updateComplete;
+
+    const paypalSlot = paymentMethodEl.querySelector('#ia-mgc-paypal-button');
+    expect(paypalSlot).to.exist;
+  });
+
+  it('Cancel button resets selectedPaymentProvider and closes the form', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    paymentMethodEl.selectedPaymentProvider = PaymentProvider.CreditCard;
+    await paymentMethodEl.updateComplete;
+
+    const cancelBtn = paymentMethodEl.querySelector(
+      'ia-mgc-button#edit-plan-payment-method-cancel',
+    ) as MGCButton;
+    const innerBtn = cancelBtn.shadowRoot?.querySelector('button');
+    innerBtn!.click();
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.currentlyEditing).to.be.false;
+    expect(paymentMethodEl.selectedPaymentProvider).to.equal('');
+  });
+
+  it('braintreeManagerElement getter returns ia-mgc-braintree-manager', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.braintreeManagerElement).to.exist;
+    expect(
+      paymentMethodEl.braintreeManagerElement?.tagName.toLowerCase(),
+    ).to.equal('ia-mgc-braintree-manager');
+  });
+
   it('BraintreeManagerSetupComplete triggers renderPayPalVaultButton eagerly', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(
