@@ -1,11 +1,5 @@
 /* eslint-disable no-console */
-import {
-  LitElement,
-  html,
-  css,
-  CSSResult,
-  PropertyValueMap,
-} from 'lit';
+import { LitElement, html, css, CSSResult, PropertyValueMap } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import {
@@ -126,7 +120,6 @@ export class MGCBraintreeManager extends LitElement {
     ) {
       this.setupCreditCardHandler();
     }
-
   }
 
   async validateCreditCardFields() {
@@ -211,9 +204,7 @@ export class MGCBraintreeManager extends LitElement {
   }
 
   render() {
-    return html`
-      <div>${this.creditCardTemplate}</div>
-    `;
+    return html` <div>${this.creditCardTemplate}</div> `;
   }
 
   lightDomCSS(): CSSResult {
@@ -394,5 +385,4 @@ export class MGCBraintreeManager extends LitElement {
   get contactForm(): HTMLFormElement | null {
     return this.querySelector('form[name="contact-form"]');
   }
-
 }

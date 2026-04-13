@@ -226,8 +226,8 @@ export class MGCEditPaymentMethod extends LitElement {
                 .plan=${this.plan}
                 .paymentConfig=${this.paymentConfig}
                 @BraintreeManagerSetupComplete=${() => {
-                    this.braintreeManagerElement?.renderPayPalVaultButton();
-                  }}
+                  this.braintreeManagerElement?.renderPayPalVaultButton();
+                }}
                 @PayPalVaultAuthorized=${(e: CustomEvent) => {
                   this.handlePayPalVaultAuthorized(e);
                 }}
