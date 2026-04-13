@@ -116,10 +116,6 @@ export class MGCEditPaymentMethod extends LitElement {
         ? 'Help us stay in touch'
         : 'Enter payment information';
 
-    const displayContactForm =
-      this.selectedPaymentProvider === PaymentProvider.CreditCard ||
-      this.selectedPaymentProvider === PaymentProvider.Venmo;
-
     return html`
       <donation-form-section
         badgemode="hidebadge"
