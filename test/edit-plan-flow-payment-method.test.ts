@@ -141,7 +141,7 @@ describe('Payment method coordination:', () => {
 
     paymentMethodEl
       .querySelector('payment-selector')!
-      .dispatchEvent(new Event('paypalBlockerSelected', { bubbles: true }));
+      .dispatchEvent(new Event('paypalSelected', { bubbles: true }));
     await paymentMethodEl.updateComplete;
 
     expect(paymentMethodEl.selectedPaymentProvider).to.equal(

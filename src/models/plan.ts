@@ -134,23 +134,39 @@ export class MonthlyPlan {
     const isPayPal =
       newPaymentMethodRequest.paymentProvider === PaymentProvider.PayPal;
 
+    const isVenmo =
+      newPaymentMethodRequest.paymentProvider === PaymentProvider.Venmo;
     const paypalEmail = details.email ?? details.description ?? 'not_found';
-    const mergedBtData: BtData = isPayPal
-      ? {
-          ...this.plan.btdata,
-          paymentMethodType: 'PayPal',
-          paypalEmail,
-          cardType: null,
-          last4: null,
-          expirationMonth: null,
-          expirationYear: null,
-        }
-      : {
-          ...this.plan.btdata,
-          ...details,
-          paymentMethodType: type,
-          last4: details.lastFour ?? 'unknown',
-        };
+
+    let mergedBtData: BtData;
+    if (isPayPal) {
+      mergedBtData = {
+        ...this.plan.btdata,
+        paymentMethodType: 'PayPal',
+        paypalEmail,
+        cardType: null,
+        last4: null,
+        expirationMonth: null,
+        expirationYear: null,
+      };
+    } else if (isVenmo) {
+      mergedBtData = {
+        ...this.plan.btdata,
+        paymentMethodType: PaymentProvider.Venmo,
+        venmoUsername: details.username,
+        cardType: null,
+        last4: null,
+        expirationMonth: null,
+        expirationYear: null,
+      };
+    } else {
+      mergedBtData = {
+        ...this.plan.btdata,
+        ...details,
+        paymentMethodType: type,
+        last4: details.lastFour ?? 'unknown',
+      };
+    }
 
     this.plan.old_btData = currentPaymentMethod;
     this.plan.btdata = mergedBtData;
