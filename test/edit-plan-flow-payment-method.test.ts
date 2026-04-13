@@ -12,6 +12,7 @@ import type { MGCEditPlanDate } from '../src/form-sections/date';
 import type { MGCEditPaymentMethod } from '../src/form-sections/payment-method';
 import type { MGCButton } from '../src/presentational/mgc-button';
 import type { MGCFormSectionInfo } from '../src/presentational/donation-section-info';
+import type { MGCBraintreeManager } from '../src/form-sections/parts/braintree-manager';
 
 import '../src/monthly-giving-circle';
 import { makePlan, navigateToEditView } from './helpers/edit-plan-helpers';
@@ -146,6 +147,43 @@ describe('Payment method coordination:', () => {
     expect(paymentMethodEl.selectedPaymentProvider).to.equal(
       PaymentProvider.PayPal,
     );
+  });
+
+  it('BraintreeManagerSetupComplete triggers renderPayPalVaultButton eagerly', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    await paymentMethodEl.updateComplete;
+
+    const braintreeManagerEl = paymentMethodEl.querySelector(
+      'ia-mgc-braintree-manager',
+    ) as MGCBraintreeManager;
+
+    let renderPayPalCalled = false;
+    braintreeManagerEl.renderPayPalVaultButton = async () => {
+      renderPayPalCalled = true;
+    };
+
+    braintreeManagerEl.dispatchEvent(
+      new Event('BraintreeManagerSetupComplete', { bubbles: true }),
+    );
+    await paymentMethodEl.updateComplete;
+
+    expect(renderPayPalCalled).to.be.true;
   });
 
   it('PayPalVaultAuthorized on braintree manager dispatches UpdatePaymentMethod with PayPal provider', async () => {

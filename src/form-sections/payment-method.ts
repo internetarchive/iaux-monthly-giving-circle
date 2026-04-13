@@ -207,7 +207,7 @@ export class MGCEditPaymentMethod extends LitElement {
                 @googlePaySelected=${() => {
                   this.selectedPaymentProvider = PaymentProvider.GooglePay;
                 }}
-                @paypalBlockerSelected=${() => {
+                @paypalSelected=${() => {
                   this.selectedPaymentProvider = PaymentProvider.PayPal;
                 }}
                 @resetPaymentMethod=${async () => {
@@ -215,6 +215,9 @@ export class MGCEditPaymentMethod extends LitElement {
                 }}
                 tabindex="0"
               >
+                <div slot="paypal-button">
+                  <div id="ia-mgc-paypal-button"></div>
+                </div>
               </payment-selector>
 
               <div class="${displayContactForm ? '' : 'hidden'}">
@@ -224,10 +227,11 @@ export class MGCEditPaymentMethod extends LitElement {
               <ia-mgc-braintree-manager
                 class="${displayBraintreeManager ? '' : 'hidden'}"
                 .displayCreditCard=${displayCCFields}
-                .displayPayPal=${this.selectedPaymentProvider === PaymentProvider.PayPal}
                 .plan=${this.plan}
                 .paymentConfig=${this.paymentConfig}
-                @BraintreeManagerSetupComplete=${() => {}}
+                @BraintreeManagerSetupComplete=${() => {
+                    this.braintreeManagerElement?.renderPayPalVaultButton();
+                  }}
                 @PayPalVaultAuthorized=${(e: CustomEvent) => {
                   this.handlePayPalVaultAuthorized(e);
                 }}
@@ -354,6 +358,13 @@ export class MGCEditPaymentMethod extends LitElement {
         visibility: hidden;
         height: 1px;
         width: 1px;
+      }
+
+      #ia-mgc-paypal-button {
+        opacity: 0.001;
+        width: var(--paymentButtonWidth, 5rem);
+        height: var(--paymentButtonHeight, 3.2rem);
+        overflow: hidden;
       }
     `;
   }

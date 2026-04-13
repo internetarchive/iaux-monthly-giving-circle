@@ -3,7 +3,6 @@ import {
   LitElement,
   html,
   css,
-  nothing,
   CSSResult,
   PropertyValueMap,
 } from 'lit';
@@ -56,10 +55,6 @@ export class MGCBraintreeManager extends LitElement {
   @property({ type: Object }) braintreeManager?: BraintreeManagerInterface;
 
   @state() private elementConnected: boolean = false;
-
-  @property({ type: Boolean }) displayPayPal: boolean = false;
-
-  @state() private paypalButtonRendered: boolean = false;
 
   get braintreeInputs(): {
     errorMessage: HTMLDivElement | null;
@@ -132,21 +127,6 @@ export class MGCBraintreeManager extends LitElement {
       this.setupCreditCardHandler();
     }
 
-    if (changed.has('displayPayPal') && !this.displayPayPal) {
-      this.paypalButtonRendered = false;
-    }
-    if (
-      this.braintreeManager &&
-      changed.has('displayPayPal') &&
-      this.displayPayPal &&
-      !this.paypalButtonRendered
-    ) {
-      this.paypalButtonRendered = true;
-      this.renderPayPalVaultButton().catch(e => {
-        console.error('PayPal button setup failed:', e);
-        this.paypalButtonRendered = false;
-      });
-    }
   }
 
   async validateCreditCardFields() {
@@ -233,9 +213,6 @@ export class MGCBraintreeManager extends LitElement {
   render() {
     return html`
       <div>${this.creditCardTemplate}</div>
-      ${this.displayPayPal
-        ? html`<div id="ia-mgc-paypal-button-container"></div>`
-        : nothing}
     `;
   }
 
@@ -287,9 +264,15 @@ export class MGCBraintreeManager extends LitElement {
   }
 
   async renderPayPalVaultButton(): Promise<void> {
+    console.log('[PayPal] renderPayPalVaultButton called');
+
     const handler =
       await this.braintreeManager?.paymentProviders.paypalHandler.get();
+    console.log('[PayPal] handler:', handler);
     if (!handler) return;
+
+    const container = document.querySelector('#ia-mgc-paypal-button');
+    console.log('[PayPal] container element:', container);
 
     const donationInfo = new DonationPaymentInfo({
       donationType: DonationType.Monthly,
@@ -298,10 +281,11 @@ export class MGCBraintreeManager extends LitElement {
     });
 
     const dataSource = await handler.renderPayPalButton({
-      selector: '#ia-mgc-paypal-button-container',
+      selector: '#ia-mgc-paypal-button',
       style: { color: 'blue', shape: 'rect', size: 'medium' },
       donationInfo,
     });
+    console.log('[PayPal] dataSource:', dataSource);
 
     if (!dataSource) return;
 
