@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { LitElement, html, css, CSSResult, PropertyValueMap } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
@@ -10,6 +11,10 @@ import {
   BraintreeManagerInterface,
   HostingEnvironment,
 } from '@internetarchive/donation-form';
+import {
+  DonationPaymentInfo,
+  DonationType,
+} from '@internetarchive/donation-form-data-models';
 import type { BraintreeEndpointManagerInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/braintree-interfaces.js';
 import type { PaymentClientsInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-clients.js';
 
@@ -249,6 +254,73 @@ export class MGCBraintreeManager extends LitElement {
     `;
   }
 
+  async renderPayPalVaultButton(): Promise<void> {
+    console.log('[PayPal] renderPayPalVaultButton called');
+
+    const handler =
+      await this.braintreeManager?.paymentProviders.paypalHandler.get();
+    console.log('[PayPal] handler:', handler);
+    if (!handler) return;
+
+    const container = document.querySelector('#ia-mgc-paypal-button');
+    console.log('[PayPal] container element:', container);
+
+    const donationInfo = new DonationPaymentInfo({
+      donationType: DonationType.Monthly,
+      amount: this.plan?.amount ?? 0,
+      coverFees: false,
+    });
+
+    const dataSource = await handler.renderPayPalButton({
+      selector: '#ia-mgc-paypal-button',
+      style: { color: 'blue', shape: 'rect', size: 'medium' },
+      donationInfo,
+    });
+    console.log('[PayPal] dataSource:', dataSource);
+
+    if (!dataSource) return;
+
+    dataSource.delegate = {
+      payPalPaymentStarted: async () => {
+        console.log('PayPal payment started');
+      },
+      payPalPaymentAuthorized: async (_ds: any, payload: any) => {
+        this.handlePayPalAuthorized(payload);
+      },
+      payPalPaymentConfirmed: async (_ds: any, payload: any) => {
+        this.handlePayPalAuthorized(payload);
+      },
+      payPalPaymentCancelled: async () => {
+        console.log('PayPal payment cancelled');
+      },
+      payPalPaymentError: async (_ds: any, error: unknown) => {
+        console.error('PayPal vault error:', error);
+        this.dispatchEvent(
+          new CustomEvent('PayPalVaultError', { detail: { error } }),
+        );
+      },
+    };
+  }
+
+  private handlePayPalAuthorized(payload: {
+    nonce: string;
+    type: string;
+    details: { email: string };
+  }): void {
+    this.dispatchEvent(
+      new CustomEvent('PayPalVaultAuthorized', {
+        detail: {
+          paymentMethodInfo: {
+            description: `PayPal - ${payload.details.email}`,
+            nonce: payload.nonce,
+            type: payload.type,
+            details: { email: payload.details.email },
+          },
+        },
+      }),
+    );
+  }
+
   private async setupBraintreeManager(): Promise<void> {
     this.braintreeManager = new BraintreeManager({
       paymentClients:
@@ -312,15 +384,5 @@ export class MGCBraintreeManager extends LitElement {
 
   get contactForm(): HTMLFormElement | null {
     return this.querySelector('form[name="contact-form"]');
-  }
-
-  async setupPaymentHandlers() {
-    // const creditCardFlowHandler = this.paymentConfig?.paymentFlowHandlers?.creditCardHandler;
-    const creditCardHandler =
-      await this.braintreeManager?.paymentProviders.creditCardHandler.get();
-    creditCardHandler?.hideErrorMessage();
-    // const valid = this.contactForm?.reportValidity();
-    // const hostedFieldsResponse = await creditCardFlowHandler?.tokenizeFields();
-    // console.log("CC hostedFieldsResponse", hostedFieldsResponse);
   }
 }

@@ -1,3 +1,5 @@
+import { PaymentProvider } from '@internetarchive/donation-form-data-models';
+
 import type { PaymentMethodRequest } from './payment-method-request';
 import { formatCurrency } from '../utils/currency-format';
 
@@ -128,15 +130,44 @@ export class MonthlyPlan {
 
   setNewPaymentMethod(newPaymentMethodRequest: PaymentMethodRequest): void {
     const currentPaymentMethod = this.payment;
-    const mergedBtData = {
-      ...this.plan.btdata,
-      ...newPaymentMethodRequest.paymentMethodInfo.details,
-      ...{
-        last4:
-          newPaymentMethodRequest.paymentMethodInfo.details.lastFour ??
-          'unknown',
-      },
-    };
+    const { details, type } = newPaymentMethodRequest.paymentMethodInfo;
+    const isPayPal =
+      newPaymentMethodRequest.paymentProvider === PaymentProvider.PayPal;
+
+    const isVenmo =
+      newPaymentMethodRequest.paymentProvider === PaymentProvider.Venmo;
+    const paypalEmail = details.email ?? details.description ?? 'not_found';
+
+    let mergedBtData: BtData;
+    if (isPayPal) {
+      mergedBtData = {
+        ...this.plan.btdata,
+        paymentMethodType: 'PayPal',
+        paypalEmail,
+        cardType: null,
+        last4: null,
+        expirationMonth: null,
+        expirationYear: null,
+      };
+    } else if (isVenmo) {
+      mergedBtData = {
+        ...this.plan.btdata,
+        paymentMethodType: PaymentProvider.Venmo,
+        venmoUsername: details.username,
+        cardType: null,
+        last4: null,
+        expirationMonth: null,
+        expirationYear: null,
+      };
+    } else {
+      mergedBtData = {
+        ...this.plan.btdata,
+        ...details,
+        paymentMethodType: type,
+        last4: details.lastFour ?? 'unknown',
+      };
+    }
+
     this.plan.old_btData = currentPaymentMethod;
     this.plan.btdata = mergedBtData;
   }

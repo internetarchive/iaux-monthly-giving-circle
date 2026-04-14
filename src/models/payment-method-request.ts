@@ -13,6 +13,8 @@ export type BTPaymentMethodUpdate = {
     expirationMonth?: string;
     expirationYear?: string;
     description?: string;
+    email?: string;
+    username?: string;
   };
 };
 

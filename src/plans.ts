@@ -2,6 +2,8 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
+import { PaymentProvider } from '@internetarchive/donation-form-data-models';
+
 import type { MonthlyPlan } from './models/plan';
 
 import './presentational/mgc-button';
@@ -41,11 +43,12 @@ export class IauxMgcPlans extends LitElement {
                   <div class="payment-details">
                     <h3>Method</h3>
                     <p>${methodType}</p>
-                    ${plan.payment?.paymentMethodType === 'creditCard'
+                    ${plan.payment?.paymentMethodType ===
+                    PaymentProvider.CreditCard
                       ? html`<p>${cardType}</p>
                           <p>${last4}</p>`
                       : nothing}
-                    ${plan.payment?.paymentMethodType === 'Paypal'
+                    ${plan.payment?.paymentMethodType === PaymentProvider.PayPal
                       ? html`<p>
                           Paypal email:
                           <a href=${`mailto:${plan.payment?.paypalEmail}`}
@@ -53,15 +56,16 @@ export class IauxMgcPlans extends LitElement {
                           >
                         </p>`
                       : nothing}
-                    ${plan.payment?.paymentMethodType === 'Venmo'
+                    ${plan.payment?.paymentMethodType === PaymentProvider.Venmo
                       ? html`<p>
                           Venmo username:
                           <a href=${`mailto:${plan.payment?.venmoUsername}`}
-                            >${plan.payment?.paypalEmail}</a
+                            >${plan.payment?.venmoUsername}</a
                           >
                         </p>`
                       : nothing}
-                    ${plan.payment?.paymentMethodType !== 'creditCard'
+                    ${plan.payment?.paymentMethodType !==
+                    PaymentProvider.CreditCard
                       ? html`<p>
                           Expires:
                           ${plan.payment?.expirationMonth ??
