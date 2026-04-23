@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { LitElement, html, css, CSSResult, PropertyValueMap } from 'lit';
+import { LitElement, html, nothing, css, CSSResult, PropertyValueMap } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import {
@@ -49,6 +49,8 @@ export class MGCBraintreeManager extends LitElement {
   @property({ type: Object }) braintreeManager?: BraintreeManagerInterface;
 
   @state() private elementConnected: boolean = false;
+
+  @property({ type: Boolean }) displayVenmo: boolean = false;
 
   get braintreeInputs(): {
     errorMessage: HTMLDivElement | null;
@@ -204,7 +206,17 @@ export class MGCBraintreeManager extends LitElement {
   }
 
   render() {
-    return html` <div>${this.creditCardTemplate}</div> `;
+    return html`
+      <div>${this.creditCardTemplate}</div>
+      ${this.displayVenmo
+        ? html`<button
+            id="ia-mgc-venmo-button"
+            @click=${this.startVenmoPayment}
+          >
+            Pay with Venmo
+          </button>`
+        : nothing}
+    `;
   }
 
   lightDomCSS(): CSSResult {
@@ -319,6 +331,37 @@ export class MGCBraintreeManager extends LitElement {
         },
       }),
     );
+  }
+
+  private async startVenmoPayment(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.venmoHandler.get();
+    if (!handler) return;
+
+    try {
+      const payload = await handler.startPayment();
+      this.dispatchEvent(
+        new CustomEvent('VenmoAuthorized', {
+          detail: {
+            paymentMethodInfo: {
+              description: `Venmo - ${payload.details.username}`,
+              nonce: payload.nonce,
+              type: payload.type,
+              details: { username: payload.details.username },
+            },
+          },
+        }),
+      );
+    } catch (e: any) {
+      if (e?.code === 'VENMO_APP_CANCELED' || e?.code === 'VENMO_CANCELED') {
+        console.log('Venmo payment cancelled');
+      } else {
+        console.error('Venmo payment error:', e);
+        this.dispatchEvent(
+          new CustomEvent('VenmoError', { detail: { error: e } }),
+        );
+      }
+    }
   }
 
   private async setupBraintreeManager(): Promise<void> {

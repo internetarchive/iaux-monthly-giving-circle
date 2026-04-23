@@ -148,6 +148,14 @@ export class MGCEditPaymentMethod extends LitElement {
     return this.querySelector('ia-mgc-braintree-manager');
   }
 
+  get paymentMethodDetail(): string {
+    const { paymentMethodType, paypalEmail, venmoUsername, cardType, last4 } =
+      this.plan?.payment ?? {};
+    if (paymentMethodType === 'PayPal') return paypalEmail ?? '';
+    if (paymentMethodType === 'Venmo') return venmoUsername ?? '';
+    return `${cardType} - ${last4}`;
+  }
+
   render() {
     const displayContactForm =
       this.selectedPaymentProvider === PaymentProvider.CreditCard ||
@@ -158,7 +166,8 @@ export class MGCEditPaymentMethod extends LitElement {
 
     const displayBraintreeManager =
       this.selectedPaymentProvider === PaymentProvider.CreditCard ||
-      this.selectedPaymentProvider === PaymentProvider.PayPal;
+      this.selectedPaymentProvider === PaymentProvider.PayPal ||
+      this.selectedPaymentProvider === PaymentProvider.Venmo;
 
     return html`
       <style>
@@ -175,10 +184,7 @@ export class MGCEditPaymentMethod extends LitElement {
                 ${this.plan?.payment?.paymentMethodType === 'creditCard'
                   ? 'Credit Card'
                   : this.plan?.payment?.paymentMethodType}:
-                ${this.plan?.payment?.paymentMethodType ===
-                PaymentProvider.PayPal
-                  ? this.plan?.payment?.paypalEmail
-                  : `${this.plan?.payment?.cardType} - ${this.plan?.payment?.last4}`}
+                ${this.paymentMethodDetail}
               </span></ia-mgc-form-section-info
             >`
           : nothing}
@@ -223,6 +229,7 @@ export class MGCEditPaymentMethod extends LitElement {
               <ia-mgc-braintree-manager
                 class="${displayBraintreeManager ? '' : 'hidden'}"
                 .displayCreditCard=${displayCCFields}
+                .displayVenmo=${this.selectedPaymentProvider === PaymentProvider.Venmo}
                 .plan=${this.plan}
                 .paymentConfig=${this.paymentConfig}
                 @BraintreeManagerSetupComplete=${() => {
@@ -234,6 +241,13 @@ export class MGCEditPaymentMethod extends LitElement {
                 @PayPalVaultError=${() => {
                   this.updateStatus = 'fail';
                   this.updateMessage = 'PayPal error, please try again';
+                }}
+                @VenmoAuthorized=${(e: CustomEvent) => {
+                  this.handleVenmoAuthorized(e);
+                }}
+                @VenmoError=${() => {
+                  this.updateStatus = 'fail';
+                  this.updateMessage = 'Venmo error, please try again';
                 }}
               ></ia-mgc-braintree-manager>
 
@@ -248,7 +262,8 @@ export class MGCEditPaymentMethod extends LitElement {
                 >Cancel</ia-mgc-button
               >
               ${
-                this.selectedPaymentProvider !== PaymentProvider.PayPal
+                this.selectedPaymentProvider !== PaymentProvider.PayPal &&
+                this.selectedPaymentProvider !== PaymentProvider.Venmo
                   ? html`<ia-mgc-button
                       id="edit-plan-payment-method-submit"
                       class="primary"
@@ -306,6 +321,20 @@ export class MGCEditPaymentMethod extends LitElement {
           : nothing}
       </donation-form-section>
     `;
+  }
+
+  private handleVenmoAuthorized(e: CustomEvent): void {
+    const { paymentMethodInfo } = e.detail;
+    const newPaymentMethodRequest = new PaymentMethodRequest({
+      paymentMethodInfo,
+      donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
+      paymentProvider: PaymentProvider.Venmo,
+    });
+    this.dispatchEvent(
+      new CustomEvent('UpdatePaymentMethod', {
+        detail: { newPaymentMethodRequest },
+      }),
+    );
   }
 
   private handlePayPalVaultAuthorized(e: CustomEvent): void {
