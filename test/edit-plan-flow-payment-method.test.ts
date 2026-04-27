@@ -609,3 +609,124 @@ describe('Venmo redirect restoration (firstUpdated):', () => {
     );
   });
 });
+
+describe('Venmo payment UI:', () => {
+  async function setupVenmoEditing() {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+    await navigateToEditView(el);
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+    paymentMethodEl.currentlyEditing = true;
+    paymentMethodEl.selectedPaymentProvider = PaymentProvider.Venmo;
+    await paymentMethodEl.updateComplete;
+    return paymentMethodEl;
+  }
+
+  it('paymentMethodDetail returns venmoUsername for a Venmo plan', async () => {
+    const plan = makePlan();
+    plan.plan.btdata.paymentMethodType = 'Venmo';
+    plan.plan.btdata.venmoUsername = 'johndoe';
+
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+    await navigateToEditView(el);
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    expect(paymentMethodEl.paymentMethodDetail).to.equal('johndoe');
+  });
+
+  it('venmoSelected event sets selectedPaymentProvider to Venmo', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+    await navigateToEditView(el);
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    await paymentMethodEl.updateComplete;
+
+    paymentMethodEl
+      .querySelector('payment-selector')!
+      .dispatchEvent(new Event('venmoSelected'));
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.selectedPaymentProvider).to.equal(
+      PaymentProvider.Venmo,
+    );
+  });
+
+  it('Venmo button does not call startVenmoPayment when contact form is invalid', async () => {
+    const paymentMethodEl = await setupVenmoEditing();
+
+    (paymentMethodEl.querySelector('contact-form') as any).reportValidity =
+      () => false;
+
+    const btEl = paymentMethodEl.querySelector(
+      'ia-mgc-braintree-manager',
+    ) as MGCBraintreeManager;
+    let startVenmoCalled = false;
+    (btEl as any).startVenmoPayment = async () => {
+      startVenmoCalled = true;
+    };
+
+    const venmoBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-venmo-submit',
+    ) as MGCButton;
+    venmoBtn.shadowRoot?.querySelector('button')!.click();
+    await new Promise(r => {
+      setTimeout(r, 0);
+    });
+
+    expect(startVenmoCalled).to.be.false;
+  });
+
+  it('Venmo button calls startVenmoPayment when contact form is valid', async () => {
+    const paymentMethodEl = await setupVenmoEditing();
+
+    (paymentMethodEl.querySelector('contact-form') as any).reportValidity =
+      () => true;
+
+    const btEl = paymentMethodEl.querySelector(
+      'ia-mgc-braintree-manager',
+    ) as MGCBraintreeManager;
+    let startVenmoCalled = false;
+    (btEl as any).startVenmoPayment = async () => {
+      startVenmoCalled = true;
+    };
+
+    const venmoBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-venmo-submit',
+    ) as MGCButton;
+    venmoBtn.shadowRoot?.querySelector('button')!.click();
+    await new Promise(r => {
+      setTimeout(r, 50);
+    });
+
+    expect(startVenmoCalled).to.be.true;
+  });
+});
