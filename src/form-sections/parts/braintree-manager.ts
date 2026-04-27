@@ -466,6 +466,15 @@ export class MGCBraintreeManager extends LitElement {
       },
     );
 
+    // If no Google Pay merchant ID is configured, suppress the button by
+    // returning null from the handler so payment-selector marks it unavailable.
+    if (!this.paymentConfig?.googlePayMerchantId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.braintreeManager as any).paymentProviders.googlePayHandler = {
+        get: async () => null,
+      };
+    }
+
     await this.checkVenmoRestoration();
     this.dispatchEvent(new Event('BraintreeManagerSetupComplete'));
   }
