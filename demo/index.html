@@ -426,17 +426,27 @@
       console.log('UpdatePaymentMethod received:', e.detail);
       const { plan, newPaymentMethodRequest } = e.detail;
 
-      const isPayPal = newPaymentMethodRequest?.paymentProvider === 'PayPal';
-      const heads = isPayPal ? true : flipCoin() === 1;
+      const provider = newPaymentMethodRequest?.paymentProvider;
+      const isPayPal = provider === 'PayPal';
+      const isVenmo = provider === 'Venmo';
+
+      // PayPal always succeeds in demo; Venmo always succeeds; CC is coin-flip
+      const heads = (isPayPal || isVenmo) ? true : flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 4000;
 
-      const paypalEmail = newPaymentMethodRequest?.paymentMethodInfo?.details?.email;
-      const paypalNonce = newPaymentMethodRequest?.paymentMethodInfo?.nonce;
-      const methodLabel = isPayPal
-        ? `PayPal (${paypalEmail}, nonce: ${paypalNonce})`
-        : 'payment method';
-      uxMessageInfoArea.innerText = `Updating ${methodLabel} for plan: ${plan ? plan.id : 'no plan'} -- Update will return ${successOrFail} in ${returnTiming} ms`;
+      const details = newPaymentMethodRequest?.paymentMethodInfo?.details;
+      const nonce = newPaymentMethodRequest?.paymentMethodInfo?.nonce;
+      let methodLabel;
+      if (isPayPal) {
+        methodLabel = `PayPal (${details?.email}, nonce: ${nonce})`;
+      } else if (isVenmo) {
+        methodLabel = `Venmo (@${details?.username}, nonce: ${nonce})`;
+      } else {
+        methodLabel = 'Credit Card';
+      }
+
+      uxMessageInfoArea.innerText = `Updating ${methodLabel} for plan: ${plan ? plan.id : 'no plan'} — will return ${successOrFail} in ${returnTiming} ms`;
       const message = successOrFail === 'success' ? 'Payment method updated' : 'Payment method failed to update';
 
       if (heads && plan) {

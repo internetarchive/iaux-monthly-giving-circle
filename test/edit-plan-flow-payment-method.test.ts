@@ -13,9 +13,42 @@ import type { MGCEditPaymentMethod } from '../src/form-sections/payment-method';
 import type { MGCButton } from '../src/presentational/mgc-button';
 import type { MGCFormSectionInfo } from '../src/presentational/donation-section-info';
 import type { MGCBraintreeManager } from '../src/form-sections/parts/braintree-manager';
+import {
+  VenmoPendingStorage,
+  VENMO_MGC_PENDING_EXPIRY_MS,
+} from '../src/utils/venmo-pending-storage';
 
 import '../src/monthly-giving-circle';
 import { makePlan, navigateToEditView } from './helpers/edit-plan-helpers';
+
+/** Minimal in-memory Storage for injecting into VenmoPendingStorage */
+class MockStorage implements Storage {
+  private store: Record<string, string> = {};
+
+  get length() {
+    return Object.keys(this.store).length;
+  }
+
+  key(index: number): string | null {
+    return Object.keys(this.store)[index] ?? null;
+  }
+
+  getItem(key: string): string | null {
+    return this.store[key] ?? null;
+  }
+
+  setItem(key: string, value: string): void {
+    this.store[key] = value;
+  }
+
+  removeItem(key: string): void {
+    delete this.store[key];
+  }
+
+  clear(): void {
+    this.store = {};
+  }
+}
 
 describe('Payment method coordination:', () => {
   it('payment method sub-form appears when canEditPaymentMethod is true', async () => {
@@ -424,5 +457,191 @@ describe('Payment method coordination:', () => {
     // Amount and date sub-forms should be unaffected (still in default closed state)
     expect(amountEl.currentlyEditing).to.be.false;
     expect(dateEl.currentlyEditing).to.be.false;
+  });
+});
+
+describe('Venmo redirect restoration (firstUpdated):', () => {
+  it('does nothing when no pending Venmo state exists', async () => {
+    const plan = makePlan();
+    const mockStorage = new MockStorage();
+    const venmoPendingStorage = new VenmoPendingStorage(mockStorage);
+
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+        .venmoPendingStorage=${venmoPendingStorage}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    expect(paymentMethodEl.currentlyEditing).to.be.false;
+    expect(paymentMethodEl.selectedPaymentProvider).to.equal('');
+  });
+
+  it('auto-opens edit form with Venmo when a valid pending key exists', async () => {
+    const plan = makePlan();
+    const mockStorage = new MockStorage();
+    const venmoPendingStorage = new VenmoPendingStorage(mockStorage);
+
+    // Pre-set a fresh pending key for this plan
+    venmoPendingStorage.setPending(plan.id);
+
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    // Inject the storage with the pending key and manually trigger the check
+    paymentMethodEl.venmoPendingStorage = venmoPendingStorage;
+    // Re-run the check (simulates firstUpdated in a new tab scenario)
+    (paymentMethodEl as any).checkAndRestoreVenmoState();
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.currentlyEditing).to.be.true;
+    expect(paymentMethodEl.selectedPaymentProvider).to.equal(
+      PaymentProvider.Venmo,
+    );
+  });
+
+  it('does not open edit form when pending key is expired', async () => {
+    const plan = makePlan();
+    const mockStorage = new MockStorage();
+    const venmoPendingStorage = new VenmoPendingStorage(mockStorage);
+
+    // Manually write an expired entry
+    mockStorage.setItem(
+      `venmo_mgc_pending_${plan.id}`,
+      JSON.stringify({
+        planId: plan.id,
+        timestamp: Date.now() - VENMO_MGC_PENDING_EXPIRY_MS - 1000,
+      }),
+    );
+
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.venmoPendingStorage = venmoPendingStorage;
+    (paymentMethodEl as any).checkAndRestoreVenmoState();
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.currentlyEditing).to.be.false;
+  });
+
+  it('VenmoAuthorized from braintree-manager dispatches UpdatePaymentMethod with Venmo provider', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    paymentMethodEl.selectedPaymentProvider = PaymentProvider.Venmo;
+    await paymentMethodEl.updateComplete;
+
+    let receivedEvent: CustomEvent | null = null;
+    el.addEventListener('UpdatePaymentMethod', (e: Event) => {
+      receivedEvent = e as CustomEvent;
+    });
+
+    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
+      new CustomEvent('VenmoAuthorized', {
+        bubbles: true,
+        detail: {
+          paymentMethodInfo: {
+            description: 'Venmo - johndoe',
+            nonce: 'nonce-venmo-test',
+            type: 'VenmoAccount',
+            details: { username: 'johndoe' },
+          },
+        },
+      }),
+    );
+    await el.updateComplete;
+
+    expect(receivedEvent).to.not.be.null;
+    const { newPaymentMethodRequest } = (
+      receivedEvent as unknown as CustomEvent
+    ).detail;
+    expect(newPaymentMethodRequest.paymentProvider).to.equal(
+      PaymentProvider.Venmo,
+    );
+    expect(newPaymentMethodRequest.paymentMethodInfo.details.username).to.equal(
+      'johndoe',
+    );
+  });
+
+  it('VenmoError from braintree-manager sets updateStatus to fail', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    paymentMethodEl.selectedPaymentProvider = PaymentProvider.Venmo;
+    await paymentMethodEl.updateComplete;
+
+    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
+      new CustomEvent('VenmoError', {
+        bubbles: true,
+        detail: { error: 'network error' },
+      }),
+    );
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.updateStatus).to.equal('fail');
+    expect(paymentMethodEl.updateMessage).to.equal(
+      'Venmo error, please try again',
+    );
   });
 });

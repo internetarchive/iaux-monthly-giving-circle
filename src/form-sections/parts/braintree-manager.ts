@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { LitElement, html, nothing, css, CSSResult, PropertyValueMap } from 'lit';
+import { LitElement, html, css, CSSResult, PropertyValueMap } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import {
@@ -21,6 +21,7 @@ import type { PaymentClientsInterface } from '@internetarchive/donation-form/dis
 import creditCardImg from '@internetarchive/icon-credit-card/index.js';
 import calendarImg from '@internetarchive/icon-calendar/index.js';
 import lockImg from '@internetarchive/icon-lock/index.js';
+import { VenmoPendingStorage } from '../../utils/venmo-pending-storage';
 
 import type { MonthlyPlan } from '../../models/plan';
 
@@ -50,7 +51,8 @@ export class MGCBraintreeManager extends LitElement {
 
   @state() private elementConnected: boolean = false;
 
-  @property({ type: Boolean }) displayVenmo: boolean = false;
+  @property({ type: Object }) venmoPendingStorage: VenmoPendingStorage =
+    new VenmoPendingStorage();
 
   get braintreeInputs(): {
     errorMessage: HTMLDivElement | null;
@@ -206,17 +208,7 @@ export class MGCBraintreeManager extends LitElement {
   }
 
   render() {
-    return html`
-      <div>${this.creditCardTemplate}</div>
-      ${this.displayVenmo
-        ? html`<button
-            id="ia-mgc-venmo-button"
-            @click=${this.startVenmoPayment}
-          >
-            Pay with Venmo
-          </button>`
-        : nothing}
-    `;
+    return html` <div>${this.creditCardTemplate}</div> `;
   }
 
   lightDomCSS(): CSSResult {
@@ -333,10 +325,64 @@ export class MGCBraintreeManager extends LitElement {
     );
   }
 
-  private async startVenmoPayment(): Promise<void> {
+  async startVenmoPayment(): Promise<void> {
     const handler =
       await this.braintreeManager?.paymentProviders.venmoHandler.get();
     if (!handler) return;
+
+    if (this.plan?.id) this.venmoPendingStorage.setPending(this.plan.id);
+
+    try {
+      const payload = await handler.startPayment();
+      if (this.plan?.id) this.venmoPendingStorage.clearPending(this.plan.id);
+      this.dispatchEvent(
+        new CustomEvent('VenmoAuthorized', {
+          detail: {
+            paymentMethodInfo: {
+              description: `Venmo - ${payload.details.username}`,
+              nonce: payload.nonce,
+              type: payload.type,
+              details: { username: payload.details.username },
+            },
+          },
+        }),
+      );
+    } catch (e: any) {
+      if (this.plan?.id) this.venmoPendingStorage.clearPending(this.plan.id);
+      if (e?.code === 'VENMO_APP_CANCELED' || e?.code === 'VENMO_CANCELED') {
+        console.log('Venmo payment cancelled');
+      } else {
+        console.error('Venmo payment error:', e);
+        this.dispatchEvent(
+          new CustomEvent('VenmoError', { detail: { error: e } }),
+        );
+      }
+    }
+  }
+
+  private async checkVenmoRestoration(): Promise<void> {
+    const planId = this.plan?.id;
+    if (!planId) return;
+    const pending = this.venmoPendingStorage.getPending(planId);
+    if (!pending) return;
+
+    const handler =
+      await this.braintreeManager?.paymentProviders.venmoHandler.get();
+    if (!handler) {
+      this.venmoPendingStorage.clearPending(planId);
+      return;
+    }
+
+    const instance = await handler.instance.get();
+    if (!instance) {
+      this.venmoPendingStorage.clearPending(planId);
+      return;
+    }
+
+    // Clear before tokenizing to prevent retry loops on failure
+    this.venmoPendingStorage.clearPending(planId);
+
+    if (!instance.hasTokenizationResult()) return;
 
     try {
       const payload = await handler.startPayment();
@@ -353,10 +399,8 @@ export class MGCBraintreeManager extends LitElement {
         }),
       );
     } catch (e: any) {
-      if (e?.code === 'VENMO_APP_CANCELED' || e?.code === 'VENMO_CANCELED') {
-        console.log('Venmo payment cancelled');
-      } else {
-        console.error('Venmo payment error:', e);
+      if (e?.code !== 'VENMO_APP_CANCELED' && e?.code !== 'VENMO_CANCELED') {
+        console.error('Venmo restoration error:', e);
         this.dispatchEvent(
           new CustomEvent('VenmoError', { detail: { error: e } }),
         );
@@ -422,6 +466,7 @@ export class MGCBraintreeManager extends LitElement {
       },
     );
 
+    await this.checkVenmoRestoration();
     this.dispatchEvent(new Event('BraintreeManagerSetupComplete'));
   }
 

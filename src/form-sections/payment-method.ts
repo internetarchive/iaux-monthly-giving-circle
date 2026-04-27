@@ -28,6 +28,7 @@ import type {
   PaymentConfig,
 } from '../form-sections/parts/braintree-manager';
 import { PaymentMethodRequest } from '../models/payment-method-request';
+import { VenmoPendingStorage } from '../utils/venmo-pending-storage';
 
 /**
  * <ia-mgc-edit-payment-method>
@@ -72,8 +73,23 @@ export class MGCEditPaymentMethod extends LitElement {
 
   @property({ type: String }) updateStatus: 'success' | 'fail' | '' = '';
 
+  @property({ type: Object }) venmoPendingStorage: VenmoPendingStorage =
+    new VenmoPendingStorage();
+
   createRenderRoot() {
     return this;
+  }
+
+  override firstUpdated(): void {
+    this.checkAndRestoreVenmoState();
+  }
+
+  private checkAndRestoreVenmoState(): void {
+    if (!this.plan?.id) return;
+    if (this.venmoPendingStorage.getPending(this.plan.id)) {
+      this.currentlyEditing = true;
+      this.selectedPaymentProvider = PaymentProvider.Venmo;
+    }
   }
 
   submitPaymentMethodChange(e: Event) {
@@ -229,10 +245,11 @@ export class MGCEditPaymentMethod extends LitElement {
               <ia-mgc-braintree-manager
                 class="${displayBraintreeManager ? '' : 'hidden'}"
                 .displayCreditCard=${displayCCFields}
-                .displayVenmo=${this.selectedPaymentProvider === PaymentProvider.Venmo}
                 .plan=${this.plan}
                 .paymentConfig=${this.paymentConfig}
                 @BraintreeManagerSetupComplete=${() => {
+                  this.braintreeManager =
+                    this.braintreeManagerElement?.braintreeManager;
                   this.braintreeManagerElement?.renderPayPalVaultButton();
                 }}
                 @PayPalVaultAuthorized=${(e: CustomEvent) => {
@@ -307,6 +324,30 @@ export class MGCEditPaymentMethod extends LitElement {
                         );
                       }}
                       >Update payment method</ia-mgc-button
+                    >`
+                  : nothing
+              }
+              ${
+                this.selectedPaymentProvider === PaymentProvider.Venmo
+                  ? html`<ia-mgc-button
+                      id="edit-plan-payment-method-venmo-submit"
+                      class="primary"
+                      .clickHandler=${async (
+                        _event: Event,
+                        iaButton: MGCButton,
+                      ) => {
+                        const button = iaButton;
+                        button.isDisabled = true;
+                        const isContactFormValid =
+                          this.contactFormElement?.reportValidity();
+                        if (!isContactFormValid) {
+                          button.isDisabled = false;
+                          return;
+                        }
+                        await this.braintreeManagerElement?.startVenmoPayment();
+                        button.isDisabled = false;
+                      }}
+                      >Pay with Venmo</ia-mgc-button
                     >`
                   : nothing
               }

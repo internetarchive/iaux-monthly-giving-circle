@@ -173,7 +173,7 @@ describe('MonthlyPlan', () => {
 
     it('returns empty string when lastBillingDate.date is null', () => {
       const btdata = makeBtData();
-      btdata.lastBillingDate.date = null;
+      btdata.lastBillingDate!.date = null;
       const mp = new MonthlyPlan(makePlan({ btdata }));
       expect(mp.lastBillingDateLocale).to.equal('');
     });
@@ -356,7 +356,7 @@ describe('MonthlyPlan', () => {
       expect(mp.plan.btdata.nextBillingDate.date).to.equal(
         '2024-08-15 00:00:00',
       );
-      expect(mp.plan.btdata.lastBillingDate.date).to.equal(
+      expect(mp.plan.btdata.lastBillingDate?.date).to.equal(
         '2024-07-15 00:00:00',
       );
     });
