@@ -40,6 +40,17 @@ describe('VenmoPendingStorage', () => {
       // Should not throw
       expect(() => storage.setPending(PLAN_ID)).to.not.throw();
     });
+
+    it('does not throw when setItem throws', () => {
+      const throwing = {
+        ...new MockStorage(),
+        setItem: () => {
+          throw new Error('storage full');
+        },
+      } as unknown as Storage;
+      const storage = new VenmoPendingStorage(throwing);
+      expect(() => storage.setPending(PLAN_ID)).to.not.throw();
+    });
   });
 
   describe('getPending', () => {
