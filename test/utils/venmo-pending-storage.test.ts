@@ -128,5 +128,17 @@ describe('VenmoPendingStorage', () => {
       const storage = new VenmoPendingStorage(undefined);
       expect(() => storage.clearPending(PLAN_ID)).to.not.throw();
     });
+
+    it('does not throw when removeItem throws', () => {
+      const mock = new MockStorage();
+      const throwing = {
+        ...mock,
+        removeItem: () => {
+          throw new Error('storage error');
+        },
+      } as unknown as Storage;
+      const storage = new VenmoPendingStorage(throwing);
+      expect(() => storage.clearPending(PLAN_ID)).to.not.throw();
+    });
   });
 });
