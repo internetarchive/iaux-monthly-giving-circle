@@ -20,35 +20,7 @@ import {
 
 import '../src/monthly-giving-circle';
 import { makePlan, navigateToEditView } from './helpers/edit-plan-helpers';
-
-/** Minimal in-memory Storage for injecting into VenmoPendingStorage */
-class MockStorage implements Storage {
-  private store: Record<string, string> = {};
-
-  get length() {
-    return Object.keys(this.store).length;
-  }
-
-  key(index: number): string | null {
-    return Object.keys(this.store)[index] ?? null;
-  }
-
-  getItem(key: string): string | null {
-    return this.store[key] ?? null;
-  }
-
-  setItem(key: string, value: string): void {
-    this.store[key] = value;
-  }
-
-  removeItem(key: string): void {
-    delete this.store[key];
-  }
-
-  clear(): void {
-    this.store = {};
-  }
-}
+import { MockStorage } from './helpers/mock-storage';
 
 describe('Payment method coordination:', () => {
   it('payment method sub-form appears when canEditPaymentMethod is true', async () => {
@@ -499,6 +471,7 @@ describe('Venmo redirect restoration (firstUpdated):', () => {
         .canEdit=${true}
         .canEditPaymentMethod=${true}
         .plans=${[plan]}
+        .venmoPendingStorage=${venmoPendingStorage}
       ></ia-monthly-giving-circle>`,
     );
 
@@ -508,12 +481,6 @@ describe('Venmo redirect restoration (firstUpdated):', () => {
     const paymentMethodEl = editPlan.querySelector(
       'ia-mgc-edit-payment-method',
     ) as MGCEditPaymentMethod;
-
-    // Inject the storage with the pending key and manually trigger the check
-    paymentMethodEl.venmoPendingStorage = venmoPendingStorage;
-    // Re-run the check (simulates firstUpdated in a new tab scenario)
-    (paymentMethodEl as any).checkAndRestoreVenmoState();
-    await paymentMethodEl.updateComplete;
 
     expect(paymentMethodEl.currentlyEditing).to.be.true;
     expect(paymentMethodEl.selectedPaymentProvider).to.equal(
@@ -540,6 +507,7 @@ describe('Venmo redirect restoration (firstUpdated):', () => {
         .canEdit=${true}
         .canEditPaymentMethod=${true}
         .plans=${[plan]}
+        .venmoPendingStorage=${venmoPendingStorage}
       ></ia-monthly-giving-circle>`,
     );
 
@@ -549,10 +517,6 @@ describe('Venmo redirect restoration (firstUpdated):', () => {
     const paymentMethodEl = editPlan.querySelector(
       'ia-mgc-edit-payment-method',
     ) as MGCEditPaymentMethod;
-
-    paymentMethodEl.venmoPendingStorage = venmoPendingStorage;
-    (paymentMethodEl as any).checkAndRestoreVenmoState();
-    await paymentMethodEl.updateComplete;
 
     expect(paymentMethodEl.currentlyEditing).to.be.false;
   });

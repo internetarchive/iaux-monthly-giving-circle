@@ -6,6 +6,7 @@ import '@internetarchive/donation-form/dist/src/form-elements/badged-input';
 import { HostingEnvironment } from '@internetarchive/donation-form';
 import type { PaymentConfig } from './form-sections/parts/braintree-manager';
 import type { MonthlyPlan } from './models/plan';
+import { VenmoPendingStorage } from './utils/venmo-pending-storage';
 import './form-sections/amount';
 import './form-sections/date';
 import './form-sections/cancel';
@@ -31,6 +32,9 @@ export class IauxEditPlanForm extends LitElement {
       feeCovered: number;
     },
   ) => void;
+
+  @property({ type: Object }) venmoPendingStorage: VenmoPendingStorage =
+    new VenmoPendingStorage();
 
   @property({ type: Object }) paymentConfig: PaymentConfig = {
     referrer: '',
@@ -98,6 +102,7 @@ export class IauxEditPlanForm extends LitElement {
                 .plan=${this.plan}
                 .patronEmail=${this.patronEmail}
                 .paymentConfig=${this.paymentConfig}
+                .venmoPendingStorage=${this.venmoPendingStorage}
                 @UpdatePaymentMethod=${(e: CustomEvent) => {
                   const { newPaymentMethodRequest } = e.detail;
                   if (this.plan) {

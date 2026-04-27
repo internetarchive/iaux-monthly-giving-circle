@@ -247,6 +247,7 @@ export class MGCEditPaymentMethod extends LitElement {
                 .displayCreditCard=${displayCCFields}
                 .plan=${this.plan}
                 .paymentConfig=${this.paymentConfig}
+                .venmoPendingStorage=${this.venmoPendingStorage}
                 @BraintreeManagerSetupComplete=${() => {
                   this.braintreeManager =
                     this.braintreeManagerElement?.braintreeManager;
@@ -380,9 +381,13 @@ export class MGCEditPaymentMethod extends LitElement {
 
   private handlePayPalVaultAuthorized(e: CustomEvent): void {
     const { paymentMethodInfo } = e.detail;
+    const paypalEmail = paymentMethodInfo?.details?.email ?? '';
+    const donorContactInfo = this.contactFormElement?.donorContactInfo ?? {
+      customer: { email: paypalEmail },
+    };
     const newPaymentMethodRequest = new PaymentMethodRequest({
       paymentMethodInfo,
-      donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
+      donorContactInfo,
       paymentProvider: PaymentProvider.PayPal,
     });
     this.dispatchEvent(

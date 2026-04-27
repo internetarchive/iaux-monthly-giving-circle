@@ -4,35 +4,7 @@ import {
   VENMO_MGC_PENDING_KEY_PREFIX,
   VENMO_MGC_PENDING_EXPIRY_MS,
 } from '../../src/utils/venmo-pending-storage';
-
-/** Minimal in-memory Storage implementation for testing */
-class MockStorage implements Storage {
-  private store: Record<string, string> = {};
-
-  get length() {
-    return Object.keys(this.store).length;
-  }
-
-  key(index: number): string | null {
-    return Object.keys(this.store)[index] ?? null;
-  }
-
-  getItem(key: string): string | null {
-    return this.store[key] ?? null;
-  }
-
-  setItem(key: string, value: string): void {
-    this.store[key] = value;
-  }
-
-  removeItem(key: string): void {
-    delete this.store[key];
-  }
-
-  clear(): void {
-    this.store = {};
-  }
-}
+import { MockStorage } from '../helpers/mock-storage';
 
 describe('VenmoPendingStorage', () => {
   const PLAN_ID = 'plan-token-abc123';

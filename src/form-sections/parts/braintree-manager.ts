@@ -347,9 +347,10 @@ export class MGCBraintreeManager extends LitElement {
           },
         }),
       );
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (this.plan?.id) this.venmoPendingStorage.clearPending(this.plan.id);
-      if (e?.code === 'VENMO_APP_CANCELED' || e?.code === 'VENMO_CANCELED') {
+      const code = (e as { code?: string })?.code;
+      if (code === 'VENMO_APP_CANCELED' || code === 'VENMO_CANCELED') {
         console.log('Venmo payment cancelled');
       } else {
         console.error('Venmo payment error:', e);
@@ -385,6 +386,9 @@ export class MGCBraintreeManager extends LitElement {
     if (!instance.hasTokenizationResult()) return;
 
     try {
+      // startPayment() re-checks hasTokenizationResult() internally and
+      // calls instance.tokenize() on the cached result — it does NOT launch
+      // a new Venmo redirect when a tokenization result is already present.
       const payload = await handler.startPayment();
       this.dispatchEvent(
         new CustomEvent('VenmoAuthorized', {
@@ -398,8 +402,9 @@ export class MGCBraintreeManager extends LitElement {
           },
         }),
       );
-    } catch (e: any) {
-      if (e?.code !== 'VENMO_APP_CANCELED' && e?.code !== 'VENMO_CANCELED') {
+    } catch (e: unknown) {
+      const code = (e as { code?: string })?.code;
+      if (code !== 'VENMO_APP_CANCELED' && code !== 'VENMO_CANCELED') {
         console.error('Venmo restoration error:', e);
         this.dispatchEvent(
           new CustomEvent('VenmoError', { detail: { error: e } }),
@@ -466,8 +471,10 @@ export class MGCBraintreeManager extends LitElement {
       },
     );
 
-    // If no Google Pay merchant ID is configured, suppress the button by
-    // returning null from the handler so payment-selector marks it unavailable.
+    // BraintreeManager (@internetarchive/donation-form) has no config option to
+    // suppress Google Pay, so we replace the handler directly. The upstream path
+    // is `BraintreeManager.paymentProviders.googlePayHandler` — if that changes
+    // this cast will silently stop working and the button may reappear.
     if (!this.paymentConfig?.googlePayMerchantId) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.braintreeManager as any).paymentProviders.googlePayHandler = {
