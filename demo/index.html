@@ -47,6 +47,8 @@
       <button id="toggle-plans">Toggle plans</button>
       <button id="toggle-prefilled-email">Toggle pre-filled email</button>
       <button id="toggle-edit-payment-method">Toggle edit payment method</button>
+      <button id="mock-venmo-success">Mock Venmo success</button>
+      <button id="mock-venmo-error">Mock Venmo error</button>
 
       <br>
       <input type="checkbox" id="force-successful-requests" name="force-successful-requests">
@@ -501,6 +503,42 @@
     document.getElementById('toggle-edit-payment-method').addEventListener('click', async () => {
       mgcComponent.canEditPaymentMethod = !mgcComponent.canEditPaymentMethod;
       await mgcComponent.updateComplete;
+    });
+
+    // --- Venmo mocks ---
+    // These fire the same events that the real Braintree Venmo SDK fires on
+    // <ia-mgc-braintree-manager>, so payment-method.ts handles them identically.
+    // Open a plan in edit mode and select Venmo before clicking.
+
+    document.getElementById('mock-venmo-success').addEventListener('click', () => {
+      const bt = document.querySelector('ia-mgc-braintree-manager');
+      if (!bt) {
+        uxMessageInfoArea.innerText = 'No braintree manager found — open a plan in edit mode first.';
+        return;
+      }
+      bt.dispatchEvent(new CustomEvent('VenmoAuthorized', {
+        detail: {
+          paymentMethodInfo: {
+            description: 'Venmo - @mock_venmo_user',
+            nonce: `mock-venmo-nonce-${Date.now()}`,
+            type: 'VenmoAccount',
+            details: { username: 'mock_venmo_user' },
+          },
+        },
+      }));
+      uxMessageInfoArea.innerText = 'Mock VenmoAuthorized event dispatched.';
+    });
+
+    document.getElementById('mock-venmo-error').addEventListener('click', () => {
+      const bt = document.querySelector('ia-mgc-braintree-manager');
+      if (!bt) {
+        uxMessageInfoArea.innerText = 'No braintree manager found — open a plan in edit mode first.';
+        return;
+      }
+      bt.dispatchEvent(new CustomEvent('VenmoError', {
+        detail: { error: { code: 'VENMO_MOCK_ERROR', message: 'Mock Venmo error for demo' } },
+      }));
+      uxMessageInfoArea.innerText = 'Mock VenmoError event dispatched.';
     });
   </script>
 </body>
