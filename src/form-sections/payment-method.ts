@@ -264,8 +264,15 @@ export class MGCEditPaymentMethod extends LitElement {
                   this.handleVenmoAuthorized(e);
                 }}
                 @VenmoError=${() => {
-                  this.updateStatus = 'fail';
-                  this.updateMessage = 'Venmo error, please try again';
+                  this.showVenmoError('Venmo error, please try again');
+                  // Re-dispatch with bubbles so ancestor components can react
+                  // (e.g. close a loading/redirect modal).
+                  this.dispatchEvent(
+                    new CustomEvent('VenmoError', {
+                      bubbles: true,
+                      composed: true,
+                    }),
+                  );
                 }}
               ></ia-mgc-braintree-manager>
 
@@ -345,6 +352,12 @@ export class MGCEditPaymentMethod extends LitElement {
                           button.isDisabled = false;
                           return;
                         }
+                        this.dispatchEvent(
+                          new CustomEvent('VenmoRedirectStarted', {
+                            bubbles: true,
+                            composed: true,
+                          }),
+                        );
                         await this.braintreeManagerElement?.startVenmoPayment();
                         button.isDisabled = false;
                       }}
@@ -363,6 +376,13 @@ export class MGCEditPaymentMethod extends LitElement {
           : nothing}
       </donation-form-section>
     `;
+  }
+
+  showVenmoError(
+    message: string = 'Venmo payment cancelled, please try again.',
+  ): void {
+    this.updateStatus = 'fail';
+    this.updateMessage = message;
   }
 
   private handleVenmoAuthorized(e: CustomEvent): void {

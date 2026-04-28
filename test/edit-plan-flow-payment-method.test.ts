@@ -729,4 +729,110 @@ describe('Venmo payment UI:', () => {
 
     expect(startVenmoCalled).to.be.true;
   });
+
+  it('VenmoRedirectStarted is dispatched when Venmo button is clicked with valid contact form', async () => {
+    const paymentMethodEl = await setupVenmoEditing();
+
+    (paymentMethodEl.querySelector('contact-form') as any).reportValidity =
+      () => true;
+
+    const btEl = paymentMethodEl.querySelector(
+      'ia-mgc-braintree-manager',
+    ) as MGCBraintreeManager;
+    (btEl as any).startVenmoPayment = async () => {};
+
+    let redirectStarted = false;
+    paymentMethodEl.addEventListener('VenmoRedirectStarted', () => {
+      redirectStarted = true;
+    });
+
+    const venmoBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-venmo-submit',
+    ) as MGCButton;
+    venmoBtn.shadowRoot?.querySelector('button')!.click();
+    await new Promise(r => {
+      setTimeout(r, 50);
+    });
+
+    expect(redirectStarted).to.be.true;
+  });
+
+  it('VenmoRedirectStarted is NOT dispatched when contact form is invalid', async () => {
+    const paymentMethodEl = await setupVenmoEditing();
+
+    (paymentMethodEl.querySelector('contact-form') as any).reportValidity =
+      () => false;
+
+    let redirectStarted = false;
+    paymentMethodEl.addEventListener('VenmoRedirectStarted', () => {
+      redirectStarted = true;
+    });
+
+    const venmoBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-venmo-submit',
+    ) as MGCButton;
+    venmoBtn.shadowRoot?.querySelector('button')!.click();
+    await new Promise(r => {
+      setTimeout(r, 50);
+    });
+
+    expect(redirectStarted).to.be.false;
+  });
+
+  it('showVenmoError() sets updateStatus to fail with default cancel message', async () => {
+    const paymentMethodEl = await setupVenmoEditing();
+
+    paymentMethodEl.showVenmoError();
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.updateStatus).to.equal('fail');
+    expect(paymentMethodEl.updateMessage).to.equal(
+      'Venmo payment cancelled, please try again.',
+    );
+  });
+
+  it('showVenmoError(message) uses the provided message', async () => {
+    const paymentMethodEl = await setupVenmoEditing();
+
+    paymentMethodEl.showVenmoError('Custom Venmo error');
+    await paymentMethodEl.updateComplete;
+
+    expect(paymentMethodEl.updateStatus).to.equal('fail');
+    expect(paymentMethodEl.updateMessage).to.equal('Custom Venmo error');
+  });
+
+  it('VenmoError from braintree-manager re-dispatches with bubbles', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+    await navigateToEditView(el);
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    paymentMethodEl.selectedPaymentProvider = PaymentProvider.Venmo;
+    await paymentMethodEl.updateComplete;
+
+    let bubbledVenmoError = false;
+    el.addEventListener('VenmoError', () => {
+      bubbledVenmoError = true;
+    });
+
+    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
+      new CustomEvent('VenmoError', {
+        bubbles: true,
+        detail: { error: 'network error' },
+      }),
+    );
+    await paymentMethodEl.updateComplete;
+
+    expect(bubbledVenmoError).to.be.true;
+  });
 });
