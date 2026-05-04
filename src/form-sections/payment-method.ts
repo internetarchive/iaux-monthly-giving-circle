@@ -30,6 +30,10 @@ import type {
 import { PaymentMethodRequest } from '../models/payment-method-request';
 import { VenmoPendingStorage } from '../utils/venmo-pending-storage';
 
+// Braintree's paymentMethodType for credit card ('creditCard') differs from
+// PaymentProvider.CreditCard ('Credit Card'), so we define it explicitly here.
+const BRAINTREE_CREDITCARD_TYPE = 'creditCard' as const;
+
 /**
  * <ia-mgc-edit-payment-method>
  * - collecting the data to send to the service
@@ -166,8 +170,8 @@ export class MGCEditPaymentMethod extends LitElement {
   get paymentMethodDetail(): string {
     const { paymentMethodType, paypalEmail, venmoUsername, cardType, last4 } =
       this.plan?.payment ?? {};
-    if (paymentMethodType === 'PayPal') return paypalEmail ?? '';
-    if (paymentMethodType === 'Venmo') return venmoUsername ?? '';
+    if (paymentMethodType === PaymentProvider.PayPal) return paypalEmail ?? '';
+    if (paymentMethodType === PaymentProvider.Venmo) return venmoUsername ?? '';
     return `${cardType} - ${last4}`;
   }
 
@@ -196,7 +200,8 @@ export class MGCEditPaymentMethod extends LitElement {
                 this.clearStatusMessaging();
               }}
               ><span>
-                ${this.plan?.payment?.paymentMethodType === 'creditCard'
+                ${this.plan?.payment?.paymentMethodType ===
+                BRAINTREE_CREDITCARD_TYPE
                   ? 'Credit Card'
                   : this.plan?.payment?.paymentMethodType}:
                 ${this.paymentMethodDetail}

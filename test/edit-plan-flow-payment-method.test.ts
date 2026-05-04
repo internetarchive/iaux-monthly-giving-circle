@@ -653,6 +653,72 @@ describe('Venmo payment UI:', () => {
     expect(paymentMethodEl.paymentMethodDetail).to.equal('johndoe');
   });
 
+  it('paymentMethodDetail returns paypalEmail for a PayPal plan', async () => {
+    const plan = makePlan();
+    plan.plan.btdata.paymentMethodType = 'PayPal';
+    plan.plan.btdata.paypalEmail = 'donor@example.com';
+
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+    await navigateToEditView(el);
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    expect(paymentMethodEl.paymentMethodDetail).to.equal('donor@example.com');
+  });
+
+  it('paymentMethodDetail returns cardType and last4 for a credit card plan', async () => {
+    const plan = makePlan();
+    plan.plan.btdata.paymentMethodType = 'creditCard';
+    plan.plan.btdata.cardType = 'Visa';
+    plan.plan.btdata.last4 = '4242';
+
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+    await navigateToEditView(el);
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    expect(paymentMethodEl.paymentMethodDetail).to.equal('Visa - 4242');
+  });
+
+  it('display label shows "Credit Card" when paymentMethodType is creditCard', async () => {
+    const plan = makePlan();
+    plan.plan.btdata.paymentMethodType = 'creditCard';
+
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+    await navigateToEditView(el);
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    const label = paymentMethodEl.querySelector(
+      'ia-mgc-form-section-info span',
+    )?.textContent;
+    expect(label).to.include('Credit Card');
+  });
+
   it('venmoSelected event sets selectedPaymentProvider to Venmo', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(
