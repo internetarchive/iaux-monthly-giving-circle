@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { html, fixture, expect } from '@open-wc/testing';
+import Sinon from 'sinon';
 import { PaymentProvider } from '@internetarchive/donation-form-data-models';
 
 import type {
@@ -689,10 +690,10 @@ describe('Venmo payment UI:', () => {
     const btEl = paymentMethodEl.querySelector(
       'ia-mgc-braintree-manager',
     ) as MGCBraintreeManager;
-    let startVenmoCalled = false;
-    (btEl as any).startVenmoPayment = async () => {
-      startVenmoCalled = true;
-    };
+    const startVenmoStub = Sinon.stub(
+      btEl as any,
+      'startVenmoPayment',
+    ).resolves();
 
     const venmoBtn = paymentMethodEl.querySelector(
       '#edit-plan-payment-method-venmo-submit',
@@ -702,7 +703,8 @@ describe('Venmo payment UI:', () => {
       setTimeout(r, 0);
     });
 
-    expect(startVenmoCalled).to.be.false;
+    expect(startVenmoStub.called).to.be.false;
+    startVenmoStub.restore();
   });
 
   it('Venmo button calls startVenmoPayment when contact form is valid', async () => {
@@ -714,10 +716,10 @@ describe('Venmo payment UI:', () => {
     const btEl = paymentMethodEl.querySelector(
       'ia-mgc-braintree-manager',
     ) as MGCBraintreeManager;
-    let startVenmoCalled = false;
-    (btEl as any).startVenmoPayment = async () => {
-      startVenmoCalled = true;
-    };
+    const startVenmoStub = Sinon.stub(
+      btEl as any,
+      'startVenmoPayment',
+    ).resolves();
 
     const venmoBtn = paymentMethodEl.querySelector(
       '#edit-plan-payment-method-venmo-submit',
@@ -727,7 +729,8 @@ describe('Venmo payment UI:', () => {
       setTimeout(r, 50);
     });
 
-    expect(startVenmoCalled).to.be.true;
+    expect(startVenmoStub.calledOnce).to.be.true;
+    startVenmoStub.restore();
   });
 
   it('VenmoRedirectStarted is dispatched when Venmo button is clicked with valid contact form', async () => {
@@ -739,7 +742,10 @@ describe('Venmo payment UI:', () => {
     const btEl = paymentMethodEl.querySelector(
       'ia-mgc-braintree-manager',
     ) as MGCBraintreeManager;
-    (btEl as any).startVenmoPayment = async () => {};
+    const startVenmoStub = Sinon.stub(
+      btEl as any,
+      'startVenmoPayment',
+    ).resolves();
 
     let redirectStarted = false;
     paymentMethodEl.addEventListener('VenmoRedirectStarted', () => {
@@ -755,6 +761,7 @@ describe('Venmo payment UI:', () => {
     });
 
     expect(redirectStarted).to.be.true;
+    startVenmoStub.restore();
   });
 
   it('VenmoRedirectStarted is NOT dispatched when contact form is invalid', async () => {
