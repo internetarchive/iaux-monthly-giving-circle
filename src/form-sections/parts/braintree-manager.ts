@@ -51,8 +51,7 @@ export class MGCBraintreeManager extends LitElement {
 
   @state() private elementConnected: boolean = false;
 
-  @property({ type: Object }) venmoPendingStorage: VenmoPendingStorage =
-    new VenmoPendingStorage();
+  @property({ type: Object }) venmoPendingStorage?: VenmoPendingStorage;
 
   get braintreeInputs(): {
     errorMessage: HTMLDivElement | null;
@@ -330,11 +329,11 @@ export class MGCBraintreeManager extends LitElement {
       await this.braintreeManager?.paymentProviders.venmoHandler.get();
     if (!handler) return;
 
-    if (this.plan?.id) this.venmoPendingStorage.setPending(this.plan.id);
+    if (this.plan?.id) this.venmoPendingStorage?.setPending(this.plan.id);
 
     try {
       const payload = await handler.startPayment();
-      if (this.plan?.id) this.venmoPendingStorage.clearPending(this.plan.id);
+      if (this.plan?.id) this.venmoPendingStorage?.clearPending(this.plan.id);
       this.dispatchEvent(
         new CustomEvent('VenmoAuthorized', {
           detail: {
@@ -348,7 +347,7 @@ export class MGCBraintreeManager extends LitElement {
         }),
       );
     } catch (e: unknown) {
-      if (this.plan?.id) this.venmoPendingStorage.clearPending(this.plan.id);
+      if (this.plan?.id) this.venmoPendingStorage?.clearPending(this.plan.id);
       const code = (e as { code?: string })?.code;
       if (code === 'VENMO_APP_CANCELED' || code === 'VENMO_CANCELED') {
         console.log('Venmo payment cancelled');
@@ -364,24 +363,24 @@ export class MGCBraintreeManager extends LitElement {
   private async checkVenmoRestoration(): Promise<void> {
     const planId = this.plan?.id;
     if (!planId) return;
-    const pending = this.venmoPendingStorage.getPending(planId);
+    const pending = this.venmoPendingStorage?.getPending(planId);
     if (!pending) return;
 
     const handler =
       await this.braintreeManager?.paymentProviders.venmoHandler.get();
     if (!handler) {
-      this.venmoPendingStorage.clearPending(planId);
+      this.venmoPendingStorage?.clearPending(planId);
       return;
     }
 
     const instance = await handler.instance.get();
     if (!instance) {
-      this.venmoPendingStorage.clearPending(planId);
+      this.venmoPendingStorage?.clearPending(planId);
       return;
     }
 
     // Clear before tokenizing to prevent retry loops on failure
-    this.venmoPendingStorage.clearPending(planId);
+    this.venmoPendingStorage?.clearPending(planId);
 
     if (!instance.hasTokenizationResult()) return;
 

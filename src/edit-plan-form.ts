@@ -6,7 +6,7 @@ import '@internetarchive/donation-form/dist/src/form-elements/badged-input';
 import { HostingEnvironment } from '@internetarchive/donation-form';
 import type { PaymentConfig } from './form-sections/parts/braintree-manager';
 import type { MonthlyPlan } from './models/plan';
-import { VenmoPendingStorage } from './utils/venmo-pending-storage';
+import type { VenmoPendingStorage } from './utils/venmo-pending-storage';
 import './form-sections/amount';
 import './form-sections/date';
 import './form-sections/cancel';
@@ -33,8 +33,7 @@ export class IauxEditPlanForm extends LitElement {
     },
   ) => void;
 
-  @property({ type: Object }) venmoPendingStorage: VenmoPendingStorage =
-    new VenmoPendingStorage();
+  @property({ type: Object }) venmoPendingStorage?: VenmoPendingStorage;
 
   @property({ type: Object }) paymentConfig: PaymentConfig = {
     referrer: '',

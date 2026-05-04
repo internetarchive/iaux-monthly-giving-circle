@@ -73,8 +73,7 @@ export class MGCEditPaymentMethod extends LitElement {
 
   @property({ type: String }) updateStatus: 'success' | 'fail' | '' = '';
 
-  @property({ type: Object }) venmoPendingStorage: VenmoPendingStorage =
-    new VenmoPendingStorage();
+  @property({ type: Object }) venmoPendingStorage?: VenmoPendingStorage;
 
   createRenderRoot() {
     return this;
@@ -86,7 +85,7 @@ export class MGCEditPaymentMethod extends LitElement {
 
   private checkAndRestoreVenmoState(): void {
     if (!this.plan?.id) return;
-    if (this.venmoPendingStorage.getPending(this.plan.id)) {
+    if (this.venmoPendingStorage?.getPending(this.plan.id)) {
       this.currentlyEditing = true;
       this.selectedPaymentProvider = PaymentProvider.Venmo;
     }
@@ -280,6 +279,12 @@ export class MGCEditPaymentMethod extends LitElement {
                 id="edit-plan-payment-method-cancel"
                 class="secondary"
                 .clickHandler=${() => {
+                  if (
+                    this.selectedPaymentProvider === PaymentProvider.Venmo &&
+                    this.plan?.id
+                  ) {
+                    this.venmoPendingStorage?.clearPending(this.plan.id);
+                  }
                   this.currentlyEditing = false;
                   this.selectedPaymentProvider = '';
                   this.clearStatusMessaging();
