@@ -336,4 +336,167 @@ describe('MGCBraintreeManager', () => {
       expect(errorFired).to.be.true;
     });
   });
+
+  describe('startVenmoPayment', () => {
+    let sandbox: Sinon.SinonSandbox;
+    let el: MGCBraintreeManager;
+    const PLAN_ID = 'test-plan-id';
+
+    function makeStorage() {
+      return {
+        getPending: Sinon.stub().returns(null),
+        setPending: Sinon.stub(),
+        clearPending: Sinon.stub(),
+      };
+    }
+
+    function makeVenmoHandler({
+      startPaymentResult = null as any,
+      startPaymentThrows = null as Error | null,
+    } = {}) {
+      return {
+        startPayment: startPaymentThrows
+          ? Sinon.stub().rejects(startPaymentThrows)
+          : Sinon.stub().resolves(startPaymentResult),
+      };
+    }
+
+    function makeBraintreeManager(handler: any = null) {
+      return {
+        paymentProviders: {
+          venmoHandler: { get: Sinon.stub().resolves(handler) },
+        },
+      };
+    }
+
+    beforeEach(() => {
+      sandbox = Sinon.createSandbox();
+      el = document.createElement(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+      (el as any).plan = { id: PLAN_ID };
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('returns early without setting pending when handler is unavailable', async () => {
+      const storage = makeStorage();
+      (el as any).venmoPendingStorage = storage;
+      (el as any).braintreeManager = makeBraintreeManager(null);
+
+      await el.startVenmoPayment();
+
+      expect(storage.setPending.called).to.be.false;
+      expect(storage.clearPending.called).to.be.false;
+    });
+
+    it('sets pending before payment and clears it on success', async () => {
+      const storage = makeStorage();
+      (el as any).venmoPendingStorage = storage;
+      const payload = {
+        nonce: 'fake-nonce',
+        type: 'VenmoAccount',
+        details: { username: 'venmouser' },
+      };
+      (el as any).braintreeManager = makeBraintreeManager(
+        makeVenmoHandler({ startPaymentResult: payload }),
+      );
+
+      await el.startVenmoPayment();
+
+      expect(storage.setPending.calledWith(PLAN_ID)).to.be.true;
+      expect(storage.clearPending.calledWith(PLAN_ID)).to.be.true;
+    });
+
+    it('dispatches VenmoAuthorized with correct payload on success', async () => {
+      const storage = makeStorage();
+      (el as any).venmoPendingStorage = storage;
+      const payload = {
+        nonce: 'fake-nonce',
+        type: 'VenmoAccount',
+        details: { username: 'venmouser' },
+      };
+      (el as any).braintreeManager = makeBraintreeManager(
+        makeVenmoHandler({ startPaymentResult: payload }),
+      );
+
+      let authorizedDetail: any = null;
+      el.addEventListener('VenmoAuthorized', (e: Event) => {
+        authorizedDetail = (e as CustomEvent).detail;
+      });
+
+      await el.startVenmoPayment();
+
+      expect(authorizedDetail).to.not.be.null;
+      expect(authorizedDetail.paymentMethodInfo.nonce).to.equal('fake-nonce');
+      expect(authorizedDetail.paymentMethodInfo.description).to.equal(
+        'Venmo - venmouser',
+      );
+      expect(authorizedDetail.paymentMethodInfo.details.username).to.equal(
+        'venmouser',
+      );
+    });
+
+    it('clears pending and does not dispatch VenmoError for VENMO_APP_CANCELED', async () => {
+      const storage = makeStorage();
+      (el as any).venmoPendingStorage = storage;
+      const cancelErr = Object.assign(new Error('Canceled'), {
+        code: 'VENMO_APP_CANCELED',
+      });
+      (el as any).braintreeManager = makeBraintreeManager(
+        makeVenmoHandler({ startPaymentThrows: cancelErr }),
+      );
+
+      let errorFired = false;
+      el.addEventListener('VenmoError', () => {
+        errorFired = true;
+      });
+
+      await el.startVenmoPayment();
+
+      expect(storage.clearPending.calledWith(PLAN_ID)).to.be.true;
+      expect(errorFired).to.be.false;
+    });
+
+    it('clears pending and does not dispatch VenmoError for VENMO_CANCELED', async () => {
+      const storage = makeStorage();
+      (el as any).venmoPendingStorage = storage;
+      const cancelErr = Object.assign(new Error('Canceled'), {
+        code: 'VENMO_CANCELED',
+      });
+      (el as any).braintreeManager = makeBraintreeManager(
+        makeVenmoHandler({ startPaymentThrows: cancelErr }),
+      );
+
+      let errorFired = false;
+      el.addEventListener('VenmoError', () => {
+        errorFired = true;
+      });
+
+      await el.startVenmoPayment();
+
+      expect(storage.clearPending.calledWith(PLAN_ID)).to.be.true;
+      expect(errorFired).to.be.false;
+    });
+
+    it('clears pending and dispatches VenmoError on unexpected error', async () => {
+      const storage = makeStorage();
+      (el as any).venmoPendingStorage = storage;
+      (el as any).braintreeManager = makeBraintreeManager(
+        makeVenmoHandler({ startPaymentThrows: new Error('Network error') }),
+      );
+
+      let errorFired = false;
+      el.addEventListener('VenmoError', () => {
+        errorFired = true;
+      });
+
+      await el.startVenmoPayment();
+
+      expect(storage.clearPending.calledWith(PLAN_ID)).to.be.true;
+      expect(errorFired).to.be.true;
+    });
+  });
 });
