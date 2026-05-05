@@ -366,25 +366,25 @@ export class MGCBraintreeManager extends LitElement {
     const pending = this.venmoPendingStorage?.getPending(planId);
     if (!pending) return;
 
-    const handler =
-      await this.braintreeManager?.paymentProviders.venmoHandler.get();
-    if (!handler) {
-      this.venmoPendingStorage?.clearPending(planId);
-      return;
-    }
-
-    const instance = await handler.instance.get();
-    if (!instance) {
-      this.venmoPendingStorage?.clearPending(planId);
-      return;
-    }
-
-    // Clear before tokenizing to prevent retry loops on failure
-    this.venmoPendingStorage?.clearPending(planId);
-
-    if (!instance.hasTokenizationResult()) return;
-
     try {
+      const handler =
+        await this.braintreeManager?.paymentProviders.venmoHandler.get();
+      if (!handler) {
+        this.venmoPendingStorage?.clearPending(planId);
+        return;
+      }
+
+      const instance = await handler.instance.get();
+      if (!instance) {
+        this.venmoPendingStorage?.clearPending(planId);
+        return;
+      }
+
+      // Clear before tokenizing to prevent retry loops on failure
+      this.venmoPendingStorage?.clearPending(planId);
+
+      if (!instance.hasTokenizationResult()) return;
+
       // startPayment() re-checks hasTokenizationResult() internally and
       // calls instance.tokenize() on the cached result — it does NOT launch
       // a new Venmo redirect when a tokenization result is already present.
@@ -402,6 +402,7 @@ export class MGCBraintreeManager extends LitElement {
         }),
       );
     } catch (e: unknown) {
+      this.venmoPendingStorage?.clearPending(planId);
       const code = (e as { code?: string })?.code;
       if (code !== 'VENMO_APP_CANCELED' && code !== 'VENMO_CANCELED') {
         console.error('Venmo restoration error:', e);
