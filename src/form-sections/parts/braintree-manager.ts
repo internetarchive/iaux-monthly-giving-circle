@@ -21,6 +21,7 @@ import type { PaymentClientsInterface } from '@internetarchive/donation-form/dis
 import creditCardImg from '@internetarchive/icon-credit-card/index.js';
 import calendarImg from '@internetarchive/icon-calendar/index.js';
 import lockImg from '@internetarchive/icon-lock/index.js';
+import { VenmoPendingStorage } from '../../utils/venmo-pending-storage';
 
 import type { MonthlyPlan } from '../../models/plan';
 
@@ -49,6 +50,8 @@ export class MGCBraintreeManager extends LitElement {
   @property({ type: Object }) braintreeManager?: BraintreeManagerInterface;
 
   @state() private elementConnected: boolean = false;
+
+  @property({ type: Object }) venmoPendingStorage?: VenmoPendingStorage;
 
   get braintreeInputs(): {
     errorMessage: HTMLDivElement | null;
@@ -321,6 +324,95 @@ export class MGCBraintreeManager extends LitElement {
     );
   }
 
+  async startVenmoPayment(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.venmoHandler.get();
+    if (!handler) return;
+
+    if (this.plan?.id) this.venmoPendingStorage?.setPending(this.plan.id);
+
+    try {
+      const payload = await handler.startPayment();
+      if (this.plan?.id) this.venmoPendingStorage?.clearPending(this.plan.id);
+      this.dispatchEvent(
+        new CustomEvent('VenmoAuthorized', {
+          detail: {
+            paymentMethodInfo: {
+              description: `Venmo - ${payload.details.username}`,
+              nonce: payload.nonce,
+              type: payload.type,
+              details: { username: payload.details.username },
+            },
+          },
+        }),
+      );
+    } catch (e: unknown) {
+      if (this.plan?.id) this.venmoPendingStorage?.clearPending(this.plan.id);
+      const code = (e as { code?: string })?.code;
+      if (code === 'VENMO_APP_CANCELED' || code === 'VENMO_CANCELED') {
+        console.log('Venmo payment cancelled');
+      } else {
+        console.error('Venmo payment error:', e);
+        this.dispatchEvent(
+          new CustomEvent('VenmoError', { detail: { error: e } }),
+        );
+      }
+    }
+  }
+
+  private async checkVenmoRestoration(): Promise<void> {
+    const planId = this.plan?.id;
+    if (!planId) return;
+    const pending = this.venmoPendingStorage?.getPending(planId);
+    if (!pending) return;
+
+    try {
+      const handler =
+        await this.braintreeManager?.paymentProviders.venmoHandler.get();
+      if (!handler) {
+        this.venmoPendingStorage?.clearPending(planId);
+        return;
+      }
+
+      const instance = await handler.instance.get();
+      if (!instance) {
+        this.venmoPendingStorage?.clearPending(planId);
+        return;
+      }
+
+      // Clear before tokenizing to prevent retry loops on failure
+      this.venmoPendingStorage?.clearPending(planId);
+
+      if (!instance.hasTokenizationResult()) return;
+
+      // startPayment() re-checks hasTokenizationResult() internally and
+      // calls instance.tokenize() on the cached result — it does NOT launch
+      // a new Venmo redirect when a tokenization result is already present.
+      const payload = await handler.startPayment();
+      this.dispatchEvent(
+        new CustomEvent('VenmoAuthorized', {
+          detail: {
+            paymentMethodInfo: {
+              description: `Venmo - ${payload.details.username}`,
+              nonce: payload.nonce,
+              type: payload.type,
+              details: { username: payload.details.username },
+            },
+          },
+        }),
+      );
+    } catch (e: unknown) {
+      this.venmoPendingStorage?.clearPending(planId);
+      const code = (e as { code?: string })?.code;
+      if (code !== 'VENMO_APP_CANCELED' && code !== 'VENMO_CANCELED') {
+        console.error('Venmo restoration error:', e);
+        this.dispatchEvent(
+          new CustomEvent('VenmoError', { detail: { error: e } }),
+        );
+      }
+    }
+  }
+
   private async setupBraintreeManager(): Promise<void> {
     this.braintreeManager = new BraintreeManager({
       paymentClients:
@@ -379,6 +471,22 @@ export class MGCBraintreeManager extends LitElement {
       },
     );
 
+    // BraintreeManager (@internetarchive/donation-form) has no config option to
+    // suppress Google Pay, so we replace the handler directly. The upstream path
+    // is `BraintreeManager.paymentProviders.googlePayHandler` — if that changes
+    // this cast will silently stop working and the button may reappear.
+    if (!this.paymentConfig?.googlePayMerchantId && this.braintreeManager) {
+      // BraintreeManager has no config option to suppress Google Pay, so we
+      // replace the handler directly. Casting only paymentProviders (not the
+      // whole manager) keeps the access chain type-checked — if upstream
+      // renames paymentProviders or googlePayHandler, TypeScript will catch it.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.braintreeManager.paymentProviders as any).googlePayHandler = {
+        get: async () => null,
+      };
+    }
+
+    await this.checkVenmoRestoration();
     this.dispatchEvent(new Event('BraintreeManagerSetupComplete'));
   }
 

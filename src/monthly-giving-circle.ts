@@ -10,6 +10,7 @@ import {
   PaymentClientsInterface,
 } from '@internetarchive/donation-form';
 import type { IauxMgcReceipts } from './receipts';
+import { VenmoPendingStorage } from './utils/venmo-pending-storage';
 import './presentational/mgc-button';
 import type { MonthlyPlan } from './models/plan';
 import './edit-plan-form';
@@ -59,6 +60,9 @@ export class MonthlyGivingCircle extends LitElement {
     | 'editPlan' = 'welcome';
 
   @property({ type: Boolean, reflect: true }) canEdit = true;
+
+  @property({ type: Object }) venmoPendingStorage: VenmoPendingStorage =
+    new VenmoPendingStorage();
 
   @property({ type: Object }) paymentConfig: {
     referrer: string;
@@ -146,6 +150,7 @@ export class MonthlyGivingCircle extends LitElement {
             .patronEmail=${this.patronEmail}
             .plan=${this.editingThisPlan}
             .paymentConfig=${this.paymentConfig}
+            .venmoPendingStorage=${this.venmoPendingStorage}
             @cancelPlan=${() => {
               this.dispatchEvent(
                 new CustomEvent('cancelPlan', {

@@ -28,6 +28,11 @@ import type {
   PaymentConfig,
 } from '../form-sections/parts/braintree-manager';
 import { PaymentMethodRequest } from '../models/payment-method-request';
+import { VenmoPendingStorage } from '../utils/venmo-pending-storage';
+
+// Braintree's paymentMethodType for credit card ('creditCard') differs from
+// PaymentProvider.CreditCard ('Credit Card'), so we define it explicitly here.
+const BRAINTREE_CREDITCARD_TYPE = 'creditCard' as const;
 
 /**
  * <ia-mgc-edit-payment-method>
@@ -72,8 +77,22 @@ export class MGCEditPaymentMethod extends LitElement {
 
   @property({ type: String }) updateStatus: 'success' | 'fail' | '' = '';
 
+  @property({ type: Object }) venmoPendingStorage?: VenmoPendingStorage;
+
   createRenderRoot() {
     return this;
+  }
+
+  override firstUpdated(): void {
+    this.checkAndRestoreVenmoState();
+  }
+
+  private checkAndRestoreVenmoState(): void {
+    if (!this.plan?.id) return;
+    if (this.venmoPendingStorage?.getPending(this.plan.id)) {
+      this.currentlyEditing = true;
+      this.selectedPaymentProvider = PaymentProvider.Venmo;
+    }
   }
 
   submitPaymentMethodChange(e: Event) {
@@ -148,6 +167,14 @@ export class MGCEditPaymentMethod extends LitElement {
     return this.querySelector('ia-mgc-braintree-manager');
   }
 
+  get paymentMethodDetail(): string {
+    const { paymentMethodType, paypalEmail, venmoUsername, cardType, last4 } =
+      this.plan?.payment ?? {};
+    if (paymentMethodType === PaymentProvider.PayPal) return paypalEmail ?? '';
+    if (paymentMethodType === PaymentProvider.Venmo) return venmoUsername ?? '';
+    return `${cardType} - ${last4}`;
+  }
+
   render() {
     const displayContactForm =
       this.selectedPaymentProvider === PaymentProvider.CreditCard ||
@@ -158,7 +185,8 @@ export class MGCEditPaymentMethod extends LitElement {
 
     const displayBraintreeManager =
       this.selectedPaymentProvider === PaymentProvider.CreditCard ||
-      this.selectedPaymentProvider === PaymentProvider.PayPal;
+      this.selectedPaymentProvider === PaymentProvider.PayPal ||
+      this.selectedPaymentProvider === PaymentProvider.Venmo;
 
     return html`
       <style>
@@ -172,13 +200,11 @@ export class MGCEditPaymentMethod extends LitElement {
                 this.clearStatusMessaging();
               }}
               ><span>
-                ${this.plan?.payment?.paymentMethodType === 'creditCard'
+                ${this.plan?.payment?.paymentMethodType ===
+                BRAINTREE_CREDITCARD_TYPE
                   ? 'Credit Card'
                   : this.plan?.payment?.paymentMethodType}:
-                ${this.plan?.payment?.paymentMethodType ===
-                PaymentProvider.PayPal
-                  ? this.plan?.payment?.paypalEmail
-                  : `${this.plan?.payment?.cardType} - ${this.plan?.payment?.last4}`}
+                ${this.paymentMethodDetail}
               </span></ia-mgc-form-section-info
             >`
           : nothing}
@@ -225,7 +251,10 @@ export class MGCEditPaymentMethod extends LitElement {
                 .displayCreditCard=${displayCCFields}
                 .plan=${this.plan}
                 .paymentConfig=${this.paymentConfig}
+                .venmoPendingStorage=${this.venmoPendingStorage}
                 @BraintreeManagerSetupComplete=${() => {
+                  this.braintreeManager =
+                    this.braintreeManagerElement?.braintreeManager;
                   this.braintreeManagerElement?.renderPayPalVaultButton();
                 }}
                 @PayPalVaultAuthorized=${(e: CustomEvent) => {
@@ -235,12 +264,32 @@ export class MGCEditPaymentMethod extends LitElement {
                   this.updateStatus = 'fail';
                   this.updateMessage = 'PayPal error, please try again';
                 }}
+                @VenmoAuthorized=${(e: CustomEvent) => {
+                  this.handleVenmoAuthorized(e);
+                }}
+                @VenmoError=${() => {
+                  this.showVenmoError('Venmo error, please try again');
+                  // Re-dispatch with bubbles so ancestor components can react
+                  // (e.g. close a loading/redirect modal).
+                  this.dispatchEvent(
+                    new CustomEvent('VenmoError', {
+                      bubbles: true,
+                      composed: true,
+                    }),
+                  );
+                }}
               ></ia-mgc-braintree-manager>
 
               <ia-mgc-button
                 id="edit-plan-payment-method-cancel"
                 class="secondary"
                 .clickHandler=${() => {
+                  if (
+                    this.selectedPaymentProvider === PaymentProvider.Venmo &&
+                    this.plan?.id
+                  ) {
+                    this.venmoPendingStorage?.clearPending(this.plan.id);
+                  }
                   this.currentlyEditing = false;
                   this.selectedPaymentProvider = '';
                   this.clearStatusMessaging();
@@ -248,7 +297,8 @@ export class MGCEditPaymentMethod extends LitElement {
                 >Cancel</ia-mgc-button
               >
               ${
-                this.selectedPaymentProvider !== PaymentProvider.PayPal
+                this.selectedPaymentProvider !== PaymentProvider.PayPal &&
+                this.selectedPaymentProvider !== PaymentProvider.Venmo
                   ? html`<ia-mgc-button
                       id="edit-plan-payment-method-submit"
                       class="primary"
@@ -295,6 +345,36 @@ export class MGCEditPaymentMethod extends LitElement {
                     >`
                   : nothing
               }
+              ${
+                this.selectedPaymentProvider === PaymentProvider.Venmo
+                  ? html`<ia-mgc-button
+                      id="edit-plan-payment-method-venmo-submit"
+                      class="primary"
+                      .clickHandler=${async (
+                        _event: Event,
+                        iaButton: MGCButton,
+                      ) => {
+                        const button = iaButton;
+                        button.isDisabled = true;
+                        const isContactFormValid =
+                          this.contactFormElement?.reportValidity();
+                        if (!isContactFormValid) {
+                          button.isDisabled = false;
+                          return;
+                        }
+                        this.dispatchEvent(
+                          new CustomEvent('VenmoRedirectStarted', {
+                            bubbles: true,
+                            composed: true,
+                          }),
+                        );
+                        await this.braintreeManagerElement?.startVenmoPayment();
+                        button.isDisabled = false;
+                      }}
+                      >Pay with Venmo</ia-mgc-button
+                    >`
+                  : nothing
+              }
               <ia-mgc-update-status .status=${this.updateStatus}
                 >${this.updateMessage}</ia-mgc-update-status
               ></ia-mgc-form-section-info>
@@ -308,11 +388,36 @@ export class MGCEditPaymentMethod extends LitElement {
     `;
   }
 
-  private handlePayPalVaultAuthorized(e: CustomEvent): void {
+  showVenmoError(
+    message: string = 'Venmo payment cancelled, please try again.',
+  ): void {
+    this.updateStatus = 'fail';
+    this.updateMessage = message;
+  }
+
+  private handleVenmoAuthorized(e: CustomEvent): void {
     const { paymentMethodInfo } = e.detail;
     const newPaymentMethodRequest = new PaymentMethodRequest({
       paymentMethodInfo,
       donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
+      paymentProvider: PaymentProvider.Venmo,
+    });
+    this.dispatchEvent(
+      new CustomEvent('UpdatePaymentMethod', {
+        detail: { newPaymentMethodRequest },
+      }),
+    );
+  }
+
+  private handlePayPalVaultAuthorized(e: CustomEvent): void {
+    const { paymentMethodInfo } = e.detail;
+    const paypalEmail = paymentMethodInfo?.details?.email ?? '';
+    const donorContactInfo = this.contactFormElement?.donorContactInfo ?? {
+      customer: { email: paypalEmail },
+    };
+    const newPaymentMethodRequest = new PaymentMethodRequest({
+      paymentMethodInfo,
+      donorContactInfo,
       paymentProvider: PaymentProvider.PayPal,
     });
     this.dispatchEvent(

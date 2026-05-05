@@ -11,7 +11,7 @@ export type BtData = {
     timezone: string;
     oldDate?: string; // optional for updates ISO UTC date string
   };
-  lastBillingDate: {
+  lastBillingDate?: {
     date: string | null;
     timezone_type: number;
     timezone: string;
@@ -99,13 +99,13 @@ export class MonthlyPlan {
   }
 
   get nextBillingDateLocale(): string {
-    const dateStr = this.payment?.nextBillingDate.date ?? '';
+    const dateStr = this.payment?.nextBillingDate?.date ?? '';
     if (!dateStr) return 'not found';
     return this.formatDateUTC(dateStr);
   }
 
   get lastBillingDateLocale(): string {
-    const dateStr = this.payment?.lastBillingDate.date ?? '';
+    const dateStr = this.payment?.lastBillingDate?.date ?? '';
     if (!dateStr) return '';
     return this.formatDateUTC(dateStr);
   }
