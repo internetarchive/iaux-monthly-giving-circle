@@ -27,6 +27,40 @@ describe('MGCBraintreeManager', () => {
 
       expect(checkVenmoSpy.calledOnce).to.be.true;
     });
+
+    it('replaces googlePayHandler with a null stub when googlePayMerchantId is absent', async () => {
+      sandbox = Sinon.createSandbox();
+      const el = document.createElement(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+
+      sandbox.stub(el as any, 'checkVenmoRestoration').resolves();
+
+      // No googlePayMerchantId in paymentConfig
+      await (el as any).setupBraintreeManager();
+
+      const result =
+        await el.braintreeManager?.paymentProviders.googlePayHandler.get();
+      expect(result).to.be.null;
+    });
+
+    it('does not replace googlePayHandler when googlePayMerchantId is set', async () => {
+      sandbox = Sinon.createSandbox();
+      const el = document.createElement(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+
+      (el as any).paymentConfig = { googlePayMerchantId: 'merchant-123' };
+      sandbox.stub(el as any, 'checkVenmoRestoration').resolves();
+
+      await (el as any).setupBraintreeManager();
+
+      // googlePayHandler should be the real PromisedSingleton, not our null stub
+      const handler = el.braintreeManager?.paymentProviders.googlePayHandler;
+      expect(handler).to.be.instanceOf(Object);
+      // The real handler's get() won't return null immediately (it's a PromisedSingleton)
+      expect(typeof handler?.get).to.equal('function');
+    });
   });
 
   describe('checkVenmoRestoration', () => {

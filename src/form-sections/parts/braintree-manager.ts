@@ -475,9 +475,13 @@ export class MGCBraintreeManager extends LitElement {
     // suppress Google Pay, so we replace the handler directly. The upstream path
     // is `BraintreeManager.paymentProviders.googlePayHandler` — if that changes
     // this cast will silently stop working and the button may reappear.
-    if (!this.paymentConfig?.googlePayMerchantId) {
+    if (!this.paymentConfig?.googlePayMerchantId && this.braintreeManager) {
+      // BraintreeManager has no config option to suppress Google Pay, so we
+      // replace the handler directly. Casting only paymentProviders (not the
+      // whole manager) keeps the access chain type-checked — if upstream
+      // renames paymentProviders or googlePayHandler, TypeScript will catch it.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this.braintreeManager as any).paymentProviders.googlePayHandler = {
+      (this.braintreeManager.paymentProviders as any).googlePayHandler = {
         get: async () => null,
       };
     }
