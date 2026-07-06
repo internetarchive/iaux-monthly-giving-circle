@@ -585,5 +585,59 @@ describe('MonthlyPlan', () => {
       expect(mp.plan.btdata.expirationMonth).to.be.null;
       expect(mp.plan.btdata.expirationYear).to.be.null;
     });
+
+    it('sets cardType and last4 when switching to Google Pay provider', () => {
+      const btdata = makeBtData({
+        paymentMethodType: 'Venmo',
+        venmoUsername: '@donor',
+        last4: null,
+        cardType: null,
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+
+      const request = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'Google Pay - Visa - 4242',
+          nonce: 'nonce_googlepay',
+          type: 'AndroidPayCard',
+          details: { cardType: 'Visa', lastFour: '4242' },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.GooglePay,
+      });
+
+      mp.setNewPaymentMethod(request);
+
+      expect(mp.plan.btdata.paymentMethodType).to.equal('Google Pay');
+      expect(mp.plan.btdata.cardType).to.equal('Visa');
+      expect(mp.plan.btdata.last4).to.equal('4242');
+    });
+
+    it('Google Pay branch clears expirationMonth and expirationYear', () => {
+      const btdata = makeBtData({
+        paymentMethodType: 'creditCard',
+        last4: '1234',
+        cardType: 'Visa',
+        expirationMonth: '12',
+        expirationYear: '2025',
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+
+      const request = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'Google Pay - Visa - 4242',
+          nonce: 'nonce_googlepay',
+          type: 'AndroidPayCard',
+          details: { cardType: 'Visa', lastFour: '4242' },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.GooglePay,
+      });
+
+      mp.setNewPaymentMethod(request);
+
+      expect(mp.plan.btdata.expirationMonth).to.be.null;
+      expect(mp.plan.btdata.expirationYear).to.be.null;
+    });
   });
 });

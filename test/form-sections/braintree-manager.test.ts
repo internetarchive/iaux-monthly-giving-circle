@@ -499,4 +499,177 @@ describe('MGCBraintreeManager', () => {
       expect(errorFired).to.be.true;
     });
   });
+
+  describe('startGooglePayPayment', () => {
+    let sandbox: Sinon.SinonSandbox;
+    let el: MGCBraintreeManager;
+
+    function makeGooglePayInstance({
+      paymentDataRequestResult = {} as any,
+      parseResponseResult = null as any,
+      parseResponseThrows = null as Error | null,
+    } = {}) {
+      return {
+        createPaymentDataRequest: Sinon.stub().resolves(
+          paymentDataRequestResult,
+        ),
+        parseResponse: parseResponseThrows
+          ? Sinon.stub().rejects(parseResponseThrows)
+          : Sinon.stub().resolves(parseResponseResult),
+      };
+    }
+
+    function makeGooglePayHandler({
+      instanceResult = null as any,
+      instanceThrows = null as Error | null,
+      loadPaymentDataResult = {} as any,
+      loadPaymentDataThrows = null as unknown,
+    } = {}) {
+      return {
+        instance: {
+          get: instanceThrows
+            ? Sinon.stub().rejects(instanceThrows)
+            : Sinon.stub().resolves(instanceResult),
+        },
+        paymentsClient: {
+          loadPaymentData: loadPaymentDataThrows
+            ? Sinon.stub().rejects(loadPaymentDataThrows)
+            : Sinon.stub().resolves(loadPaymentDataResult),
+        },
+      };
+    }
+
+    function makeBraintreeManager(handler: any = null) {
+      return {
+        paymentProviders: {
+          googlePayHandler: { get: Sinon.stub().resolves(handler) },
+        },
+      };
+    }
+
+    beforeEach(() => {
+      sandbox = Sinon.createSandbox();
+      el = document.createElement(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+      (el as any).plan = { amount: 10 };
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('does nothing when handler is unavailable', async () => {
+      (el as any).braintreeManager = makeBraintreeManager(null);
+
+      let eventFired = false;
+      el.addEventListener('GooglePayVaultAuthorized', () => {
+        eventFired = true;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(eventFired).to.be.false;
+    });
+
+    it('does nothing when instance is unavailable', async () => {
+      const handler = makeGooglePayHandler({ instanceResult: null });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let eventFired = false;
+      el.addEventListener('GooglePayVaultAuthorized', () => {
+        eventFired = true;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(eventFired).to.be.false;
+      expect(handler.paymentsClient.loadPaymentData.called).to.be.false;
+    });
+
+    it('dispatches GooglePayVaultAuthorized with correct payload on success', async () => {
+      const payload = {
+        nonce: 'fake-nonce',
+        type: 'AndroidPayCard',
+        details: { cardType: 'Visa', lastFour: '1234' },
+      };
+      const instance = makeGooglePayInstance({ parseResponseResult: payload });
+      const handler = makeGooglePayHandler({ instanceResult: instance });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let authorizedDetail: any = null;
+      el.addEventListener('GooglePayVaultAuthorized', (e: Event) => {
+        authorizedDetail = (e as CustomEvent).detail;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(authorizedDetail).to.not.be.null;
+      expect(authorizedDetail.paymentMethodInfo.nonce).to.equal('fake-nonce');
+      expect(authorizedDetail.paymentMethodInfo.description).to.equal(
+        'Google Pay - Visa - 1234',
+      );
+      expect(authorizedDetail.paymentMethodInfo.details.cardType).to.equal(
+        'Visa',
+      );
+      expect(authorizedDetail.paymentMethodInfo.details.lastFour).to.equal(
+        '1234',
+      );
+    });
+
+    it('dispatches GooglePayError when the Braintree Google Pay client fails to initialize', async () => {
+      const handler = makeGooglePayHandler({
+        instanceThrows: new Error(
+          'Google Pay is not enabled for this merchant',
+        ),
+      });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let errorFired = false;
+      el.addEventListener('GooglePayError', () => {
+        errorFired = true;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(errorFired).to.be.true;
+    });
+
+    it('does not dispatch GooglePayError when the user cancels', async () => {
+      const cancelErr = { statusCode: 'CANCELED' };
+      const instance = makeGooglePayInstance();
+      const handler = makeGooglePayHandler({
+        instanceResult: instance,
+        loadPaymentDataThrows: cancelErr,
+      });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let errorFired = false;
+      el.addEventListener('GooglePayError', () => {
+        errorFired = true;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(errorFired).to.be.false;
+    });
+
+    it('dispatches GooglePayError on unexpected error', async () => {
+      const instance = makeGooglePayInstance();
+      const handler = makeGooglePayHandler({
+        instanceResult: instance,
+        loadPaymentDataThrows: new Error('Network error'),
+      });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let errorFired = false;
+      el.addEventListener('GooglePayError', () => {
+        errorFired = true;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(errorFired).to.be.true;
+    });
+  });
 });

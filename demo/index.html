@@ -49,6 +49,8 @@
       <button id="toggle-edit-payment-method">Toggle edit payment method</button>
       <button id="mock-venmo-success">Mock Venmo success</button>
       <button id="mock-venmo-error">Mock Venmo error</button>
+      <button id="mock-googlepay-success">Mock Google Pay success</button>
+      <button id="mock-googlepay-error">Mock Google Pay error</button>
 
       <br>
       <input type="checkbox" id="force-successful-requests" name="force-successful-requests">
@@ -189,6 +191,27 @@
           "expirationYear": null,
           "venmoUsername": "venmojoe"
         }
+      },
+      "51902": {
+        "token": "Acbdcdcadsfdasf.1234alphanumeric.3foobar777gigglingSoda",
+        "amount": 7.5,
+        "currency": "USD",
+        "start_date": "2024-09-10 00:00:00",
+        "is_test": true,
+        "btdata": {
+          "billingDayOfMonth": 10,
+          "nextBillingDate": {
+            "date": "2024-10-10 00:00:00.000000",
+            "timezone_type": 3,
+            "timezone": "UTC"
+          },
+          "status": "Active",
+          "paymentMethodType": "Google Pay",
+          "last4": "4242",
+          "cardType": "Visa",
+          "expirationMonth": null,
+          "expirationYear": null
+        }
       }
     };
 
@@ -273,7 +296,10 @@
     origin: '',
     braintreeAuthToken: 'sandbox_x634jsj7_7zybks4ybp63pbmd',
     venmoProfileId: '1953896702662410263',
-    googlePayMerchantId: '',
+    // Placeholder — a real Google Pay merchant ID (from IA's Google Pay/Braintree
+    // account setup) is required for the live button to appear. Leaving this empty
+    // suppresses Google Pay entirely (see braintree-manager.ts).
+    googlePayMerchantId: 'merchant-id-placeholder',
     environment: 'dev',
     paymentClients: new PaymentClients(
       new LazyLoaderService(),
@@ -431,9 +457,10 @@
       const provider = newPaymentMethodRequest?.paymentProvider;
       const isPayPal = provider === 'PayPal';
       const isVenmo = provider === 'Venmo';
+      const isGooglePay = provider === 'Google Pay';
 
-      // PayPal always succeeds in demo; Venmo always succeeds; CC is coin-flip
-      const heads = (isPayPal || isVenmo) ? true : flipCoin() === 1;
+      // PayPal, Venmo, and Google Pay always succeed in demo; CC is coin-flip
+      const heads = (isPayPal || isVenmo || isGooglePay) ? true : flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 4000;
 
@@ -444,6 +471,8 @@
         methodLabel = `PayPal (${details?.email}, nonce: ${nonce})`;
       } else if (isVenmo) {
         methodLabel = `Venmo (@${details?.username}, nonce: ${nonce})`;
+      } else if (isGooglePay) {
+        methodLabel = `Google Pay (${details?.cardType} - ${details?.lastFour}, nonce: ${nonce})`;
       } else {
         methodLabel = 'Credit Card';
       }
@@ -539,6 +568,44 @@
         detail: { error: { code: 'VENMO_MOCK_ERROR', message: 'Mock Venmo error for demo' } },
       }));
       uxMessageInfoArea.innerText = 'Mock VenmoError event dispatched.';
+    });
+
+    // --- Google Pay mocks ---
+    // These fire the same events that startGooglePayPayment() fires on
+    // <ia-mgc-braintree-manager>, so payment-method.ts handles them identically.
+    // Real Google Pay requires Chrome + a registered merchant ID, so these mocks
+    // let the UI flow be exercised deterministically in any local dev environment.
+    // Open a plan in edit mode and select Google Pay before clicking.
+
+    document.getElementById('mock-googlepay-success').addEventListener('click', () => {
+      const bt = document.querySelector('ia-mgc-braintree-manager');
+      if (!bt) {
+        uxMessageInfoArea.innerText = 'No braintree manager found — open a plan in edit mode first.';
+        return;
+      }
+      bt.dispatchEvent(new CustomEvent('GooglePayVaultAuthorized', {
+        detail: {
+          paymentMethodInfo: {
+            description: 'Google Pay - Visa - 4242',
+            nonce: `mock-googlepay-nonce-${Date.now()}`,
+            type: 'AndroidPayCard',
+            details: { cardType: 'Visa', lastFour: '4242' },
+          },
+        },
+      }));
+      uxMessageInfoArea.innerText = 'Mock GooglePayVaultAuthorized event dispatched.';
+    });
+
+    document.getElementById('mock-googlepay-error').addEventListener('click', () => {
+      const bt = document.querySelector('ia-mgc-braintree-manager');
+      if (!bt) {
+        uxMessageInfoArea.innerText = 'No braintree manager found — open a plan in edit mode first.';
+        return;
+      }
+      bt.dispatchEvent(new CustomEvent('GooglePayError', {
+        detail: { error: { message: 'Mock Google Pay error for demo' } },
+      }));
+      uxMessageInfoArea.innerText = 'Mock GooglePayError event dispatched.';
     });
   </script>
 </body>

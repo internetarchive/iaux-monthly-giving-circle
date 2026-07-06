@@ -186,7 +186,8 @@ export class MGCEditPaymentMethod extends LitElement {
     const displayBraintreeManager =
       this.selectedPaymentProvider === PaymentProvider.CreditCard ||
       this.selectedPaymentProvider === PaymentProvider.PayPal ||
-      this.selectedPaymentProvider === PaymentProvider.Venmo;
+      this.selectedPaymentProvider === PaymentProvider.Venmo ||
+      this.selectedPaymentProvider === PaymentProvider.GooglePay;
 
     return html`
       <style>
@@ -228,6 +229,7 @@ export class MGCEditPaymentMethod extends LitElement {
                 }}
                 @googlePaySelected=${() => {
                   this.selectedPaymentProvider = PaymentProvider.GooglePay;
+                  this.braintreeManagerElement?.startGooglePayPayment();
                 }}
                 @paypalSelected=${() => {
                   this.selectedPaymentProvider = PaymentProvider.PayPal;
@@ -278,6 +280,13 @@ export class MGCEditPaymentMethod extends LitElement {
                     }),
                   );
                 }}
+                @GooglePayVaultAuthorized=${(e: CustomEvent) => {
+                  this.handleGooglePayVaultAuthorized(e);
+                }}
+                @GooglePayError=${() => {
+                  this.updateStatus = 'fail';
+                  this.updateMessage = 'Google Pay error, please try again';
+                }}
               ></ia-mgc-braintree-manager>
 
               <ia-mgc-button
@@ -298,7 +307,8 @@ export class MGCEditPaymentMethod extends LitElement {
               >
               ${
                 this.selectedPaymentProvider !== PaymentProvider.PayPal &&
-                this.selectedPaymentProvider !== PaymentProvider.Venmo
+                this.selectedPaymentProvider !== PaymentProvider.Venmo &&
+                this.selectedPaymentProvider !== PaymentProvider.GooglePay
                   ? html`<ia-mgc-button
                       id="edit-plan-payment-method-submit"
                       class="primary"
@@ -402,6 +412,21 @@ export class MGCEditPaymentMethod extends LitElement {
       donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
       paymentProvider: PaymentProvider.Venmo,
     });
+    this.dispatchEvent(
+      new CustomEvent('UpdatePaymentMethod', {
+        detail: { newPaymentMethodRequest },
+      }),
+    );
+  }
+
+  private handleGooglePayVaultAuthorized(e: CustomEvent): void {
+    const { paymentMethodInfo } = e.detail;
+    const newPaymentMethodRequest = new PaymentMethodRequest({
+      paymentMethodInfo,
+      donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
+      paymentProvider: PaymentProvider.GooglePay,
+    });
+    this.plan?.setNewPaymentMethod(newPaymentMethodRequest);
     this.dispatchEvent(
       new CustomEvent('UpdatePaymentMethod', {
         detail: { newPaymentMethodRequest },

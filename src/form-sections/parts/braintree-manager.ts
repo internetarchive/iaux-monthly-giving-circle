@@ -360,6 +360,55 @@ export class MGCBraintreeManager extends LitElement {
     }
   }
 
+  async startGooglePayPayment(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.googlePayHandler.get();
+    if (!handler) return;
+
+    try {
+      const instance = await handler.instance.get();
+      if (!instance) return;
+
+      const paymentDataRequest = await instance.createPaymentDataRequest({
+        emailRequired: true,
+        transactionInfo: {
+          currencyCode: 'USD',
+          totalPriceStatus: 'FINAL',
+          totalPrice: `${this.plan?.amount ?? 0}`,
+        },
+      });
+
+      const paymentData =
+        await handler.paymentsClient.loadPaymentData(paymentDataRequest);
+      const payload = await instance.parseResponse(paymentData);
+      this.dispatchEvent(
+        new CustomEvent('GooglePayVaultAuthorized', {
+          detail: {
+            paymentMethodInfo: {
+              description: `Google Pay - ${payload.details.cardType} - ${payload.details.lastFour}`,
+              nonce: payload.nonce,
+              type: payload.type,
+              details: {
+                cardType: payload.details.cardType,
+                lastFour: payload.details.lastFour,
+              },
+            },
+          },
+        }),
+      );
+    } catch (e: unknown) {
+      const statusCode = (e as { statusCode?: string })?.statusCode;
+      if (statusCode === 'CANCELED') {
+        console.log('Google Pay payment cancelled');
+      } else {
+        console.error('Google Pay payment error:', e);
+        this.dispatchEvent(
+          new CustomEvent('GooglePayError', { detail: { error: e } }),
+        );
+      }
+    }
+  }
+
   private async checkVenmoRestoration(): Promise<void> {
     const planId = this.plan?.id;
     if (!planId) return;
