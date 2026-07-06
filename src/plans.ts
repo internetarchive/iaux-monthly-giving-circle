@@ -65,7 +65,8 @@ export class IauxMgcPlans extends LitElement {
                     ${plan.payment?.paymentMethodType !==
                       PaymentProvider.CreditCard &&
                     plan.payment?.paymentMethodType !==
-                      PaymentProvider.GooglePay
+                      PaymentProvider.GooglePay &&
+                    plan.payment?.paymentMethodType !== PaymentProvider.ApplePay
                       ? html`<p>
                           Expires:
                           ${plan.payment?.expirationMonth ??

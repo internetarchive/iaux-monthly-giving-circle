@@ -187,7 +187,8 @@ export class MGCEditPaymentMethod extends LitElement {
       this.selectedPaymentProvider === PaymentProvider.CreditCard ||
       this.selectedPaymentProvider === PaymentProvider.PayPal ||
       this.selectedPaymentProvider === PaymentProvider.Venmo ||
-      this.selectedPaymentProvider === PaymentProvider.GooglePay;
+      this.selectedPaymentProvider === PaymentProvider.GooglePay ||
+      this.selectedPaymentProvider === PaymentProvider.ApplePay;
 
     return html`
       <style>
@@ -224,8 +225,11 @@ export class MGCEditPaymentMethod extends LitElement {
                 @venmoSelected=${() => {
                   this.selectedPaymentProvider = PaymentProvider.Venmo;
                 }}
-                @applePaySelected=${() => {
+                @applePaySelected=${(e: CustomEvent) => {
                   this.selectedPaymentProvider = PaymentProvider.ApplePay;
+                  this.braintreeManagerElement?.startApplePayPayment(
+                    e.detail.originalEvent,
+                  );
                 }}
                 @googlePaySelected=${() => {
                   this.selectedPaymentProvider = PaymentProvider.GooglePay;
@@ -287,6 +291,13 @@ export class MGCEditPaymentMethod extends LitElement {
                   this.updateStatus = 'fail';
                   this.updateMessage = 'Google Pay error, please try again';
                 }}
+                @ApplePayVaultAuthorized=${(e: CustomEvent) => {
+                  this.handleApplePayVaultAuthorized(e);
+                }}
+                @ApplePayError=${() => {
+                  this.updateStatus = 'fail';
+                  this.updateMessage = 'Apple Pay error, please try again';
+                }}
               ></ia-mgc-braintree-manager>
 
               <ia-mgc-button
@@ -308,7 +319,8 @@ export class MGCEditPaymentMethod extends LitElement {
               ${
                 this.selectedPaymentProvider !== PaymentProvider.PayPal &&
                 this.selectedPaymentProvider !== PaymentProvider.Venmo &&
-                this.selectedPaymentProvider !== PaymentProvider.GooglePay
+                this.selectedPaymentProvider !== PaymentProvider.GooglePay &&
+                this.selectedPaymentProvider !== PaymentProvider.ApplePay
                   ? html`<ia-mgc-button
                       id="edit-plan-payment-method-submit"
                       class="primary"
@@ -425,6 +437,21 @@ export class MGCEditPaymentMethod extends LitElement {
       paymentMethodInfo,
       donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
       paymentProvider: PaymentProvider.GooglePay,
+    });
+    this.plan?.setNewPaymentMethod(newPaymentMethodRequest);
+    this.dispatchEvent(
+      new CustomEvent('UpdatePaymentMethod', {
+        detail: { newPaymentMethodRequest },
+      }),
+    );
+  }
+
+  private handleApplePayVaultAuthorized(e: CustomEvent): void {
+    const { paymentMethodInfo } = e.detail;
+    const newPaymentMethodRequest = new PaymentMethodRequest({
+      paymentMethodInfo,
+      donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
+      paymentProvider: PaymentProvider.ApplePay,
     });
     this.plan?.setNewPaymentMethod(newPaymentMethodRequest);
     this.dispatchEvent(

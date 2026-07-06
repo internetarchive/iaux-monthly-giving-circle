@@ -42,6 +42,7 @@
   "devDependencies": {
     "@open-wc/eslint-config": "^9.0.0",
     "@open-wc/testing": "^4.0.0",
+    "@types/applepayjs": "^14.0.9",
     "@types/mocha": "^10.0.6",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
@@ -76,6 +77,10 @@
     "plugins": [
       "@typescript-eslint"
     ],
+    "globals": {
+      "ApplePaySession": "readonly",
+      "ApplePayJS": "readonly"
+    },
     "rules": {
       "no-console": 1,
       "no-unused-vars": "off",

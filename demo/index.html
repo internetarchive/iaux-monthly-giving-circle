@@ -51,10 +51,16 @@
       <button id="mock-venmo-error">Mock Venmo error</button>
       <button id="mock-googlepay-success">Mock Google Pay success</button>
       <button id="mock-googlepay-error">Mock Google Pay error</button>
+      <button id="mock-applepay-success">Mock Apple Pay success</button>
+      <button id="mock-applepay-error">Mock Apple Pay error</button>
 
       <br>
       <input type="checkbox" id="force-successful-requests" name="force-successful-requests">
       <label for="force-successful-requests">Force successful requests</label>
+
+      <br>
+      <input type="checkbox" id="simulate-applepay" name="simulate-applepay">
+      <label for="simulate-applepay">Force show + simulate Apple Pay (for browsers without real Apple Pay support)</label>
 
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
@@ -208,6 +214,27 @@
           "status": "Active",
           "paymentMethodType": "Google Pay",
           "last4": "4242",
+          "cardType": "Visa",
+          "expirationMonth": null,
+          "expirationYear": null
+        }
+      },
+      "62813": {
+        "token": "Acbdcdcadsfdasf.1234alphanumeric.3foobar888hummingTonic",
+        "amount": 12,
+        "currency": "USD",
+        "start_date": "2024-11-05 00:00:00",
+        "is_test": true,
+        "btdata": {
+          "billingDayOfMonth": 5,
+          "nextBillingDate": {
+            "date": "2024-12-05 00:00:00.000000",
+            "timezone_type": 3,
+            "timezone": "UTC"
+          },
+          "status": "Active",
+          "paymentMethodType": "Apple Pay",
+          "last4": "42",
           "cardType": "Visa",
           "expirationMonth": null,
           "expirationYear": null
@@ -458,9 +485,10 @@
       const isPayPal = provider === 'PayPal';
       const isVenmo = provider === 'Venmo';
       const isGooglePay = provider === 'Google Pay';
+      const isApplePay = provider === 'Apple Pay';
 
-      // PayPal, Venmo, and Google Pay always succeed in demo; CC is coin-flip
-      const heads = (isPayPal || isVenmo || isGooglePay) ? true : flipCoin() === 1;
+      // PayPal, Venmo, Google Pay, and Apple Pay always succeed in demo; CC is coin-flip
+      const heads = (isPayPal || isVenmo || isGooglePay || isApplePay) ? true : flipCoin() === 1;
       const successOrFail = heads ? 'success' : 'fail';
       const returnTiming = heads ? 1500 : 4000;
 
@@ -473,6 +501,8 @@
         methodLabel = `Venmo (@${details?.username}, nonce: ${nonce})`;
       } else if (isGooglePay) {
         methodLabel = `Google Pay (${details?.cardType} - ${details?.lastFour}, nonce: ${nonce})`;
+      } else if (isApplePay) {
+        methodLabel = `Apple Pay (${details?.cardType} - ${details?.lastTwo}, nonce: ${nonce})`;
       } else {
         methodLabel = 'Credit Card';
       }
@@ -606,6 +636,173 @@
         detail: { error: { message: 'Mock Google Pay error for demo' } },
       }));
       uxMessageInfoArea.innerText = 'Mock GooglePayError event dispatched.';
+    });
+
+    // --- Apple Pay mocks ---
+    // These fire the same events that startApplePayPayment() fires on
+    // <ia-mgc-braintree-manager>, so payment-method.ts handles them identically.
+    // Real Apple Pay requires Safari + a registered merchant domain, so these
+    // mocks let the UI flow be exercised deterministically in any local dev
+    // environment. Open a plan in edit mode and select Apple Pay before clicking.
+
+    document.getElementById('mock-applepay-success').addEventListener('click', () => {
+      const bt = document.querySelector('ia-mgc-braintree-manager');
+      if (!bt) {
+        uxMessageInfoArea.innerText = 'No braintree manager found — open a plan in edit mode first.';
+        return;
+      }
+      bt.dispatchEvent(new CustomEvent('ApplePayVaultAuthorized', {
+        detail: {
+          paymentMethodInfo: {
+            description: 'Apple Pay - Visa - 42',
+            nonce: `mock-applepay-nonce-${Date.now()}`,
+            type: 'ApplePayCard',
+            details: { cardType: 'Visa', lastTwo: '42' },
+          },
+        },
+      }));
+      uxMessageInfoArea.innerText = 'Mock ApplePayVaultAuthorized event dispatched.';
+    });
+
+    document.getElementById('mock-applepay-error').addEventListener('click', () => {
+      const bt = document.querySelector('ia-mgc-braintree-manager');
+      if (!bt) {
+        uxMessageInfoArea.innerText = 'No braintree manager found — open a plan in edit mode first.';
+        return;
+      }
+      bt.dispatchEvent(new CustomEvent('ApplePayError', {
+        detail: { error: { message: 'Mock Apple Pay error for demo' } },
+      }));
+      uxMessageInfoArea.innerText = 'Mock ApplePayError event dispatched.';
+    });
+
+    // --- Apple Pay simulation (force-show + fake ApplePaySession) ---
+    // Real browsers other than Safari never expose window.ApplePaySession, so
+    // <payment-selector> always hides the Apple Pay icon and the real
+    // startApplePayPayment() flow can never run outside Safari. This installs
+    // a fake ApplePaySession plus a fake Braintree applePayHandler so the REAL
+    // code path (payment-method.ts -> startApplePayPayment ->
+    // ApplePaySession -> tokenize) can be exercised end-to-end in any browser,
+    // distinct from the "Mock Apple Pay success/error" buttons above (which
+    // dispatch the result event directly, skipping the real code entirely).
+    //
+    // Note: this only fakes our own client-side call chain. It can't fake a
+    // real Apple merchant-validation round trip (Apple's validation endpoint
+    // only accepts validation URLs issued by a genuine Safari ApplePaySession
+    // by design), so this is for exercising our UI/wiring, not a substitute
+    // for testing in real Safari.
+
+    class FakeApplePaySession {
+      static STATUS_SUCCESS = 1;
+
+      static STATUS_FAILURE = 2;
+
+      static supportsVersion() { return true; }
+
+      static canMakePayments() { return true; }
+
+      constructor(version, paymentRequest) {
+        this.version = version;
+        this.paymentRequest = paymentRequest;
+      }
+
+      begin() {
+        const proceed = window.confirm(
+          'Apple Pay Demo\n\n' +
+          'This is a simulated Apple Pay sheet — no real Apple Pay session ' +
+          'exists in this browser.\n\n' +
+          'Click OK to simulate a successful payment authorization for Visa ...42.',
+        );
+        if (!proceed) {
+          uxMessageInfoArea.innerText = 'Simulated Apple Pay sheet cancelled.';
+          this.oncancel?.();
+          return;
+        }
+        uxMessageInfoArea.innerText = 'Simulated Apple Pay sheet: auto-validating merchant...';
+        Promise.resolve().then(() => {
+          this.onvalidatemerchant?.({ validationURL: 'https://fake.apple.example/validate' });
+        });
+      }
+
+      completeMerchantValidation() {
+        uxMessageInfoArea.innerText = 'Simulated Apple Pay: merchant validated, auto-authorizing payment...';
+        Promise.resolve().then(() => {
+          this.onpaymentauthorized?.({
+            payment: {
+              token: { fake: true },
+              billingContact: {},
+              shippingContact: { emailAddress: 'demo-donor@example.com' },
+            },
+          });
+        });
+      }
+
+      abort() {
+        uxMessageInfoArea.innerText = 'Simulated Apple Pay session aborted.';
+      }
+
+      completePayment(status) {
+        uxMessageInfoArea.innerText = status === FakeApplePaySession.STATUS_SUCCESS
+          ? 'Simulated Apple Pay: payment completed successfully.'
+          : 'Simulated Apple Pay: payment failed.';
+      }
+    }
+
+    function makeFakeApplePayHandler() {
+      const instance = {
+        createPaymentRequest: (req) => req,
+        performValidation: (_options, callback) => {
+          callback(null, { fakeMerchantSession: true });
+        },
+        tokenize: () => Promise.resolve({
+          nonce: `demo-fake-applepay-nonce-${Date.now()}`,
+          type: 'ApplePayCard',
+          details: { cardType: 'Visa', dpanLastTwo: '42' },
+        }),
+      };
+      return {
+        isAvailable: async () => true,
+        instance: { get: async () => instance },
+      };
+    }
+
+    let applePaySimulationInterval = null;
+
+    function tickApplePaySimulation() {
+      const bt = document.querySelector('ia-mgc-braintree-manager');
+      const braintreeManager = bt?.braintreeManager;
+      if (braintreeManager && !braintreeManager.__demoApplePayPatched) {
+        braintreeManager.paymentProviders.applePayHandler = {
+          get: async () => makeFakeApplePayHandler(),
+        };
+        braintreeManager.__demoApplePayPatched = true;
+      }
+
+      // Force the icon visible directly, in case <payment-selector> already
+      // ran its (real, negative) availability check before we got to patch
+      // the handler above.
+      const selector = document.querySelector(
+        'ia-mgc-edit-payment-method payment-selector',
+      );
+      if (selector) {
+        selector.applePayMode = 'available';
+      }
+    }
+
+    document.getElementById('simulate-applepay').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        window.ApplePaySession = FakeApplePaySession;
+        tickApplePaySimulation();
+        applePaySimulationInterval = setInterval(tickApplePaySimulation, 300);
+        uxMessageInfoArea.innerText = 'Apple Pay simulation enabled — open a plan in edit mode to see the icon.';
+      } else {
+        delete window.ApplePaySession;
+        if (applePaySimulationInterval) {
+          clearInterval(applePaySimulationInterval);
+          applePaySimulationInterval = null;
+        }
+        uxMessageInfoArea.innerText = 'Apple Pay simulation disabled.';
+      }
     });
   </script>
 </body>

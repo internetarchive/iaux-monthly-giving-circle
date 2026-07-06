@@ -138,6 +138,8 @@ export class MonthlyPlan {
       newPaymentMethodRequest.paymentProvider === PaymentProvider.Venmo;
     const isGooglePay =
       newPaymentMethodRequest.paymentProvider === PaymentProvider.GooglePay;
+    const isApplePay =
+      newPaymentMethodRequest.paymentProvider === PaymentProvider.ApplePay;
     const paypalEmail = details.email ?? details.description ?? 'not_found';
 
     let mergedBtData: BtData;
@@ -167,6 +169,18 @@ export class MonthlyPlan {
         paymentMethodType: PaymentProvider.GooglePay,
         cardType: details.cardType ?? null,
         last4: details.lastFour ?? null,
+        expirationMonth: null,
+        expirationYear: null,
+      };
+    } else if (isApplePay) {
+      mergedBtData = {
+        ...this.plan.btdata,
+        paymentMethodType: PaymentProvider.ApplePay,
+        cardType: details.cardType ?? null,
+        // Apple Pay's tokenization payload only exposes the last two digits
+        // of the underlying card (dpanLastTwo), not the last four like every
+        // other provider here.
+        last4: details.lastTwo ?? null,
         expirationMonth: null,
         expirationYear: null,
       };

@@ -86,6 +86,24 @@ describe('Plans view payment method display:', () => {
     expect(detailsText).to.not.include('not found');
   });
 
+  it('Apple Pay plan shows cardType and last4 (2 digits), and no Expires text', async () => {
+    const plan = makePlanWithPayment({
+      paymentMethodType: PaymentProvider.ApplePay,
+      cardType: 'Visa',
+      last4: '42',
+      expirationMonth: null,
+      expirationYear: null,
+    });
+    const mgcPlans = await renderPlansFor(plan);
+    const detailsText =
+      mgcPlans.shadowRoot?.querySelector('.payment-details')?.textContent ?? '';
+
+    expect(detailsText).to.include('Visa');
+    expect(detailsText).to.include('...42');
+    expect(detailsText).to.not.include('Expires');
+    expect(detailsText).to.not.include('not found');
+  });
+
   it('PayPal plan does not show a cardType/last4 line', async () => {
     const plan = makePlanWithPayment({
       paymentMethodType: PaymentProvider.PayPal,

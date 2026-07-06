@@ -639,5 +639,59 @@ describe('MonthlyPlan', () => {
       expect(mp.plan.btdata.expirationMonth).to.be.null;
       expect(mp.plan.btdata.expirationYear).to.be.null;
     });
+
+    it('sets cardType and last4 (from lastTwo) when switching to Apple Pay provider', () => {
+      const btdata = makeBtData({
+        paymentMethodType: 'Venmo',
+        venmoUsername: '@donor',
+        last4: null,
+        cardType: null,
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+
+      const request = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'Apple Pay - Visa - 42',
+          nonce: 'nonce_applepay',
+          type: 'ApplePayCard',
+          details: { cardType: 'Visa', lastTwo: '42' },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.ApplePay,
+      });
+
+      mp.setNewPaymentMethod(request);
+
+      expect(mp.plan.btdata.paymentMethodType).to.equal('Apple Pay');
+      expect(mp.plan.btdata.cardType).to.equal('Visa');
+      expect(mp.plan.btdata.last4).to.equal('42');
+    });
+
+    it('Apple Pay branch clears expirationMonth and expirationYear', () => {
+      const btdata = makeBtData({
+        paymentMethodType: 'creditCard',
+        last4: '1234',
+        cardType: 'Visa',
+        expirationMonth: '12',
+        expirationYear: '2025',
+      });
+      const mp = new MonthlyPlan(makePlan({ btdata }));
+
+      const request = new PaymentMethodRequest({
+        paymentMethodInfo: {
+          description: 'Apple Pay - Visa - 42',
+          nonce: 'nonce_applepay',
+          type: 'ApplePayCard',
+          details: { cardType: 'Visa', lastTwo: '42' },
+        },
+        donorContactInfo: {},
+        paymentProvider: PaymentProvider.ApplePay,
+      });
+
+      mp.setNewPaymentMethod(request);
+
+      expect(mp.plan.btdata.expirationMonth).to.be.null;
+      expect(mp.plan.btdata.expirationYear).to.be.null;
+    });
   });
 });
