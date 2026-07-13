@@ -62,6 +62,10 @@
       <input type="checkbox" id="simulate-applepay" name="simulate-applepay">
       <label for="simulate-applepay">Force show + simulate Apple Pay (for browsers without real Apple Pay support)</label>
 
+      <br>
+      <input type="checkbox" id="simulate-googlepay" name="simulate-googlepay">
+      <label for="simulate-googlepay">Force show + simulate Google Pay (for browsers/setups without real Google Pay support)</label>
+
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
   </div>
@@ -802,6 +806,92 @@
           applePaySimulationInterval = null;
         }
         uxMessageInfoArea.innerText = 'Apple Pay simulation disabled.';
+      }
+    });
+
+    // --- Google Pay simulation (force-show + fake handler) ---
+    // Real Google Pay availability (payment-selector.ts) depends on the
+    // Google Pay JS SDK's paymentsClient.isReadyToPay() resolving true, which
+    // in turn needs a real merchant ID and a browser/account combo Google
+    // considers eligible — never true for the placeholder merchant ID this
+    // demo uses. This installs a fake Braintree googlePayHandler so the REAL
+    // code path (payment-method.ts -> startGooglePayPayment ->
+    // handler.instance.get() -> paymentsClient.loadPaymentData ->
+    // instance.parseResponse) can be exercised end-to-end in any browser,
+    // distinct from the "Mock Google Pay success/error" buttons above (which
+    // dispatch the result event directly, skipping the real code entirely).
+    //
+    // Unlike Apple Pay, Google Pay has no browser-global session class to
+    // fake — everything is mediated through the handler object itself — so
+    // there's no window.* shim needed here.
+
+    function makeFakeGooglePayHandler() {
+      const instance = {
+        createPaymentDataRequest: (req) => req,
+        parseResponse: () => Promise.resolve({
+          nonce: `demo-fake-googlepay-nonce-${Date.now()}`,
+          type: 'AndroidPayCard',
+          details: { cardType: 'Visa', lastFour: '4242' },
+        }),
+      };
+      return {
+        isBrowserSupported: async () => true,
+        instance: { get: async () => instance },
+        paymentsClient: {
+          loadPaymentData: () => {
+            const proceed = window.confirm(
+              'Google Pay Demo\n\n' +
+              'This is a simulated Google Pay sheet — no real Google Pay session ' +
+              'exists in this browser.\n\n' +
+              'Click OK to simulate a successful payment authorization for Visa ...4242.',
+            );
+            if (!proceed) {
+              uxMessageInfoArea.innerText = 'Simulated Google Pay sheet cancelled.';
+              const err = new Error('User closed the Payment Request UI.');
+              err.statusCode = 'CANCELED';
+              return Promise.reject(err);
+            }
+            uxMessageInfoArea.innerText = 'Simulated Google Pay sheet: auto-authorizing payment...';
+            return Promise.resolve({ fakePaymentData: true });
+          },
+        },
+      };
+    }
+
+    let googlePaySimulationInterval = null;
+
+    function tickGooglePaySimulation() {
+      const bt = document.querySelector('ia-mgc-braintree-manager');
+      const braintreeManager = bt?.braintreeManager;
+      if (braintreeManager && !braintreeManager.__demoGooglePayPatched) {
+        braintreeManager.paymentProviders.googlePayHandler = {
+          get: async () => makeFakeGooglePayHandler(),
+        };
+        braintreeManager.__demoGooglePayPatched = true;
+      }
+
+      // Force the icon visible directly, in case <payment-selector> already
+      // ran its (real, negative) availability check before we got to patch
+      // the handler above.
+      const selector = document.querySelector(
+        'ia-mgc-edit-payment-method payment-selector',
+      );
+      if (selector) {
+        selector.googlePayMode = 'available';
+      }
+    }
+
+    document.getElementById('simulate-googlepay').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        tickGooglePaySimulation();
+        googlePaySimulationInterval = setInterval(tickGooglePaySimulation, 300);
+        uxMessageInfoArea.innerText = 'Google Pay simulation enabled — open a plan in edit mode to see the icon.';
+      } else {
+        if (googlePaySimulationInterval) {
+          clearInterval(googlePaySimulationInterval);
+          googlePaySimulationInterval = null;
+        }
+        uxMessageInfoArea.innerText = 'Google Pay simulation disabled.';
       }
     });
   </script>
