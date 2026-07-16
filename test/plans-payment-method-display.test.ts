@@ -120,5 +120,25 @@ describe('Plans view payment method display:', () => {
     expect(detailsText).to.include('Paypal email');
     expect(detailsText).to.not.include('CC number not found');
     expect(detailsText).to.not.include('Card type not found');
+    expect(detailsText).to.not.include('Expires');
+    expect(detailsText).to.not.include('not found');
+  });
+
+  it('Venmo plan does not show an Expires line', async () => {
+    const plan = makePlanWithPayment({
+      paymentMethodType: PaymentProvider.Venmo,
+      cardType: null,
+      last4: null,
+      expirationMonth: null,
+      expirationYear: null,
+      venmoUsername: 'donor-venmo',
+    });
+    const mgcPlans = await renderPlansFor(plan);
+    const detailsText =
+      mgcPlans.shadowRoot?.querySelector('.payment-details')?.textContent ?? '';
+
+    expect(detailsText).to.include('Venmo username');
+    expect(detailsText).to.not.include('Expires');
+    expect(detailsText).to.not.include('not found');
   });
 });

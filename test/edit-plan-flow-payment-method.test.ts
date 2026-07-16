@@ -14,18 +14,13 @@ import type { MGCEditPaymentMethod } from '../src/form-sections/payment-method';
 import type { MGCButton } from '../src/presentational/mgc-button';
 import type { MGCFormSectionInfo } from '../src/presentational/donation-section-info';
 import type { MGCBraintreeManager } from '../src/form-sections/parts/braintree-manager';
-import type { IauxMgcPlans } from '../src/plans';
 import {
   VenmoPendingStorage,
   VENMO_MGC_PENDING_EXPIRY_MS,
 } from '../src/utils/venmo-pending-storage';
 
 import '../src/monthly-giving-circle';
-import {
-  makePlan,
-  navigateToEditView,
-  navigateBackToPlans,
-} from './helpers/edit-plan-helpers';
+import { makePlan, navigateToEditView } from './helpers/edit-plan-helpers';
 import { MockStorage } from './helpers/mock-storage';
 
 describe('Payment method coordination:', () => {
@@ -279,7 +274,7 @@ describe('Payment method coordination:', () => {
     expect(renderPayPalCalled).to.be.true;
   });
 
-  it('PayPalVaultAuthorized on braintree manager dispatches UpdatePaymentMethod with PayPal provider', async () => {
+  it('PayPalVaultAuthorized enables submit; submitting dispatches UpdatePaymentMethod with PayPal provider', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(
       html`<ia-monthly-giving-circle
@@ -318,6 +313,16 @@ describe('Payment method coordination:', () => {
         },
       }),
     );
+    await paymentMethodEl.updateComplete;
+
+    // Authorization alone does not save — it just enables submit.
+    expect(receivedEvent).to.be.null;
+    const submitBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-submit',
+    ) as MGCButton;
+    expect(submitBtn.isDisabled).to.not.be.true;
+
+    submitBtn.shadowRoot?.querySelector('button')!.click();
     await el.updateComplete;
 
     expect(receivedEvent).to.not.be.null;
@@ -364,7 +369,7 @@ describe('Payment method coordination:', () => {
     expect(paymentMethodEl.updateStatus).to.equal('fail');
   });
 
-  it('submit button is hidden when PayPal is the selected provider', async () => {
+  it('submit button is visible but disabled until PayPal authorizes', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(
       html`<ia-monthly-giving-circle
@@ -387,8 +392,82 @@ describe('Payment method coordination:', () => {
 
     const submitBtn = paymentMethodEl.querySelector(
       '#edit-plan-payment-method-submit',
+    ) as MGCButton;
+    expect(submitBtn).to.exist;
+    expect(submitBtn.isDisabled).to.be.true;
+
+    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
+      new CustomEvent('PayPalVaultAuthorized', {
+        bubbles: true,
+        detail: {
+          paymentMethodInfo: {
+            description: 'PayPal - donor@example.com',
+            nonce: 'nonce-pp-enable',
+            type: 'PayPalAccount',
+            details: { email: 'donor@example.com' },
+          },
+        },
+      }),
     );
-    expect(submitBtn).to.not.exist;
+    await paymentMethodEl.updateComplete;
+
+    expect(submitBtn.isDisabled).to.not.be.true;
+  });
+
+  it('submit button is shown but disabled when no provider is selected', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    // no selectedPaymentProvider set — nothing chosen yet
+    await paymentMethodEl.updateComplete;
+
+    const submitBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-submit',
+    ) as MGCButton | null;
+    expect(submitBtn).to.exist;
+    expect(submitBtn?.isDisabled).to.be.true;
+  });
+
+  it('submit button is shown and enabled when Credit Card is selected', async () => {
+    const plan = makePlan();
+    const el = await fixture<MonthlyGivingCircle>(
+      html`<ia-monthly-giving-circle
+        .canEdit=${true}
+        .canEditPaymentMethod=${true}
+        .plans=${[plan]}
+      ></ia-monthly-giving-circle>`,
+    );
+
+    await navigateToEditView(el);
+
+    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+    const paymentMethodEl = editPlan.querySelector(
+      'ia-mgc-edit-payment-method',
+    ) as MGCEditPaymentMethod;
+
+    paymentMethodEl.currentlyEditing = true;
+    paymentMethodEl.selectedPaymentProvider = PaymentProvider.CreditCard;
+    await paymentMethodEl.updateComplete;
+
+    const submitBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-submit',
+    ) as MGCButton | null;
+    expect(submitBtn).to.exist;
+    expect(submitBtn?.isDisabled).to.not.be.true;
   });
 
   it('selecting Google Pay sets selectedPaymentProvider to PaymentProvider.GooglePay', async () => {
@@ -486,7 +565,7 @@ describe('Payment method coordination:', () => {
     expect(braintreeManagerEl?.classList.contains('hidden')).to.be.false;
   });
 
-  it('GooglePayVaultAuthorized on braintree manager dispatches UpdatePaymentMethod with Google Pay provider', async () => {
+  it('GooglePayVaultAuthorized enables submit; submitting dispatches UpdatePaymentMethod with Google Pay provider', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(
       html`<ia-monthly-giving-circle
@@ -525,6 +604,16 @@ describe('Payment method coordination:', () => {
         },
       }),
     );
+    await paymentMethodEl.updateComplete;
+
+    // Authorization alone does not save — it just enables submit.
+    expect(receivedEvent).to.be.null;
+    const submitBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-submit',
+    ) as MGCButton;
+    expect(submitBtn.isDisabled).to.not.be.true;
+
+    submitBtn.shadowRoot?.querySelector('button')!.click();
     await el.updateComplete;
 
     expect(receivedEvent).to.not.be.null;
@@ -537,65 +626,6 @@ describe('Payment method coordination:', () => {
     expect(newPaymentMethodRequest.paymentMethodInfo.details.cardType).to.equal(
       'Visa',
     );
-
-    expect(plan.payment?.paymentMethodType).to.equal(PaymentProvider.GooglePay);
-    expect(plan.payment?.cardType).to.equal('Visa');
-    expect(plan.payment?.last4).to.equal('4242');
-  });
-
-  it('GooglePayVaultAuthorized updates the plan model immediately, before any host-level UpdatePaymentMethod handling', async () => {
-    const plan = makePlan();
-    const el = await fixture<MonthlyGivingCircle>(
-      html`<ia-monthly-giving-circle
-        .canEdit=${true}
-        .canEditPaymentMethod=${true}
-        .plans=${[plan]}
-      ></ia-monthly-giving-circle>`,
-    );
-
-    await navigateToEditView(el);
-
-    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
-    const paymentMethodEl = editPlan.querySelector(
-      'ia-mgc-edit-payment-method',
-    ) as MGCEditPaymentMethod;
-
-    paymentMethodEl.currentlyEditing = true;
-    paymentMethodEl.selectedPaymentProvider = PaymentProvider.GooglePay;
-    await paymentMethodEl.updateComplete;
-
-    // No listener for UpdatePaymentMethod / updateReceived here — proving the
-    // model update doesn't depend on the host's async round-trip.
-    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
-      new CustomEvent('GooglePayVaultAuthorized', {
-        bubbles: true,
-        detail: {
-          paymentMethodInfo: {
-            description: 'Google Pay - Mastercard - 9999',
-            nonce: 'nonce-gp-immediate',
-            type: 'AndroidPayCard',
-            details: { cardType: 'Mastercard', lastFour: '9999' },
-          },
-        },
-      }),
-    );
-
-    expect(plan.payment?.paymentMethodType).to.equal(PaymentProvider.GooglePay);
-    expect(plan.payment?.cardType).to.equal('Mastercard');
-    expect(plan.payment?.last4).to.equal('9999');
-    expect(plan.payment?.expirationMonth).to.be.null;
-    expect(plan.payment?.expirationYear).to.be.null;
-
-    await navigateBackToPlans(el);
-
-    const mgcPlans = el.querySelector('ia-mgc-plans') as IauxMgcPlans;
-    await mgcPlans.updateComplete;
-    const detailsText =
-      mgcPlans.shadowRoot?.querySelector('.payment-details')?.textContent ?? '';
-    expect(detailsText).to.include('Mastercard');
-    expect(detailsText).to.include('...9999');
-    expect(detailsText).to.not.include('Expires');
-    expect(detailsText).to.not.include('not found');
   });
 
   it('GooglePayError on braintree manager sets updateStatus to fail', async () => {
@@ -630,7 +660,7 @@ describe('Payment method coordination:', () => {
     expect(paymentMethodEl.updateStatus).to.equal('fail');
   });
 
-  it('submit button is hidden when Google Pay is the selected provider', async () => {
+  it('submit button is visible but disabled until Google Pay authorizes', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(
       html`<ia-monthly-giving-circle
@@ -653,8 +683,26 @@ describe('Payment method coordination:', () => {
 
     const submitBtn = paymentMethodEl.querySelector(
       '#edit-plan-payment-method-submit',
+    ) as MGCButton;
+    expect(submitBtn).to.exist;
+    expect(submitBtn.isDisabled).to.be.true;
+
+    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
+      new CustomEvent('GooglePayVaultAuthorized', {
+        bubbles: true,
+        detail: {
+          paymentMethodInfo: {
+            description: 'Google Pay - Visa - 4242',
+            nonce: 'nonce-gp-enable',
+            type: 'AndroidPayCard',
+            details: { cardType: 'Visa', lastFour: '4242' },
+          },
+        },
+      }),
     );
-    expect(submitBtn).to.not.exist;
+    await paymentMethodEl.updateComplete;
+
+    expect(submitBtn.isDisabled).to.not.be.true;
   });
 
   it('selecting Apple Pay sets selectedPaymentProvider to PaymentProvider.ApplePay', async () => {
@@ -759,7 +807,7 @@ describe('Payment method coordination:', () => {
     expect(braintreeManagerEl?.classList.contains('hidden')).to.be.false;
   });
 
-  it('ApplePayVaultAuthorized on braintree manager dispatches UpdatePaymentMethod with Apple Pay provider', async () => {
+  it('ApplePayVaultAuthorized enables submit; submitting dispatches UpdatePaymentMethod with Apple Pay provider', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(
       html`<ia-monthly-giving-circle
@@ -798,6 +846,16 @@ describe('Payment method coordination:', () => {
         },
       }),
     );
+    await paymentMethodEl.updateComplete;
+
+    // Authorization alone does not save — it just enables submit.
+    expect(receivedEvent).to.be.null;
+    const submitBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-submit',
+    ) as MGCButton;
+    expect(submitBtn.isDisabled).to.not.be.true;
+
+    submitBtn.shadowRoot?.querySelector('button')!.click();
     await el.updateComplete;
 
     expect(receivedEvent).to.not.be.null;
@@ -810,65 +868,6 @@ describe('Payment method coordination:', () => {
     expect(newPaymentMethodRequest.paymentMethodInfo.details.cardType).to.equal(
       'Visa',
     );
-
-    expect(plan.payment?.paymentMethodType).to.equal(PaymentProvider.ApplePay);
-    expect(plan.payment?.cardType).to.equal('Visa');
-    expect(plan.payment?.last4).to.equal('42');
-  });
-
-  it('ApplePayVaultAuthorized updates the plan model immediately, before any host-level UpdatePaymentMethod handling', async () => {
-    const plan = makePlan();
-    const el = await fixture<MonthlyGivingCircle>(
-      html`<ia-monthly-giving-circle
-        .canEdit=${true}
-        .canEditPaymentMethod=${true}
-        .plans=${[plan]}
-      ></ia-monthly-giving-circle>`,
-    );
-
-    await navigateToEditView(el);
-
-    const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
-    const paymentMethodEl = editPlan.querySelector(
-      'ia-mgc-edit-payment-method',
-    ) as MGCEditPaymentMethod;
-
-    paymentMethodEl.currentlyEditing = true;
-    paymentMethodEl.selectedPaymentProvider = PaymentProvider.ApplePay;
-    await paymentMethodEl.updateComplete;
-
-    // No listener for UpdatePaymentMethod / updateReceived here — proving the
-    // model update doesn't depend on the host's async round-trip.
-    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
-      new CustomEvent('ApplePayVaultAuthorized', {
-        bubbles: true,
-        detail: {
-          paymentMethodInfo: {
-            description: 'Apple Pay - Mastercard - 99',
-            nonce: 'nonce-ap-immediate',
-            type: 'ApplePayCard',
-            details: { cardType: 'Mastercard', lastTwo: '99' },
-          },
-        },
-      }),
-    );
-
-    expect(plan.payment?.paymentMethodType).to.equal(PaymentProvider.ApplePay);
-    expect(plan.payment?.cardType).to.equal('Mastercard');
-    expect(plan.payment?.last4).to.equal('99');
-    expect(plan.payment?.expirationMonth).to.be.null;
-    expect(plan.payment?.expirationYear).to.be.null;
-
-    await navigateBackToPlans(el);
-
-    const mgcPlans = el.querySelector('ia-mgc-plans') as IauxMgcPlans;
-    await mgcPlans.updateComplete;
-    const detailsText =
-      mgcPlans.shadowRoot?.querySelector('.payment-details')?.textContent ?? '';
-    expect(detailsText).to.include('Mastercard');
-    expect(detailsText).to.include('...99');
-    expect(detailsText).to.not.include('Expires');
-    expect(detailsText).to.not.include('not found');
   });
 
   it('ApplePayError on braintree manager sets updateStatus to fail', async () => {
@@ -903,7 +902,7 @@ describe('Payment method coordination:', () => {
     expect(paymentMethodEl.updateStatus).to.equal('fail');
   });
 
-  it('submit button is hidden when Apple Pay is the selected provider', async () => {
+  it('submit button is visible but disabled until Apple Pay authorizes', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(
       html`<ia-monthly-giving-circle
@@ -926,8 +925,26 @@ describe('Payment method coordination:', () => {
 
     const submitBtn = paymentMethodEl.querySelector(
       '#edit-plan-payment-method-submit',
+    ) as MGCButton;
+    expect(submitBtn).to.exist;
+    expect(submitBtn.isDisabled).to.be.true;
+
+    paymentMethodEl.querySelector('ia-mgc-braintree-manager')!.dispatchEvent(
+      new CustomEvent('ApplePayVaultAuthorized', {
+        bubbles: true,
+        detail: {
+          paymentMethodInfo: {
+            description: 'Apple Pay - Visa - 42',
+            nonce: 'nonce-ap-enable',
+            type: 'ApplePayCard',
+            details: { cardType: 'Visa', lastTwo: '42' },
+          },
+        },
+      }),
     );
-    expect(submitBtn).to.not.exist;
+    await paymentMethodEl.updateComplete;
+
+    expect(submitBtn.isDisabled).to.not.be.true;
   });
 
   it('updateReceived with paymentMethodUpdate success closes payment method form', async () => {
@@ -1066,7 +1083,7 @@ describe('Venmo redirect restoration (firstUpdated):', () => {
     expect(paymentMethodEl.currentlyEditing).to.be.false;
   });
 
-  it('VenmoAuthorized from braintree-manager dispatches UpdatePaymentMethod with Venmo provider', async () => {
+  it('VenmoAuthorized enables submit; submitting dispatches UpdatePaymentMethod with Venmo provider', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(
       html`<ia-monthly-giving-circle
@@ -1105,6 +1122,16 @@ describe('Venmo redirect restoration (firstUpdated):', () => {
         },
       }),
     );
+    await paymentMethodEl.updateComplete;
+
+    // Authorization alone does not save — it just enables submit.
+    expect(receivedEvent).to.be.null;
+    const submitBtn = paymentMethodEl.querySelector(
+      '#edit-plan-payment-method-submit',
+    ) as MGCButton;
+    expect(submitBtn.isDisabled).to.not.be.true;
+
+    submitBtn.shadowRoot?.querySelector('button')!.click();
     await el.updateComplete;
 
     expect(receivedEvent).to.not.be.null;

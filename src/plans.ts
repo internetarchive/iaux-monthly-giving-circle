@@ -62,16 +62,12 @@ export class IauxMgcPlans extends LitElement {
                           >
                         </p>`
                       : nothing}
-                    ${plan.payment?.paymentMethodType !==
-                      PaymentProvider.CreditCard &&
-                    plan.payment?.paymentMethodType !==
-                      PaymentProvider.GooglePay &&
-                    plan.payment?.paymentMethodType !== PaymentProvider.ApplePay
+                    ${plan.payment?.expirationMonth &&
+                    plan.payment?.expirationYear
                       ? html`<p>
                           Expires:
-                          ${plan.payment?.expirationMonth ??
-                          'month not found'}/${plan.payment?.expirationYear ??
-                          'year not found'}
+                          ${plan.payment.expirationMonth}/${plan.payment
+                            .expirationYear}
                         </p>`
                       : nothing}
                   </div>
