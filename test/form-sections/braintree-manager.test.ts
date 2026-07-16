@@ -499,4 +499,390 @@ describe('MGCBraintreeManager', () => {
       expect(errorFired).to.be.true;
     });
   });
+
+  describe('startGooglePayPayment', () => {
+    let sandbox: Sinon.SinonSandbox;
+    let el: MGCBraintreeManager;
+
+    function makeGooglePayInstance({
+      paymentDataRequestResult = {} as any,
+      parseResponseResult = null as any,
+      parseResponseThrows = null as Error | null,
+    } = {}) {
+      return {
+        createPaymentDataRequest: Sinon.stub().resolves(
+          paymentDataRequestResult,
+        ),
+        parseResponse: parseResponseThrows
+          ? Sinon.stub().rejects(parseResponseThrows)
+          : Sinon.stub().resolves(parseResponseResult),
+      };
+    }
+
+    function makeGooglePayHandler({
+      instanceResult = null as any,
+      instanceThrows = null as Error | null,
+      loadPaymentDataResult = {} as any,
+      loadPaymentDataThrows = null as unknown,
+    } = {}) {
+      return {
+        instance: {
+          get: instanceThrows
+            ? Sinon.stub().rejects(instanceThrows)
+            : Sinon.stub().resolves(instanceResult),
+        },
+        paymentsClient: {
+          loadPaymentData: loadPaymentDataThrows
+            ? Sinon.stub().rejects(loadPaymentDataThrows)
+            : Sinon.stub().resolves(loadPaymentDataResult),
+        },
+      };
+    }
+
+    function makeBraintreeManager(handler: any = null) {
+      return {
+        paymentProviders: {
+          googlePayHandler: { get: Sinon.stub().resolves(handler) },
+        },
+      };
+    }
+
+    beforeEach(() => {
+      sandbox = Sinon.createSandbox();
+      el = document.createElement(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+      (el as any).plan = { amount: 10 };
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('does nothing when handler is unavailable', async () => {
+      (el as any).braintreeManager = makeBraintreeManager(null);
+
+      let eventFired = false;
+      el.addEventListener('GooglePayVaultAuthorized', () => {
+        eventFired = true;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(eventFired).to.be.false;
+    });
+
+    it('does nothing when instance is unavailable', async () => {
+      const handler = makeGooglePayHandler({ instanceResult: null });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let eventFired = false;
+      el.addEventListener('GooglePayVaultAuthorized', () => {
+        eventFired = true;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(eventFired).to.be.false;
+      expect(handler.paymentsClient.loadPaymentData.called).to.be.false;
+    });
+
+    it('dispatches GooglePayVaultAuthorized with correct payload on success', async () => {
+      const payload = {
+        nonce: 'fake-nonce',
+        type: 'AndroidPayCard',
+        details: { cardType: 'Visa', lastFour: '1234' },
+      };
+      const instance = makeGooglePayInstance({ parseResponseResult: payload });
+      const handler = makeGooglePayHandler({ instanceResult: instance });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let authorizedDetail: any = null;
+      el.addEventListener('GooglePayVaultAuthorized', (e: Event) => {
+        authorizedDetail = (e as CustomEvent).detail;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(authorizedDetail).to.not.be.null;
+      expect(authorizedDetail.paymentMethodInfo.nonce).to.equal('fake-nonce');
+      expect(authorizedDetail.paymentMethodInfo.description).to.equal(
+        'Google Pay - Visa - 1234',
+      );
+      expect(authorizedDetail.paymentMethodInfo.details.cardType).to.equal(
+        'Visa',
+      );
+      expect(authorizedDetail.paymentMethodInfo.details.lastFour).to.equal(
+        '1234',
+      );
+    });
+
+    it('dispatches GooglePayError when the Braintree Google Pay client fails to initialize', async () => {
+      const handler = makeGooglePayHandler({
+        instanceThrows: new Error(
+          'Google Pay is not enabled for this merchant',
+        ),
+      });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let errorFired = false;
+      el.addEventListener('GooglePayError', () => {
+        errorFired = true;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(errorFired).to.be.true;
+    });
+
+    it('does not dispatch GooglePayError when the user cancels', async () => {
+      const cancelErr = { statusCode: 'CANCELED' };
+      const instance = makeGooglePayInstance();
+      const handler = makeGooglePayHandler({
+        instanceResult: instance,
+        loadPaymentDataThrows: cancelErr,
+      });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let errorFired = false;
+      el.addEventListener('GooglePayError', () => {
+        errorFired = true;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(errorFired).to.be.false;
+    });
+
+    it('dispatches GooglePayError on unexpected error', async () => {
+      const instance = makeGooglePayInstance();
+      const handler = makeGooglePayHandler({
+        instanceResult: instance,
+        loadPaymentDataThrows: new Error('Network error'),
+      });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let errorFired = false;
+      el.addEventListener('GooglePayError', () => {
+        errorFired = true;
+      });
+
+      await el.startGooglePayPayment();
+
+      expect(errorFired).to.be.true;
+    });
+  });
+
+  describe('startApplePayPayment', () => {
+    let sandbox: Sinon.SinonSandbox;
+    let el: MGCBraintreeManager;
+    let originalApplePaySession: unknown;
+
+    class MockApplePaySession {
+      static STATUS_SUCCESS = 1;
+
+      static STATUS_FAILURE = 2;
+
+      static lastInstance: any;
+
+      onvalidatemerchant: ((event: any) => void) | undefined;
+
+      onpaymentauthorized: ((event: any) => void) | undefined;
+
+      oncancel: (() => void) | undefined;
+
+      completeMerchantValidation = Sinon.stub();
+
+      abort = Sinon.stub();
+
+      begin = Sinon.stub();
+
+      completePayment = Sinon.stub();
+
+      constructor(
+        public version: number,
+        public paymentRequest: any,
+      ) {
+        MockApplePaySession.lastInstance = this;
+      }
+    }
+
+    function makeApplePayInstance({
+      createPaymentRequestResult = {} as any,
+      performValidationImpl = undefined as Sinon.SinonStub | undefined,
+      tokenizeResult = null as any,
+      tokenizeThrows = null as Error | null,
+    } = {}) {
+      return {
+        createPaymentRequest: Sinon.stub().returns(createPaymentRequestResult),
+        performValidation:
+          performValidationImpl ??
+          Sinon.stub().callsFake((_options: any, cb: any) => cb(null, {})),
+        tokenize: tokenizeThrows
+          ? Sinon.stub().rejects(tokenizeThrows)
+          : Sinon.stub().resolves(tokenizeResult),
+      };
+    }
+
+    function makeApplePayHandler({
+      instanceResult = null as any,
+      instanceThrows = null as Error | null,
+    } = {}) {
+      return {
+        instance: {
+          get: instanceThrows
+            ? Sinon.stub().rejects(instanceThrows)
+            : Sinon.stub().resolves(instanceResult),
+        },
+      };
+    }
+
+    function makeBraintreeManager(handler: any = null) {
+      return {
+        paymentProviders: {
+          applePayHandler: { get: Sinon.stub().resolves(handler) },
+        },
+      };
+    }
+
+    beforeEach(() => {
+      sandbox = Sinon.createSandbox();
+      el = document.createElement(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+      (el as any).plan = { amount: 10 };
+      originalApplePaySession = (window as any).ApplePaySession;
+      (window as any).ApplePaySession = MockApplePaySession;
+      MockApplePaySession.lastInstance = undefined;
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+      (window as any).ApplePaySession = originalApplePaySession;
+    });
+
+    it('does nothing when handler is unavailable', async () => {
+      (el as any).braintreeManager = makeBraintreeManager(null);
+
+      await el.startApplePayPayment(new Event('click'));
+
+      expect(MockApplePaySession.lastInstance).to.be.undefined;
+    });
+
+    it('does nothing when applePayInstance is unavailable', async () => {
+      const handler = makeApplePayHandler({ instanceResult: null });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      await el.startApplePayPayment(new Event('click'));
+
+      expect(MockApplePaySession.lastInstance).to.be.undefined;
+    });
+
+    it('dispatches ApplePayVaultAuthorized with correct payload on success', async () => {
+      const payload = {
+        nonce: 'fake-nonce',
+        type: 'ApplePayCard',
+        details: { cardType: 'Visa', dpanLastTwo: '42' },
+      };
+      const applePayInstance = makeApplePayInstance({
+        tokenizeResult: payload,
+      });
+      const handler = makeApplePayHandler({ instanceResult: applePayInstance });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let authorizedDetail: any = null;
+      el.addEventListener('ApplePayVaultAuthorized', (e: Event) => {
+        authorizedDetail = (e as CustomEvent).detail;
+      });
+
+      await el.startApplePayPayment(new Event('click'));
+
+      const session = MockApplePaySession.lastInstance!;
+      expect(session.begin.called).to.be.true;
+
+      // Simulate Apple's merchant validation callback
+      await session.onvalidatemerchant!({ validationURL: 'https://apple.com' });
+      expect(applePayInstance.performValidation.called).to.be.true;
+      expect(session.completeMerchantValidation.calledWith({})).to.be.true;
+
+      // Simulate Apple's payment authorization callback
+      await session.onpaymentauthorized!({ payment: { token: 'fake-token' } });
+
+      expect(applePayInstance.tokenize.calledWith({ token: 'fake-token' })).to
+        .be.true;
+      expect(
+        session.completePayment.calledWith(MockApplePaySession.STATUS_SUCCESS),
+      ).to.be.true;
+      expect(authorizedDetail).to.not.be.null;
+      expect(authorizedDetail.paymentMethodInfo.nonce).to.equal('fake-nonce');
+      expect(authorizedDetail.paymentMethodInfo.details.cardType).to.equal(
+        'Visa',
+      );
+      expect(authorizedDetail.paymentMethodInfo.details.lastTwo).to.equal('42');
+    });
+
+    it('aborts the session and dispatches ApplePayError when merchant validation fails', async () => {
+      const validationErr = new Error('validation failed');
+      const applePayInstance = makeApplePayInstance({
+        performValidationImpl: Sinon.stub().callsFake(
+          (_options: any, cb: any) => cb(validationErr, null),
+        ),
+      });
+      const handler = makeApplePayHandler({ instanceResult: applePayInstance });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let errorFired = false;
+      el.addEventListener('ApplePayError', () => {
+        errorFired = true;
+      });
+
+      await el.startApplePayPayment(new Event('click'));
+
+      const session = MockApplePaySession.lastInstance!;
+      await session.onvalidatemerchant!({ validationURL: 'https://apple.com' });
+
+      expect(session.abort.called).to.be.true;
+      expect(session.completeMerchantValidation.called).to.be.false;
+      expect(errorFired).to.be.true;
+    });
+
+    it('completes the session with failure and dispatches ApplePayError when tokenize fails', async () => {
+      const applePayInstance = makeApplePayInstance({
+        tokenizeThrows: new Error('tokenize failed'),
+      });
+      const handler = makeApplePayHandler({ instanceResult: applePayInstance });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let errorFired = false;
+      el.addEventListener('ApplePayError', () => {
+        errorFired = true;
+      });
+
+      await el.startApplePayPayment(new Event('click'));
+
+      const session = MockApplePaySession.lastInstance!;
+      await session.onpaymentauthorized!({ payment: { token: 'fake-token' } });
+
+      expect(
+        session.completePayment.calledWith(MockApplePaySession.STATUS_FAILURE),
+      ).to.be.true;
+      expect(errorFired).to.be.true;
+    });
+
+    it('dispatches ApplePayError on unexpected error retrieving the instance', async () => {
+      const handler = makeApplePayHandler({
+        instanceThrows: new Error('SDK unavailable'),
+      });
+      (el as any).braintreeManager = makeBraintreeManager(handler);
+
+      let errorFired = false;
+      el.addEventListener('ApplePayError', () => {
+        errorFired = true;
+      });
+
+      await el.startApplePayPayment(new Event('click'));
+
+      expect(errorFired).to.be.true;
+    });
+  });
 });

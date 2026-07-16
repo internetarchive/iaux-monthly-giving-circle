@@ -1,6 +1,6 @@
 /* eslint-disable arrow-body-style */
 import { LitElement, html, nothing, css, TemplateResult } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import '@internetarchive/donation-form-section';
 import '@internetarchive/donation-form/dist/src/form-elements/contact-form/contact-form.js';
 
@@ -79,6 +79,12 @@ export class MGCEditPaymentMethod extends LitElement {
 
   @property({ type: Object }) venmoPendingStorage?: VenmoPendingStorage;
 
+  // Captured once a wallet provider (PayPal/Venmo/Apple Pay/Google Pay) fires
+  // its authorized callback. Its presence is what enables the submit button for
+  // those providers; the submit click then saves it. Credit Card doesn't use
+  // this — it validates and builds its request on submit.
+  @state() private authorizedPaymentMethodRequest?: PaymentMethodRequest;
+
   createRenderRoot() {
     return this;
   }
@@ -99,6 +105,13 @@ export class MGCEditPaymentMethod extends LitElement {
     e.preventDefault();
   }
 
+  private selectProvider(provider: string): void {
+    this.selectedPaymentProvider = provider;
+    // A previously authorized wallet nonce must not carry over to a different
+    // method, so drop it whenever the selection changes.
+    this.authorizedPaymentMethodRequest = undefined;
+  }
+
   clearStatusMessaging() {
     this.updateMessage = '';
     this.updateStatus = '';
@@ -114,6 +127,7 @@ export class MGCEditPaymentMethod extends LitElement {
     if (status === 'success') {
       this.currentlyEditing = false;
       this.selectedPaymentProvider = '';
+      this.authorizedPaymentMethodRequest = undefined;
       return;
     }
     this.updateRequestButton.isDisabled = false;
@@ -183,10 +197,14 @@ export class MGCEditPaymentMethod extends LitElement {
     const displayCCFields =
       this.selectedPaymentProvider === PaymentProvider.CreditCard;
 
-    const displayBraintreeManager =
+    const displayBraintreeManager = !!this.selectedPaymentProvider;
+
+    // Credit Card can be submitted as soon as it's selected (fields are
+    // validated on submit); the wallet providers can only be submitted once
+    // they've authorized and handed us a payment method request.
+    const submitEnabled =
       this.selectedPaymentProvider === PaymentProvider.CreditCard ||
-      this.selectedPaymentProvider === PaymentProvider.PayPal ||
-      this.selectedPaymentProvider === PaymentProvider.Venmo;
+      !!this.authorizedPaymentMethodRequest;
 
     return html`
       <style>
@@ -218,22 +236,26 @@ export class MGCEditPaymentMethod extends LitElement {
                   (e.target as any)?.showPaypalButton();
                 }}
                 @creditCardSelected=${() => {
-                  this.selectedPaymentProvider = PaymentProvider.CreditCard;
+                  this.selectProvider(PaymentProvider.CreditCard);
                 }}
                 @venmoSelected=${() => {
-                  this.selectedPaymentProvider = PaymentProvider.Venmo;
+                  this.selectProvider(PaymentProvider.Venmo);
                 }}
-                @applePaySelected=${() => {
-                  this.selectedPaymentProvider = PaymentProvider.ApplePay;
+                @applePaySelected=${(e: CustomEvent) => {
+                  this.selectProvider(PaymentProvider.ApplePay);
+                  this.braintreeManagerElement?.startApplePayPayment(
+                    e.detail.originalEvent,
+                  );
                 }}
                 @googlePaySelected=${() => {
-                  this.selectedPaymentProvider = PaymentProvider.GooglePay;
+                  this.selectProvider(PaymentProvider.GooglePay);
+                  this.braintreeManagerElement?.startGooglePayPayment();
                 }}
                 @paypalSelected=${() => {
-                  this.selectedPaymentProvider = PaymentProvider.PayPal;
+                  this.selectProvider(PaymentProvider.PayPal);
                 }}
                 @resetPaymentMethod=${async () => {
-                  this.selectedPaymentProvider = '';
+                  this.selectProvider('');
                 }}
                 tabindex="0"
               >
@@ -278,6 +300,20 @@ export class MGCEditPaymentMethod extends LitElement {
                     }),
                   );
                 }}
+                @GooglePayVaultAuthorized=${(e: CustomEvent) => {
+                  this.handleGooglePayVaultAuthorized(e);
+                }}
+                @GooglePayError=${() => {
+                  this.updateStatus = 'fail';
+                  this.updateMessage = 'Google Pay error, please try again';
+                }}
+                @ApplePayVaultAuthorized=${(e: CustomEvent) => {
+                  this.handleApplePayVaultAuthorized(e);
+                }}
+                @ApplePayError=${() => {
+                  this.updateStatus = 'fail';
+                  this.updateMessage = 'Apple Pay error, please try again';
+                }}
               ></ia-mgc-braintree-manager>
 
               <ia-mgc-button
@@ -292,59 +328,69 @@ export class MGCEditPaymentMethod extends LitElement {
                   }
                   this.currentlyEditing = false;
                   this.selectedPaymentProvider = '';
+                  this.authorizedPaymentMethodRequest = undefined;
                   this.clearStatusMessaging();
                 }}
                 >Cancel</ia-mgc-button
               >
-              ${
-                this.selectedPaymentProvider !== PaymentProvider.PayPal &&
-                this.selectedPaymentProvider !== PaymentProvider.Venmo
-                  ? html`<ia-mgc-button
-                      id="edit-plan-payment-method-submit"
-                      class="primary"
-                      type="submit"
-                      .isDisabled=${!this.selectedPaymentProvider}
-                      .clickHandler=${async (
-                        event: Event,
-                        iaButton: MGCButton,
-                      ) => {
-                        const button = iaButton;
-                        button.isDisabled = true;
-                        const isContactFormValid =
-                          this.creditCardElement?.reportValidity();
+              <ia-mgc-button
+                id="edit-plan-payment-method-submit"
+                class="primary"
+                type="submit"
+                .isDisabled=${!submitEnabled}
+                .clickHandler=${async (event: Event, iaButton: MGCButton) => {
+                  const button = iaButton;
+                  button.isDisabled = true;
 
-                        if (!isContactFormValid) {
-                          button.isDisabled = false;
-                          return;
-                        }
+                  // Wallet providers have already authorized by this point, so
+                  // submit just saves the request captured on authorization.
+                  if (
+                    this.selectedPaymentProvider !== PaymentProvider.CreditCard
+                  ) {
+                    if (!this.authorizedPaymentMethodRequest) {
+                      button.isDisabled = false;
+                      return;
+                    }
+                    this.dispatchEvent(
+                      new CustomEvent('UpdatePaymentMethod', {
+                        detail: {
+                          newPaymentMethodRequest:
+                            this.authorizedPaymentMethodRequest,
+                        },
+                      }),
+                    );
+                    return;
+                  }
 
-                        const paymentMethodInfo =
-                          (await this.braintreeManagerElement?.validateCreditCardFields()) as unknown as any;
+                  // Credit card validates its hosted fields on submit.
+                  const isContactFormValid =
+                    this.creditCardElement?.reportValidity();
+                  if (!isContactFormValid) {
+                    button.isDisabled = false;
+                    return;
+                  }
 
-                        if (!paymentMethodInfo) {
-                          button.isDisabled = false;
-                          return;
-                        }
+                  const paymentMethodInfo =
+                    (await this.braintreeManagerElement?.validateCreditCardFields()) as unknown as any;
+                  if (!paymentMethodInfo) {
+                    button.isDisabled = false;
+                    return;
+                  }
 
-                        const newPaymentMethodRequest =
-                          new PaymentMethodRequest({
-                            paymentMethodInfo,
-                            donorContactInfo:
-                              this.contactFormElement?.donorContactInfo,
-                            paymentProvider: this
-                              .selectedPaymentProvider as PaymentProvider,
-                          });
+                  const newPaymentMethodRequest = new PaymentMethodRequest({
+                    paymentMethodInfo,
+                    donorContactInfo: this.contactFormElement?.donorContactInfo,
+                    paymentProvider: PaymentProvider.CreditCard,
+                  });
 
-                        this.dispatchEvent(
-                          new CustomEvent('UpdatePaymentMethod', {
-                            detail: { newPaymentMethodRequest },
-                          }),
-                        );
-                      }}
-                      >Update payment method</ia-mgc-button
-                    >`
-                  : nothing
-              }
+                  this.dispatchEvent(
+                    new CustomEvent('UpdatePaymentMethod', {
+                      detail: { newPaymentMethodRequest },
+                    }),
+                  );
+                }}
+                >Update payment method</ia-mgc-button
+              >
               ${
                 this.selectedPaymentProvider === PaymentProvider.Venmo
                   ? html`<ia-mgc-button
@@ -397,16 +443,29 @@ export class MGCEditPaymentMethod extends LitElement {
 
   private handleVenmoAuthorized(e: CustomEvent): void {
     const { paymentMethodInfo } = e.detail;
-    const newPaymentMethodRequest = new PaymentMethodRequest({
+    this.authorizedPaymentMethodRequest = new PaymentMethodRequest({
       paymentMethodInfo,
       donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
       paymentProvider: PaymentProvider.Venmo,
     });
-    this.dispatchEvent(
-      new CustomEvent('UpdatePaymentMethod', {
-        detail: { newPaymentMethodRequest },
-      }),
-    );
+  }
+
+  private handleGooglePayVaultAuthorized(e: CustomEvent): void {
+    const { paymentMethodInfo } = e.detail;
+    this.authorizedPaymentMethodRequest = new PaymentMethodRequest({
+      paymentMethodInfo,
+      donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
+      paymentProvider: PaymentProvider.GooglePay,
+    });
+  }
+
+  private handleApplePayVaultAuthorized(e: CustomEvent): void {
+    const { paymentMethodInfo } = e.detail;
+    this.authorizedPaymentMethodRequest = new PaymentMethodRequest({
+      paymentMethodInfo,
+      donorContactInfo: this.contactFormElement?.donorContactInfo ?? {},
+      paymentProvider: PaymentProvider.ApplePay,
+    });
   }
 
   private handlePayPalVaultAuthorized(e: CustomEvent): void {
@@ -415,16 +474,11 @@ export class MGCEditPaymentMethod extends LitElement {
     const donorContactInfo = this.contactFormElement?.donorContactInfo ?? {
       customer: { email: paypalEmail },
     };
-    const newPaymentMethodRequest = new PaymentMethodRequest({
+    this.authorizedPaymentMethodRequest = new PaymentMethodRequest({
       paymentMethodInfo,
       donorContactInfo,
       paymentProvider: PaymentProvider.PayPal,
     });
-    this.dispatchEvent(
-      new CustomEvent('UpdatePaymentMethod', {
-        detail: { newPaymentMethodRequest },
-      }),
-    );
   }
 
   get styles() {

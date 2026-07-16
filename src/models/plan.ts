@@ -131,41 +131,62 @@ export class MonthlyPlan {
   setNewPaymentMethod(newPaymentMethodRequest: PaymentMethodRequest): void {
     const currentPaymentMethod = this.payment;
     const { details, type } = newPaymentMethodRequest.paymentMethodInfo;
-    const isPayPal =
-      newPaymentMethodRequest.paymentProvider === PaymentProvider.PayPal;
-
-    const isVenmo =
-      newPaymentMethodRequest.paymentProvider === PaymentProvider.Venmo;
     const paypalEmail = details.email ?? details.description ?? 'not_found';
 
     let mergedBtData: BtData;
-    if (isPayPal) {
-      mergedBtData = {
-        ...this.plan.btdata,
-        paymentMethodType: 'PayPal',
-        paypalEmail,
-        cardType: null,
-        last4: null,
-        expirationMonth: null,
-        expirationYear: null,
-      };
-    } else if (isVenmo) {
-      mergedBtData = {
-        ...this.plan.btdata,
-        paymentMethodType: PaymentProvider.Venmo,
-        venmoUsername: details.username,
-        cardType: null,
-        last4: null,
-        expirationMonth: null,
-        expirationYear: null,
-      };
-    } else {
-      mergedBtData = {
-        ...this.plan.btdata,
-        ...details,
-        paymentMethodType: type,
-        last4: details.lastFour ?? 'unknown',
-      };
+    switch (newPaymentMethodRequest.paymentProvider) {
+      case PaymentProvider.PayPal:
+        mergedBtData = {
+          ...this.plan.btdata,
+          paymentMethodType: 'PayPal',
+          paypalEmail,
+          cardType: null,
+          last4: null,
+          expirationMonth: null,
+          expirationYear: null,
+        };
+        break;
+      case PaymentProvider.Venmo:
+        mergedBtData = {
+          ...this.plan.btdata,
+          paymentMethodType: PaymentProvider.Venmo,
+          venmoUsername: details.username,
+          cardType: null,
+          last4: null,
+          expirationMonth: null,
+          expirationYear: null,
+        };
+        break;
+      case PaymentProvider.GooglePay:
+        mergedBtData = {
+          ...this.plan.btdata,
+          paymentMethodType: PaymentProvider.GooglePay,
+          cardType: details.cardType ?? null,
+          last4: details.lastFour ?? null,
+          expirationMonth: null,
+          expirationYear: null,
+        };
+        break;
+      case PaymentProvider.ApplePay:
+        mergedBtData = {
+          ...this.plan.btdata,
+          paymentMethodType: PaymentProvider.ApplePay,
+          cardType: details.cardType ?? null,
+          // Apple Pay's tokenization payload only exposes the last two digits
+          // of the underlying card (dpanLastTwo), not the last four like every
+          // other provider here.
+          last4: details.lastTwo ?? null,
+          expirationMonth: null,
+          expirationYear: null,
+        };
+        break;
+      default:
+        mergedBtData = {
+          ...this.plan.btdata,
+          ...details,
+          paymentMethodType: type,
+          last4: details.lastFour ?? 'unknown',
+        };
     }
 
     this.plan.old_btData = currentPaymentMethod;

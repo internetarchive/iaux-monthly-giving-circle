@@ -360,6 +360,150 @@ export class MGCBraintreeManager extends LitElement {
     }
   }
 
+  async startGooglePayPayment(): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.googlePayHandler.get();
+    if (!handler) return;
+
+    try {
+      const instance = await handler.instance.get();
+      if (!instance) return;
+
+      const paymentDataRequest = await instance.createPaymentDataRequest({
+        emailRequired: true,
+        transactionInfo: {
+          currencyCode: 'USD',
+          totalPriceStatus: 'FINAL',
+          totalPrice: `${this.plan?.amount ?? 0}`,
+        },
+      });
+
+      const paymentData =
+        await handler.paymentsClient.loadPaymentData(paymentDataRequest);
+      const payload = await instance.parseResponse(paymentData);
+      this.dispatchEvent(
+        new CustomEvent('GooglePayVaultAuthorized', {
+          detail: {
+            paymentMethodInfo: {
+              description: `Google Pay - ${payload.details.cardType} - ${payload.details.lastFour}`,
+              nonce: payload.nonce,
+              type: payload.type,
+              details: {
+                cardType: payload.details.cardType,
+                lastFour: payload.details.lastFour,
+              },
+            },
+          },
+        }),
+      );
+    } catch (e: unknown) {
+      const statusCode = (e as { statusCode?: string })?.statusCode;
+      if (statusCode === 'CANCELED') {
+        console.log('Google Pay payment cancelled');
+      } else {
+        console.error('Google Pay payment error:', e);
+        this.dispatchEvent(
+          new CustomEvent('GooglePayError', { detail: { error: e } }),
+        );
+      }
+    }
+  }
+
+  // In order to trigger the Apple Pay flow, you HAVE to call this from
+  // directly within the user-gesture handler that produced `originalEvent`
+  // (Safari requires this). Notice we're not actually using the event itself.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async startApplePayPayment(originalEvent: Event): Promise<void> {
+    const handler =
+      await this.braintreeManager?.paymentProviders.applePayHandler.get();
+    if (!handler) return;
+
+    try {
+      const applePayInstance = await handler.instance.get();
+      if (!applePayInstance) return;
+
+      const paymentRequest = applePayInstance.createPaymentRequest({
+        total: {
+          label: 'Internet Archive Monthly',
+          amount: `${this.plan?.amount ?? 0}`,
+        },
+        requiredBillingContactFields: ['postalAddress'],
+      });
+
+      const session = new ApplePaySession(3, paymentRequest);
+
+      session.onvalidatemerchant = (
+        event: ApplePayJS.ApplePayValidateMerchantEvent,
+      ) => {
+        applePayInstance.performValidation(
+          {
+            validationURL: event.validationURL,
+            displayName: 'Internet Archive',
+          },
+          (validationErr: unknown, validationData: unknown) => {
+            if (validationErr) {
+              console.error(
+                'Apple Pay merchant validation error:',
+                validationErr,
+              );
+              session.abort();
+              this.dispatchEvent(
+                new CustomEvent('ApplePayError', {
+                  detail: { error: validationErr },
+                }),
+              );
+              return;
+            }
+            session.completeMerchantValidation(validationData);
+          },
+        );
+      };
+
+      session.onpaymentauthorized = async (
+        event: ApplePayJS.ApplePayPaymentAuthorizedEvent,
+      ) => {
+        try {
+          const payload = await applePayInstance.tokenize({
+            token: event.payment.token,
+          });
+          session.completePayment(ApplePaySession.STATUS_SUCCESS);
+          this.dispatchEvent(
+            new CustomEvent('ApplePayVaultAuthorized', {
+              detail: {
+                paymentMethodInfo: {
+                  description: `Apple Pay - ${payload.details.cardType} - ${payload.details.dpanLastTwo}`,
+                  nonce: payload.nonce,
+                  type: payload.type,
+                  details: {
+                    cardType: payload.details.cardType,
+                    lastTwo: payload.details.dpanLastTwo,
+                  },
+                },
+              },
+            }),
+          );
+        } catch (e: unknown) {
+          session.completePayment(ApplePaySession.STATUS_FAILURE);
+          console.error('Apple Pay tokenization error:', e);
+          this.dispatchEvent(
+            new CustomEvent('ApplePayError', { detail: { error: e } }),
+          );
+        }
+      };
+
+      session.oncancel = () => {
+        console.log('Apple Pay payment cancelled');
+      };
+
+      session.begin();
+    } catch (e: unknown) {
+      console.error('Apple Pay error:', e);
+      this.dispatchEvent(
+        new CustomEvent('ApplePayError', { detail: { error: e } }),
+      );
+    }
+  }
+
   private async checkVenmoRestoration(): Promise<void> {
     const planId = this.plan?.id;
     if (!planId) return;

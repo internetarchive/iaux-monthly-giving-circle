@@ -43,10 +43,8 @@ export class IauxMgcPlans extends LitElement {
                   <div class="payment-details">
                     <h3>Method</h3>
                     <p>${methodType}</p>
-                    ${plan.payment?.paymentMethodType ===
-                    PaymentProvider.CreditCard
-                      ? html`<p>${cardType}</p>
-                          <p>${last4}</p>`
+                    ${plan.payment?.cardType && plan.payment?.last4
+                      ? html`<p>${cardType} ${last4}</p>`
                       : nothing}
                     ${plan.payment?.paymentMethodType === PaymentProvider.PayPal
                       ? html`<p>
@@ -64,13 +62,12 @@ export class IauxMgcPlans extends LitElement {
                           >
                         </p>`
                       : nothing}
-                    ${plan.payment?.paymentMethodType !==
-                    PaymentProvider.CreditCard
+                    ${plan.payment?.expirationMonth &&
+                    plan.payment?.expirationYear
                       ? html`<p>
                           Expires:
-                          ${plan.payment?.expirationMonth ??
-                          'month not found'}/${plan.payment?.expirationYear ??
-                          'year not found'}
+                          ${plan.payment.expirationMonth}/${plan.payment
+                            .expirationYear}
                         </p>`
                       : nothing}
                   </div>
