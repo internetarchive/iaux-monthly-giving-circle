@@ -50,10 +50,22 @@
       <button id="toggle-edit-payment-method">Toggle edit payment method</button>
       <button id="mock-venmo-success">Mock Venmo success</button>
       <button id="mock-venmo-error">Mock Venmo error</button>
+      <button id="mock-googlepay-success">Mock Google Pay success</button>
+      <button id="mock-googlepay-error">Mock Google Pay error</button>
+      <button id="mock-applepay-success">Mock Apple Pay success</button>
+      <button id="mock-applepay-error">Mock Apple Pay error</button>
 
       <br>
       <input type="checkbox" id="force-successful-requests" name="force-successful-requests">
       <label for="force-successful-requests">Force successful requests</label>
+
+      <br>
+      <input type="checkbox" id="simulate-applepay" name="simulate-applepay">
+      <label for="simulate-applepay">Force show + simulate Apple Pay (for browsers without real Apple Pay support)</label>
+
+      <br>
+      <input type="checkbox" id="simulate-googlepay" name="simulate-googlepay">
+      <label for="simulate-googlepay">Force show + simulate Google Pay (for browsers/setups without real Google Pay support)</label>
 
       <p id="interaction-status-area" style="min-height: 50px;margin: 10px;"></p>
     </div>
