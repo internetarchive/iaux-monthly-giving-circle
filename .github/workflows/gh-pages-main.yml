@@ -25,7 +25,7 @@ jobs:
           git config --global user.name "Github Actions"
           git config --global user.email "actions@github.com"
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
 
       - name: Install dependencies
         run: npm install
