@@ -1,9 +1,45 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { expect } from '@open-wc/testing';
 import Sinon from 'sinon';
+import { HostedFieldName } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-providers/credit-card/hosted-field-container';
 
 import '../../src/form-sections/parts/braintree-manager';
 import type { MGCBraintreeManager } from '../../src/form-sections/parts/braintree-manager';
+
+function makeFakeHostedFieldContainer() {
+  return {
+    fieldFor: Sinon.stub(),
+    markFieldErrors: Sinon.stub(),
+    removeFieldErrors: Sinon.stub(),
+    showErrorMessage: Sinon.stub(),
+    hideErrorMessage: Sinon.stub(),
+    resetHostedFields: Sinon.stub(),
+  };
+}
+
+/**
+ * <credit-card-fields> lives as a sibling of <ia-mgc-braintree-manager>
+ * inside the shared <form> (slotted into <payment-selector> by
+ * payment-method.ts), not as its descendant - so tests reproduce that
+ * sibling-under-a-form shape rather than nesting the fields inside the
+ * braintree-manager element itself.
+ */
+function attachCreditCardFieldsSibling(
+  el: MGCBraintreeManager,
+  hostedFieldContainer: unknown,
+) {
+  const form = document.createElement('form');
+  const ccFields = document.createElement('credit-card-fields') as any;
+  // <credit-card-fields>.hostedFieldContainer is a read-only getter on the
+  // real element, so it's shadowed on the instance rather than assigned.
+  Object.defineProperty(ccFields, 'hostedFieldContainer', {
+    value: hostedFieldContainer,
+    configurable: true,
+  });
+  form.appendChild(ccFields);
+  form.appendChild(el);
+  return { form, ccFields };
+}
 
 describe('MGCBraintreeManager', () => {
   describe('setupBraintreeManager', () => {
@@ -60,6 +96,87 @@ describe('MGCBraintreeManager', () => {
       expect(handler).to.be.instanceOf(Object);
       // The real handler's get() won't return null immediately (it's a PromisedSingleton)
       expect(typeof handler?.get).to.equal('function');
+    });
+  });
+
+  describe('creditCardFieldsElement', () => {
+    let sandbox: Sinon.SinonSandbox;
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('finds the sibling <credit-card-fields> via the shared <form> ancestor', () => {
+      sandbox = Sinon.createSandbox();
+      const el = document.createElement(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+      const { ccFields } = attachCreditCardFieldsSibling(el, {});
+
+      expect(el.creditCardFieldsElement).to.equal(ccFields);
+    });
+
+    it('returns null when there is no <form> ancestor', () => {
+      sandbox = Sinon.createSandbox();
+      const el = document.createElement(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+
+      expect(el.creditCardFieldsElement).to.be.null;
+    });
+  });
+
+  describe('setupBraintreeManager wiring credit card hosted fields', () => {
+    let sandbox: Sinon.SinonSandbox;
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("passes <credit-card-fields>'s hostedFieldContainer through to the credit card handler", async () => {
+      sandbox = Sinon.createSandbox();
+      const el = document.createElement(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+      const fakeContainer = makeFakeHostedFieldContainer();
+      attachCreditCardFieldsSibling(el, fakeContainer);
+
+      (el as any).paymentConfig = {
+        paymentClients: {
+          hostedFields: { get: Sinon.stub().resolves({}) },
+        },
+      };
+      sandbox.stub(el as any, 'checkVenmoRestoration').resolves();
+
+      await (el as any).setupBraintreeManager();
+
+      const handler =
+        await el.braintreeManager?.paymentProviders.creditCardHandler.get();
+
+      // markFieldErrors/removeFieldErrors/showErrorMessage/hideErrorMessage
+      // all delegate straight to the configured hostedFieldContainer, so
+      // calling one proves the real element's container made it all the
+      // way into the constructed BraintreeManager, not just some default.
+      handler?.markFieldErrors([HostedFieldName.CVV]);
+      expect(fakeContainer.markFieldErrors.calledWith([HostedFieldName.CVV])).to
+        .be.true;
+
+      handler?.showErrorMessage('custom error');
+      expect(fakeContainer.showErrorMessage.calledWith('custom error')).to.be
+        .true;
+    });
+
+    it('does not throw when no <credit-card-fields> sibling exists yet', async () => {
+      sandbox = Sinon.createSandbox();
+      const el = document.createElement(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+
+      sandbox.stub(el as any, 'checkVenmoRestoration').resolves();
+
+      await (el as any).setupBraintreeManager();
+
+      expect(el.braintreeManager).to.exist;
     });
   });
 
