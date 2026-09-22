@@ -7,6 +7,7 @@ import '@internetarchive/donation-form/dist/src/form-elements/contact-form/conta
 import lockImg from '@internetarchive/icon-lock/index.js';
 
 import '@internetarchive/donation-form/dist/src/form-elements/payment-selector.js';
+import '@internetarchive/donation-form/dist/src/form-elements/credit-card-fields.js';
 
 import '../form-sections/parts/braintree-manager';
 
@@ -17,6 +18,7 @@ import type {
   HostingEnvironment,
 } from '@internetarchive/donation-form';
 import type { ContactForm } from '@internetarchive/donation-form/dist/src/form-elements/contact-form/contact-form.js';
+import type { CreditCardFields } from '@internetarchive/donation-form/dist/src/form-elements/credit-card-fields.js';
 import type { MonthlyPlan } from '../models/plan';
 import '../presentational/donation-section-info';
 import '../presentational/mgc-button';
@@ -177,6 +179,10 @@ export class MGCEditPaymentMethod extends LitElement {
     return this.querySelector('contact-form');
   }
 
+  get creditCardFieldsElement(): CreditCardFields | null {
+    return this.querySelector('credit-card-fields');
+  }
+
   get braintreeManagerElement(): MGCBraintreeManager | null {
     return this.querySelector('ia-mgc-braintree-manager');
   }
@@ -261,6 +267,12 @@ export class MGCEditPaymentMethod extends LitElement {
               >
                 <div slot="paypal-button">
                   <div id="ia-mgc-paypal-button"></div>
+                </div>
+                <div
+                  slot="credit-card-fields"
+                  class="${displayCCFields ? '' : 'hidden'}"
+                >
+                  <credit-card-fields></credit-card-fields>
                 </div>
               </payment-selector>
 
@@ -362,17 +374,15 @@ export class MGCEditPaymentMethod extends LitElement {
                     return;
                   }
 
-                  // Credit card validates its hosted fields on submit.
+                  // Credit card validates its hosted fields on submit. Both
+                  // validations must run before bailing, otherwise an empty
+                  // contact form short-circuits before the hosted fields
+                  // ever get their own error state marked.
                   const isContactFormValid =
                     this.creditCardElement?.reportValidity();
-                  if (!isContactFormValid) {
-                    button.isDisabled = false;
-                    return;
-                  }
-
                   const paymentMethodInfo =
                     (await this.braintreeManagerElement?.validateCreditCardFields()) as unknown as any;
-                  if (!paymentMethodInfo) {
+                  if (!isContactFormValid || !paymentMethodInfo) {
                     button.isDisabled = false;
                     return;
                   }
@@ -492,10 +502,6 @@ export class MGCEditPaymentMethod extends LitElement {
       ia-mgc-braintree-manager {
         display: block;
         margin: 10px 0;
-      }
-
-      ia-mgc-braintree-manager:not([displaycreditcard]) #ia-mgc-cc-area {
-        display: none;
       }
 
       .secure-process-note {
