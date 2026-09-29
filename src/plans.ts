@@ -132,6 +132,8 @@ export class IauxMgcPlans extends LitElement {
     }
     li.cancelled {
       background-color: lightgoldenrodyellow;
+      --primaryDisableCTAFill: transparent;
+      --secondaryCTABorder: none;
     }
     table {
       width: 100%;
