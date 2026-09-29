@@ -289,6 +289,8 @@ import{LazyLoaderService as po}from"https://esm.archive.org/@internetarchive/laz
     }
     li.cancelled {
       background-color: lightgoldenrodyellow;
+      --primaryDisableCTAFill: transparent;
+      --secondaryCTABorder: none;
     }
     table {
       width: 100%;
