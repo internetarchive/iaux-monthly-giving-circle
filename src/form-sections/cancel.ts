@@ -101,7 +101,7 @@ export class IauxMgcCancelPlan extends LitElement {
                 .checked;
               await this.updateComplete;
             }}>
-          <label for=${`confirm-${this.formId}`}><b>I'm sure I want to cancel my subscription</b></label>
+          <label for=${`confirm-${this.formId}`}><b>I'm sure I want to cancel my recurring donation.</b></label>
         </div>
 
         <ia-mgc-button
@@ -114,9 +114,13 @@ export class IauxMgcCancelPlan extends LitElement {
             iaButton.isDisabled = true;
             this.cancelThisPlan(e);
           }}
-        >I'm sure I want to cancel my recurring donation.</ia-mgc-button>
+        >Cancel recurring donation</ia-mgc-button>
       </form>
     </section>
+    <p class="pause-note">
+      You can also pause your recurring donation by setting the next donation
+      date up to 12 months in the future.
+    </p>
     `;
   }
 
@@ -134,6 +138,11 @@ export class IauxMgcCancelPlan extends LitElement {
       background-color: #ffeeee;
     }
 
+    .pause-note {
+      font-style: italic;
+      margin: 5px 0;
+    }
+
     .cancel-donation > * {
       padding: 5px;
       position: relative;
@@ -149,6 +158,13 @@ export class IauxMgcCancelPlan extends LitElement {
 
     ia-mgc-button.link.cancel {
       --link-cancel-color: var(--mgc-warning-color-dark, #bb0505);
+    }
+
+    /* keep the red cancel fill while disabled; the button's 0.5 opacity
+       fades it to pink until the confirm checkbox is ticked */
+    ia-mgc-button.cancel:not(.link) {
+      --primaryDisableCTAFill: #d9534f;
+      --secondaryCTABorder: #f18286;
     }
 
     ia-mgc-button {
