@@ -183,16 +183,13 @@ import{LazyLoaderService as po}from"https://esm.archive.org/@internetarchive/laz
     }
 
     :host(.cancel) button {
-      border-color: #ffeeee;
+      border-color: #f18286;
       background-color: #d9534f;
-    }
-
-    :host(.cancel) button:disabled {
-      border: 2px solid #f18286;
+      color: #fff;
     }
 
     :host(.link) button {
-      color: #4b64ff;
+      color: var(--link-button-color, #4b64ff);
       border: none;
       background: transparent;
       display: flex;
@@ -216,7 +213,7 @@ import{LazyLoaderService as po}from"https://esm.archive.org/@internetarchive/laz
 
     :host([isdisabled]) button {
       cursor: not-allowed;
-      opacity: 0.5;
+      opacity: var(--disabled-button-opacity, 0.5);
       background-color: var(--primaryDisableCTAFill, #767676);
       border: 1px solid var(--secondaryCTABorder, #999);
     }
@@ -291,6 +288,9 @@ import{LazyLoaderService as po}from"https://esm.archive.org/@internetarchive/laz
       background-color: lightgoldenrodyellow;
       --primaryDisableCTAFill: transparent;
       --secondaryCTABorder: none;
+      /* read "Plan is cancelled" as plain status text, in the card's own color */
+      --link-button-color: currentColor;
+      --disabled-button-opacity: 1;
     }
     table {
       width: 100%;
@@ -2661,7 +2661,7 @@ import{LazyLoaderService as po}from"https://esm.archive.org/@internetarchive/laz
             type="checkbox"
             required
             @change=${async e=>{e.preventDefault(),this.patronWantsToKeepPlan=!e.target.checked,await this.updateComplete}}>
-          <label for=${`confirm-${this.formId}`}><b>I'm sure I want to cancel my subscription</b></label>
+          <label for=${`confirm-${this.formId}`}><b>I'm sure I want to cancel my recurring donation.</b></label>
         </div>
 
         <ia-mgc-button
@@ -2670,9 +2670,13 @@ import{LazyLoaderService as po}from"https://esm.archive.org/@internetarchive/laz
           id=${`submit-${this.formId}`}
           type="submit"
           .clickHandler=${(e,t)=>{t.isDisabled=!0,this.cancelThisPlan(e)}}
-        >I'm sure I want to cancel my recurring donation.</ia-mgc-button>
+        >Cancel recurring donation</ia-mgc-button>
       </form>
     </section>
+    <p class="pause-note">
+      You can also pause your recurring donation by setting the next donation
+      date up to 12 months in the future.
+    </p>
     `}};Ce.styles=m`
     :host {
       --formSectionTitleFontSize: 1.4rem;
@@ -2685,6 +2689,11 @@ import{LazyLoaderService as po}from"https://esm.archive.org/@internetarchive/laz
       display: block;
       border: 2px solid #d9534f;
       background-color: #ffeeee;
+    }
+
+    .pause-note {
+      font-style: italic;
+      margin: 5px 0;
     }
 
     .cancel-donation > * {
@@ -2702,6 +2711,13 @@ import{LazyLoaderService as po}from"https://esm.archive.org/@internetarchive/laz
 
     ia-mgc-button.link.cancel {
       --link-cancel-color: var(--mgc-warning-color-dark, #bb0505);
+    }
+
+    /* keep the red cancel fill while disabled; the button's 0.5 opacity
+       fades it to pink until the confirm checkbox is ticked */
+    ia-mgc-button.cancel:not(.link) {
+      --primaryDisableCTAFill: #d9534f;
+      --secondaryCTABorder: #f18286;
     }
 
     ia-mgc-button {
