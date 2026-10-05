@@ -78,16 +78,13 @@ export class MGCButton extends LitElement {
     }
 
     :host(.cancel) button {
-      border-color: #ffeeee;
+      border-color: #f18286;
       background-color: #d9534f;
-    }
-
-    :host(.cancel) button:disabled {
-      border: 2px solid #f18286;
+      color: #fff;
     }
 
     :host(.link) button {
-      color: #4b64ff;
+      color: var(--link-button-color, #4b64ff);
       border: none;
       background: transparent;
       display: flex;
@@ -111,7 +108,7 @@ export class MGCButton extends LitElement {
 
     :host([isdisabled]) button {
       cursor: not-allowed;
-      opacity: 0.5;
+      opacity: var(--disabled-button-opacity, 0.5);
       background-color: var(--primaryDisableCTAFill, #767676);
       border: 1px solid var(--secondaryCTABorder, #999);
     }

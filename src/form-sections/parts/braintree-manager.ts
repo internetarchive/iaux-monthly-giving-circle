@@ -1,11 +1,9 @@
 /* eslint-disable no-console */
-import { LitElement, html, css, CSSResult, PropertyValueMap } from 'lit';
+import { LitElement, html, PropertyValueMap } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import {
-  HostedFieldContainer,
-  HostedFieldName,
-} from '@internetarchive/donation-form/dist/src/braintree-manager/payment-providers/credit-card/hosted-field-container';
+import { HostedFieldName } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-providers/credit-card/hosted-field-container';
+import type { HostedFieldContainerInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-providers/credit-card/hosted-field-container';
 import {
   BraintreeManager,
   BraintreeManagerInterface,
@@ -17,10 +15,8 @@ import {
 } from '@internetarchive/donation-form-data-models';
 import type { BraintreeEndpointManagerInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/braintree-interfaces.js';
 import type { PaymentClientsInterface } from '@internetarchive/donation-form/dist/src/braintree-manager/payment-clients.js';
+import type { CreditCardFields } from '@internetarchive/donation-form/dist/src/form-elements/credit-card-fields.js';
 
-import creditCardImg from '@internetarchive/icon-credit-card/index.js';
-import calendarImg from '@internetarchive/icon-calendar/index.js';
-import lockImg from '@internetarchive/icon-lock/index.js';
 import { VenmoPendingStorage } from '../../utils/venmo-pending-storage';
 
 import type { MonthlyPlan } from '../../models/plan';
@@ -40,8 +36,7 @@ export type PaymentConfig = {
 export class MGCBraintreeManager extends LitElement {
   @property({ type: Object }) plan?: MonthlyPlan;
 
-  @property({ type: Boolean, reflect: true }) displayCreditCard: boolean =
-    false;
+  @property({ type: Boolean }) displayCreditCard: boolean = false;
 
   @property({ type: String }) patronEmail: string = '';
 
@@ -53,24 +48,13 @@ export class MGCBraintreeManager extends LitElement {
 
   @property({ type: Object }) venmoPendingStorage?: VenmoPendingStorage;
 
-  get braintreeInputs(): {
-    errorMessage: HTMLDivElement | null;
-    number: HTMLDivElement | null;
-    cvv: HTMLDivElement | null;
-    expirationDate: HTMLDivElement | null;
-  } {
-    return {
-      errorMessage: this.querySelector(
-        '#braintree-error-message',
-      ) as HTMLDivElement | null,
-      number: this.querySelector(
-        '#braintree-creditcard',
-      ) as HTMLDivElement | null,
-      cvv: this.querySelector('#braintree-cvv') as HTMLDivElement | null,
-      expirationDate: this.querySelector(
-        '#braintree-expiration',
-      ) as HTMLDivElement | null,
-    };
+  /**
+   * <credit-card-fields> is a sibling in <payment-method>'s light DOM (slotted
+   * into <payment-selector>), not a descendant of this element, so it's found
+   * via the shared ancestor <form> rather than this.querySelector.
+   */
+  get creditCardFieldsElement(): CreditCardFields | null {
+    return this.closest('form')?.querySelector('credit-card-fields') ?? null;
   }
 
   createRenderRoot() {
@@ -207,54 +191,7 @@ export class MGCBraintreeManager extends LitElement {
   }
 
   render() {
-    return html` <div>${this.creditCardTemplate}</div> `;
-  }
-
-  lightDomCSS(): CSSResult {
-    return css`
-      contact-form form badged-input {
-        width: 100%;
-      }
-
-      #ia-mgc-cc-area .braintree-input {
-        width: 100%;
-        display: block;
-        height: stretch;
-        height: -webkit-fill-available;
-      }
-    `;
-  }
-
-  get creditCardTemplate() {
-    return html`
-      <div id="ia-mgc-cc-area" style="border: 1px sold red;">
-        <style>
-          ${this.lightDomCSS()}
-        </style>
-        <div id="braintree-error-message"></div>
-        <div class="braintree-row">
-          <badged-input
-            .icon=${creditCardImg}
-            ?required=${true}
-            class="creditcard"
-          >
-            <div class="braintree-input" id="braintree-creditcard"></div>
-          </badged-input>
-        </div>
-        <div class="braintree-row">
-          <badged-input
-            .icon=${calendarImg}
-            ?required=${true}
-            class="expiration"
-          >
-            <div class="braintree-input" id="braintree-expiration"></div>
-          </badged-input>
-          <badged-input .icon=${lockImg} ?required=${true} class="cvv">
-            <div class="braintree-input" id="braintree-cvv"></div>
-          </badged-input>
-        </div>
-      </div>
-    `;
+    return html``;
   }
 
   async renderPayPalVaultButton(): Promise<void> {
@@ -568,26 +505,15 @@ export class MGCBraintreeManager extends LitElement {
       googlePayMerchantId: this.paymentConfig?.googlePayMerchantId,
       hostedFieldConfig: {
         hostedFieldStyle: {}, // Provide your custom style object here
+        // No placeholders: <credit-card-fields> renders its own visible
+        // labels above each field (WEBDEV-9042 adopts WEBDEV-8310's design).
         hostedFieldFieldOptions: {
-          number: {
-            selector: '#braintree-creditcard',
-            placeholder: 'Card number',
-          },
-          cvv: {
-            selector: '#braintree-cvv',
-            placeholder: 'CVC',
-          },
-          expirationDate: {
-            selector: '#braintree-expiration',
-            placeholder: 'MM / YY',
-          },
-        }, // Provide your custom field options here
-        hostedFieldContainer: new HostedFieldContainer({
-          number: this.braintreeInputs.number as HTMLDivElement,
-          cvv: this.braintreeInputs.cvv as HTMLDivElement,
-          expirationDate: this.braintreeInputs.expirationDate as HTMLDivElement,
-          errorContainer: this.braintreeInputs.errorMessage as HTMLDivElement,
-        }),
+          number: { selector: '#braintree-creditcard' },
+          cvv: { selector: '#braintree-cvv' },
+          expirationDate: { selector: '#braintree-expiration' },
+        },
+        hostedFieldContainer: this.creditCardFieldsElement
+          ?.hostedFieldContainer as HostedFieldContainerInterface,
       },
       hostingEnvironment: this.paymentConfig?.environment as HostingEnvironment,
       referrer: window.location.href,

@@ -470,6 +470,223 @@ describe('Payment method coordination:', () => {
     expect(submitBtn?.isDisabled).to.not.be.true;
   });
 
+  describe('<credit-card-fields> adoption (WEBDEV-9042):', () => {
+    it('is slotted into payment-selector once the form is open, before any provider is selected', async () => {
+      const plan = makePlan();
+      const el = await fixture<MonthlyGivingCircle>(
+        html`<ia-monthly-giving-circle
+          .canEdit=${true}
+          .canEditPaymentMethod=${true}
+          .plans=${[plan]}
+        ></ia-monthly-giving-circle>`,
+      );
+
+      await navigateToEditView(el);
+
+      const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+      const paymentMethodEl = editPlan.querySelector(
+        'ia-mgc-edit-payment-method',
+      ) as MGCEditPaymentMethod;
+
+      paymentMethodEl.currentlyEditing = true;
+      await paymentMethodEl.updateComplete;
+
+      const ccFields = paymentMethodEl.querySelector('credit-card-fields');
+      expect(ccFields).to.exist;
+      expect(ccFields?.getAttribute('slot')).to.equal(null);
+      expect(ccFields?.parentElement?.getAttribute('slot')).to.equal(
+        'credit-card-fields',
+      );
+      expect(ccFields?.closest('payment-selector')).to.exist;
+    });
+
+    it('creditCardFieldsElement getter returns the slotted <credit-card-fields>', async () => {
+      const plan = makePlan();
+      const el = await fixture<MonthlyGivingCircle>(
+        html`<ia-monthly-giving-circle
+          .canEdit=${true}
+          .canEditPaymentMethod=${true}
+          .plans=${[plan]}
+        ></ia-monthly-giving-circle>`,
+      );
+
+      await navigateToEditView(el);
+
+      const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+      const paymentMethodEl = editPlan.querySelector(
+        'ia-mgc-edit-payment-method',
+      ) as MGCEditPaymentMethod;
+
+      paymentMethodEl.currentlyEditing = true;
+      await paymentMethodEl.updateComplete;
+
+      expect(paymentMethodEl.creditCardFieldsElement).to.exist;
+      expect(
+        paymentMethodEl.creditCardFieldsElement?.tagName.toLowerCase(),
+      ).to.equal('credit-card-fields');
+    });
+
+    it("ia-mgc-braintree-manager's creditCardFieldsElement getter resolves to the same slotted element", async () => {
+      const plan = makePlan();
+      const el = await fixture<MonthlyGivingCircle>(
+        html`<ia-monthly-giving-circle
+          .canEdit=${true}
+          .canEditPaymentMethod=${true}
+          .plans=${[plan]}
+        ></ia-monthly-giving-circle>`,
+      );
+
+      await navigateToEditView(el);
+
+      const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+      const paymentMethodEl = editPlan.querySelector(
+        'ia-mgc-edit-payment-method',
+      ) as MGCEditPaymentMethod;
+
+      paymentMethodEl.currentlyEditing = true;
+      await paymentMethodEl.updateComplete;
+
+      const braintreeManagerEl = paymentMethodEl.querySelector(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+
+      expect(braintreeManagerEl.creditCardFieldsElement).to.equal(
+        paymentMethodEl.creditCardFieldsElement,
+      );
+    });
+
+    it('is hidden until Credit Card is the selected provider', async () => {
+      const plan = makePlan();
+      const el = await fixture<MonthlyGivingCircle>(
+        html`<ia-monthly-giving-circle
+          .canEdit=${true}
+          .canEditPaymentMethod=${true}
+          .plans=${[plan]}
+        ></ia-monthly-giving-circle>`,
+      );
+
+      await navigateToEditView(el);
+
+      const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+      const paymentMethodEl = editPlan.querySelector(
+        'ia-mgc-edit-payment-method',
+      ) as MGCEditPaymentMethod;
+
+      paymentMethodEl.currentlyEditing = true;
+      paymentMethodEl.selectedPaymentProvider = PaymentProvider.Venmo;
+      await paymentMethodEl.updateComplete;
+
+      const wrapper = paymentMethodEl.querySelector('credit-card-fields')
+        ?.parentElement as HTMLElement;
+      expect(wrapper.classList.contains('hidden')).to.be.true;
+
+      paymentMethodEl.selectedPaymentProvider = PaymentProvider.CreditCard;
+      await paymentMethodEl.updateComplete;
+
+      expect(wrapper.classList.contains('hidden')).to.be.false;
+    });
+
+    it('no longer renders the old hand-rolled #ia-mgc-cc-area markup', async () => {
+      const plan = makePlan();
+      const el = await fixture<MonthlyGivingCircle>(
+        html`<ia-monthly-giving-circle
+          .canEdit=${true}
+          .canEditPaymentMethod=${true}
+          .plans=${[plan]}
+        ></ia-monthly-giving-circle>`,
+      );
+
+      await navigateToEditView(el);
+
+      const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+      const paymentMethodEl = editPlan.querySelector(
+        'ia-mgc-edit-payment-method',
+      ) as MGCEditPaymentMethod;
+
+      paymentMethodEl.currentlyEditing = true;
+      paymentMethodEl.selectedPaymentProvider = PaymentProvider.CreditCard;
+      await paymentMethodEl.updateComplete;
+
+      expect(paymentMethodEl.querySelector('#ia-mgc-cc-area')).to.not.exist;
+    });
+
+    it('renders real visible labels for card fields (no placeholder-only inputs)', async () => {
+      const plan = makePlan();
+      const el = await fixture<MonthlyGivingCircle>(
+        html`<ia-monthly-giving-circle
+          .canEdit=${true}
+          .canEditPaymentMethod=${true}
+          .plans=${[plan]}
+        ></ia-monthly-giving-circle>`,
+      );
+
+      await navigateToEditView(el);
+
+      const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+      const paymentMethodEl = editPlan.querySelector(
+        'ia-mgc-edit-payment-method',
+      ) as MGCEditPaymentMethod;
+
+      paymentMethodEl.currentlyEditing = true;
+      paymentMethodEl.selectedPaymentProvider = PaymentProvider.CreditCard;
+      await paymentMethodEl.updateComplete;
+
+      const ccFields = paymentMethodEl.querySelector('credit-card-fields');
+      await (ccFields as unknown as { updateComplete: Promise<unknown> })
+        .updateComplete;
+
+      const labels = Array.from(
+        ccFields?.querySelectorAll('.field-label') ?? [],
+      ).map(label => label.textContent?.trim());
+      expect(labels.some(label => label?.startsWith('Card Number'))).to.be.true;
+      expect(labels.some(label => label?.startsWith('Expiration'))).to.be.true;
+      expect(labels.some(label => label?.startsWith('CVC'))).to.be.true;
+    });
+
+    it('marks the card fields invalid even when the contact form is also empty', async () => {
+      const plan = makePlan();
+      const el = await fixture<MonthlyGivingCircle>(
+        html`<ia-monthly-giving-circle
+          .canEdit=${true}
+          .canEditPaymentMethod=${true}
+          .plans=${[plan]}
+        ></ia-monthly-giving-circle>`,
+      );
+
+      await navigateToEditView(el);
+
+      const editPlan = el.querySelector('ia-mgc-edit-plan') as IauxEditPlanForm;
+      const paymentMethodEl = editPlan.querySelector(
+        'ia-mgc-edit-payment-method',
+      ) as MGCEditPaymentMethod;
+
+      paymentMethodEl.currentlyEditing = true;
+      paymentMethodEl.selectedPaymentProvider = PaymentProvider.CreditCard;
+      await paymentMethodEl.updateComplete;
+
+      // Contact form left empty on purpose - reportValidity() will be false.
+      const braintreeManagerEl = paymentMethodEl.querySelector(
+        'ia-mgc-braintree-manager',
+      ) as MGCBraintreeManager;
+      const validateCreditCardFieldsSpy = Sinon.spy(
+        braintreeManagerEl,
+        'validateCreditCardFields',
+      );
+
+      const submitBtn = paymentMethodEl.querySelector(
+        '#edit-plan-payment-method-submit',
+      ) as MGCButton;
+      submitBtn.shadowRoot?.querySelector('button')!.click();
+      await new Promise(r => {
+        setTimeout(r, 0);
+      });
+
+      // Both validations must run - an empty contact form must not
+      // short-circuit before the hosted fields get their own error state.
+      expect(validateCreditCardFieldsSpy.calledOnce).to.be.true;
+    });
+  });
+
   it('selecting Google Pay sets selectedPaymentProvider to PaymentProvider.GooglePay', async () => {
     const plan = makePlan();
     const el = await fixture<MonthlyGivingCircle>(

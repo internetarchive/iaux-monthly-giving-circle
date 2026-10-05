@@ -132,6 +132,11 @@ export class IauxMgcPlans extends LitElement {
     }
     li.cancelled {
       background-color: lightgoldenrodyellow;
+      --primaryDisableCTAFill: transparent;
+      --secondaryCTABorder: none;
+      /* read "Plan is cancelled" as plain status text, in the card's own color */
+      --link-button-color: currentColor;
+      --disabled-button-opacity: 1;
     }
     table {
       width: 100%;
